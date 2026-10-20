@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShoppingBag, Star, ShieldCheck, CheckCircle2, MessageSquare,
-  Plus, Minus, Trash2, Sparkles, Package, Pill, Bone, Bed, Home
+  Plus, Minus, Trash2, Sparkles, Package, Pill, Bone, Bed, Home,
+  Search, Bot, Cpu
 } from 'lucide-react';
 import { StoreProduct, UserPet } from '../data/pawloData';
+import { webMCPManager } from '../services/webmcp';
 
 interface PetStoreMarketplaceProps {
   products: StoreProduct[];
@@ -15,6 +17,7 @@ interface PetStoreMarketplaceProps {
   currency: string;
   paymentRail: string;
   theme: 'dark' | 'light';
+  onOpenAgentConsole?: () => void;
 }
 
 export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
@@ -26,11 +29,13 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
   cityName,
   currency,
   paymentRail,
-  theme
+  theme,
+  onOpenAgentConsole
 }) => {
   const activePet = pets.find(p => p.id === selectedPetId) || pets[0];
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'Todos');
   const [filterByPetSpecies, setFilterByPetSpecies] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [cart, setCart] = useState<Array<{ product: StoreProduct; qty: number }>>([
     { product: products[0], qty: 1 }
   ]);
@@ -44,6 +49,19 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
     prescriptionVerified: true
   });
 
+  // Sincronización bidireccional con el Gestor de Comercio Agéntico WebMCP
+  useEffect(() => {
+    webMCPManager.updateCartState(cart);
+  }, [cart]);
+
+  useEffect(() => {
+    webMCPManager.setListeners({
+      onCartChange: (newCart) => {
+        setCart(newCart);
+      }
+    });
+  }, []);
+
   const categories = [
     { id: 'Todos', label: 'Todo el Catálogo', icon: Package },
     { id: 'Comida', label: 'Comida & Nutrición', icon: Bone },
@@ -56,7 +74,9 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
   const filteredProducts = products.filter(p => {
     const matchesCat = selectedCategory === 'Todos' || p.category === selectedCategory;
     const matchesSpecies = !filterByPetSpecies || p.species === 'all' || p.species === activePet.species;
-    return matchesCat && matchesSpecies;
+    const q = searchQuery.toLowerCase().trim();
+    const matchesQuery = !q || p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q);
+    return matchesCat && matchesSpecies && matchesQuery;
   });
 
   const addToCart = (product: StoreProduct) => {
@@ -147,6 +167,54 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
               ${totalAmount.toFixed(2)}
             </span>
           </button>
+        </div>
+      </div>
+
+      {/* BARRA DE COMERCIO AGÉNTICO WEBMCP + BÚSQUEDA DECLARATIVA */}
+      <div className={`p-4 rounded-3xl border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 ${
+        theme === 'dark' ? 'bg-[#03060C]/90 border-white/10' : 'bg-slate-50 border-slate-200'
+      }`}>
+        <form
+          toolname="pawlo_search_catalog"
+          tooldescription="Búsqueda de productos de alimentación, farmacia y juguetes con filtros de especie y categoría"
+          toolautosubmit="true"
+          onSubmit={e => e.preventDefault()}
+          className="flex-1 flex items-center gap-2 relative"
+        >
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+          <input
+            type="text"
+            name="query"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Buscar por alimento, marca, antipulgas, cama ortopédica..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-2xl glass-input text-xs sm:text-sm focus:outline-none"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 text-xs opacity-60 hover:opacity-100"
+            >
+              ✕
+            </button>
+          )}
+        </form>
+
+        <div className="flex items-center gap-2 shrink-0 justify-between md:justify-end">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-[#00F5A0] text-xs font-mono">
+            <Cpu className="w-3.5 h-3.5 animate-pulse" />
+            <span className="font-bold">WebMCP Commerce Ready</span>
+          </div>
+          {onOpenAgentConsole && (
+            <button
+              onClick={onOpenAgentConsole}
+              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Bot className="w-3.5 h-3.5 text-[#00F5A0]" />
+              <span>Consola Agéntica</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -267,7 +335,13 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
                 )}
               </div>
 
-              <form onSubmit={handleCompleteOrder} className="lg:col-span-5 space-y-4 text-xs sm:text-sm">
+              <form
+                onSubmit={handleCompleteOrder}
+                toolname="pawlo_checkout_cart"
+                tooldescription="Formulario para despachar el pedido con dirección de entrega y forma de pago"
+                toolautosubmit="true"
+                className="lg:col-span-5 space-y-4 text-xs sm:text-sm"
+              >
                 <div>
                   <label className="font-bold block mb-1">Nombre del Tutor *</label>
                   <input

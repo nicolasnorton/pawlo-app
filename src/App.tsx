@@ -5,13 +5,18 @@ import {
   ArrowRight, Send, Check, AlertCircle,
   Compass, Zap, Globe, ChevronDown, Sun, Moon,
   Radio, Cpu, Fingerprint, Star, PlusCircle, Lock,
-  PawPrint, ShoppingBag, Smartphone, Car, Building2, Scissors, Stethoscope, Brain
+  PawPrint, ShoppingBag, Smartphone, Car, Building2, Scissors, Stethoscope, Brain,
+  Bot, Database
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import { PawloLogo } from './components/PawloLogo';
 import { MyPetsVault } from './components/MyPetsVault';
 import { PetStoreMarketplace } from './components/PetStoreMarketplace';
+import { AgenticWebMCPConsole } from './components/AgenticWebMCPConsole';
+import { webMCPManager } from './services/webmcp';
+import { processOfflineTriage } from './services/offlineTriage';
+import { pawloDB, AgentTelemetryStats } from './services/indexedDbStorage';
 import {
   INITIAL_USER_PETS,
   STORE_CATALOG,
@@ -224,12 +229,33 @@ export default function App() {
   const [chipInput, setChipInput] = useState('');
   const [chipResult, setChipResult] = useState<{ isValid: boolean; standard: string; message: string; timestamp?: string } | null>(null);
 
-  // Asistente Inteligente PAWLO AI
+  // Consola WebMCP & Comercio Agéntico
+  const [isAgentConsoleOpen, setIsAgentConsoleOpen] = useState(false);
+  const [telemetryStats, setTelemetryStats] = useState<AgentTelemetryStats | null>(null);
+
+  // Inicialización de WebMCP y Registro de Herramientas Agénticas
+  useEffect(() => {
+    const cleanup = webMCPManager.initializeAgenticTools();
+    webMCPManager.updatePetsState(userPets);
+    pawloDB.getTelemetry().then(setTelemetryStats);
+    return () => cleanup();
+  }, [userPets]);
+
+  // Asistente Inteligente PAWLO AI (Edge Neural Triage con $0 Costo Servidor)
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'bot', text: string, triageLevel?: 'RED' | 'YELLOW' | 'GREEN', action?: string }>>([
+  const [chatMessages, setChatMessages] = useState<Array<{
+    sender: 'user' | 'bot';
+    text: string;
+    triageLevel?: 'RED' | 'YELLOW' | 'GREEN' | 'BLUE';
+    badge?: string;
+    action?: string;
+    latencyMs?: number;
+    cost?: string;
+  }>>([
     {
       sender: 'bot',
-      text: 'Bienvenido a PAWLO Neural Triage. Describe los signos clínicos o las dudas de conducta de tu mascota para clasificar la urgencia con base en evidencia.'
+      text: 'Bienvenido a PAWLO Neural Triage Edge. El motor clínico opera 100% en tu dispositivo y navegador con cortafuegos farmacológico activo y $0 costo de API.',
+      badge: '⚡ EDGE COMPUTE IN-BROWSER (0ms)'
     }
   ]);
   const [inputMsg, setInputMsg] = useState('');
@@ -278,7 +304,7 @@ export default function App() {
     }
   };
 
-  const handleSendMessage = (customPrompt?: string) => {
+  const handleSendMessage = async (customPrompt?: string) => {
     const textToProcess = customPrompt ?? inputMsg;
     if (!textToProcess.trim()) return;
     if (!disclaimerAccepted) {
@@ -290,40 +316,33 @@ export default function App() {
     if (!customPrompt) setInputMsg('');
     setIsAiLoading(true);
 
-    setTimeout(() => {
+    try {
+      // Motor de Triaje Clínico Edge (IndexedDB + Cortafuegos Farmacológico 0ms)
+      const triage = await processOfflineTriage(textToProcess, activeUserPet);
       setIsAiLoading(false);
-      const lower = textToProcess.toLowerCase();
 
-      if (lower.includes('ibuprofeno') || lower.includes('paracetamol') || lower.includes('amoxicilina') || lower.includes('dosis') || lower.includes('pastilla') || lower.includes('ivermectina')) {
-        setChatMessages(prev => [...prev, {
-          sender: 'bot',
-          triageLevel: 'RED',
-          text: `🚨 CORTAFUEGOS FARMACOLÓGICO ACTIVADO PARA ${activeUserPet.name.toUpperCase()}: Los medicamentos humanos (como ibuprofeno o paracetamol) y las dosis empíricas provocan necrosis hepática o fallo renal agudo en caninos y felinos. PAWLO prohíbe la prescripción sin examen médico.`,
-          action: 'Derivación inmediata a Hospital Veterinario 24/7'
-        }]);
-      } else if (lower.includes('sangre') || lower.includes('convulsi') || lower.includes('desmayo') || lower.includes('atropell') || lower.includes('veneno')) {
-        setChatMessages(prev => [...prev, {
-          sender: 'bot',
-          triageLevel: 'RED',
-          text: '🚨 CÓDIGO ROJO (EMERGENCIA VITAL 0h): Signos agudos de compromiso vital detectados. Mantén la vía respiratoria despejada, no suministres líquidos orales y traslada al paciente de urgencia.',
-          action: 'Solicitar Pet Taxi de Urgencia o acudir a Clínica 24h'
-        }]);
-      } else if (lower.includes('vomit') || lower.includes('diarrea') || lower.includes('no come') || lower.includes('decai')) {
-        setChatMessages(prev => [...prev, {
-          sender: 'bot',
-          triageLevel: 'YELLOW',
-          text: `⚠️ CÓDIGO AMARILLO (ATENCIÓN PRIORITARIA < 12h): Cuadro con riesgo de deshidratación en ${activeUserPet.name} (${activeUserPet.weightKg} kg). Suspende la comida sólida por 4-6 horas, ofrece sorbos pequeños de agua y acude a evaluación médica presencial hoy mismo.`,
-          action: 'Agendar cita clínica prioritaria en el día'
-        }]);
-      } else {
-        setChatMessages(prev => [...prev, {
-          sender: 'bot',
-          triageLevel: 'GREEN',
-          text: `🟢 CÓDIGO VERDE (CONDUCTA & BIENESTAR PARA ${activeUserPet.name.toUpperCase()}): Para canalizar energía y mejorar la conducta, implementa paseos con correa larga, juegos de olfato estructurados de 15 minutos y refuerzo positivo.`,
-          action: 'Consultar especialista de conducta o juguetes de olfato en Tienda'
-        }]);
-      }
-    }, 550);
+      setChatMessages(prev => [...prev, {
+        sender: 'bot',
+        triageLevel: triage.triageLevel,
+        badge: triage.badge,
+        text: triage.response,
+        action: triage.actionRequired,
+        latencyMs: triage.latencyMs,
+        cost: triage.serverCost
+      }]);
+
+      // Actualizar telemetría local de ahorro
+      const updatedStats = await pawloDB.getTelemetry();
+      setTelemetryStats(updatedStats);
+    } catch {
+      setIsAiLoading(false);
+      setChatMessages(prev => [...prev, {
+        sender: 'bot',
+        triageLevel: 'YELLOW',
+        text: 'Error en procesamiento local. Por favor consulta directamente con un veterinario.',
+        action: 'Acudir a Clínica de Emergencia'
+      }]);
+    }
   };
 
   const handleBookingSubmit = (e: React.FormEvent) => {
@@ -381,6 +400,14 @@ export default function App() {
           <span className="hidden md:inline shrink-0">GUARDIANES COMUNIDAD: <strong className="text-white font-bold">{selectedCity.activeDevices.toLocaleString()}</strong></span>
         </div>
         <div className="flex items-center space-x-2.5 shrink-0">
+          <button
+            onClick={() => setIsAgentConsoleOpen(true)}
+            className="px-2.5 py-0.5 rounded-md bg-[#00F5A0]/20 hover:bg-[#00F5A0]/30 text-[#00F5A0] border border-[#00F5A0]/40 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
+            title="Abrir consola de herramientas WebMCP y Comercio Agéntico"
+          >
+            <Bot className="w-3.5 h-3.5" />
+            <span>WebMCP Agéntico</span>
+          </button>
           <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-[#00F5A0] border border-[#00F5A0]/30 font-bold hidden sm:inline-flex items-center gap-1.5">
             <Smartphone className="w-3.5 h-3.5" />
             <span>iOS & Google Play Ready</span>
@@ -564,6 +591,7 @@ export default function App() {
             currency={selectedCity.currency}
             paymentRail={selectedCity.paymentRail}
             theme={theme}
+            onOpenAgentConsole={() => setIsAgentConsoleOpen(true)}
           />
         )}
 
@@ -724,7 +752,13 @@ export default function App() {
                 </div>
 
                 {!leadSuccess ? (
-                  <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs sm:text-sm">
+                  <form
+                    onSubmit={handleBookingSubmit}
+                    toolname="pawlo_book_service"
+                    tooldescription="Reserva servicios veterinarios, hospedaje o transporte pet taxi con expediente PAWLO"
+                    toolautosubmit="true"
+                    className="space-y-4 text-xs sm:text-sm"
+                  >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label htmlFor="lead-fullname" className="font-bold block mb-1">Nombre del Tutor:</label>
@@ -1139,14 +1173,23 @@ export default function App() {
               }`}>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 rounded-full bg-[#00F5A0] shadow-[0_0_10px_#00F5A0] animate-pulse"></div>
-                  <span className="font-bold text-sm sm:text-base">PAWLO Neural Copilot ({activeUserPet.name})</span>
-                  <span className="text-xs font-mono px-2.5 py-1 rounded-md badge-indigo font-bold">
-                    DeepSeek R1 Reasoner
+                  <span className="font-bold text-sm sm:text-base">PAWLO Neural Edge Copilot ({activeUserPet.name})</span>
+                  <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-emerald-500/20 text-[#00F5A0] border border-[#00F5A0]/30 font-bold hidden sm:inline-block">
+                    100% In-Browser • $0.00
                   </span>
                 </div>
-                <span className={`text-xs font-mono font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                  Nodo: {selectedCity.name}
-                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsAgentConsoleOpen(true)}
+                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/15 text-xs font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <Bot className="w-3.5 h-3.5 text-[#00F5A0]" />
+                    <span>WebMCP Console</span>
+                  </button>
+                  <span className={`text-xs font-mono font-bold hidden md:inline ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Nodo: {selectedCity.name}
+                  </span>
+                </div>
               </div>
 
               {/* Mensajes */}
@@ -1158,6 +1201,12 @@ export default function App() {
                         ? 'btn-primary-2026 !shadow-none font-bold rounded-br-none' 
                         : (theme === 'dark' ? 'bg-[#03060C] border border-white/15 text-slate-100 rounded-bl-none' : 'bg-slate-50 border border-slate-300 text-slate-900 rounded-bl-none')
                     }`}>
+                      {msg.badge && (
+                        <div className="flex items-center justify-between gap-2 pb-1.5 mb-1 border-b border-white/10 text-[10px] font-mono">
+                          <span className="text-[#00F5A0] font-bold">{msg.badge}</span>
+                          {msg.cost && <span className="opacity-60">{msg.cost}</span>}
+                        </div>
+                      )}
                       <p>{msg.text}</p>
                       {msg.action && (
                         <div className={`mt-2.5 pt-2.5 border-t font-mono font-bold text-emerald-700 dark:text-[#00F5A0] flex items-center ${
@@ -1175,7 +1224,7 @@ export default function App() {
                 {disclaimerAccepted && chatMessages.length === 1 && (
                   <div className="pt-2 space-y-2.5">
                     <span className={`text-xs font-mono uppercase font-bold block ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
-                      Escenarios de Prueba en 1 Clic:
+                      Escenarios de Prueba en 1 Clic (Edge Compute & Reglas):
                     </span>
                     <div className="flex flex-wrap gap-2.5">
                       <button
@@ -1191,6 +1240,17 @@ export default function App() {
                       </button>
                       <button
                         type="button"
+                        onClick={() => handleSendMessage("¿Cuánto debe comer al día y cuántos gramos de croquetas?")}
+                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold cursor-pointer ${
+                          theme === 'dark' 
+                            ? 'border-sky-500/40 bg-sky-500/15 text-sky-300 hover:bg-sky-500/25' 
+                            : 'border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100'
+                        }`}
+                      >
+                        🥣 Probar Ración Nutricional (RER)
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleSendMessage("Mi mascota tiene vómito desde la mañana y está decaída")}
                         className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold cursor-pointer ${
                           theme === 'dark' 
@@ -1199,6 +1259,17 @@ export default function App() {
                         }`}
                       >
                         ⚠️ Probar Triaje Amarillo
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSendMessage("Comió chocolate negro y está temblando")}
+                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold cursor-pointer ${
+                          theme === 'dark' 
+                            ? 'border-rose-500/40 bg-rose-500/15 text-rose-300 hover:bg-rose-500/25' 
+                            : 'border-rose-300 bg-rose-50 text-rose-900 hover:bg-rose-100'
+                        }`}
+                      >
+                        🚨 Probar Emergencia Vital
                       </button>
                       <button
                         type="button"
@@ -1230,6 +1301,9 @@ export default function App() {
               {/* Input */}
               <form 
                 onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
+                toolname="pawlo_triage_symptom"
+                tooldescription="Triaje clínico de signos, síntomas y cálculo nutricional en navegador con cortafuegos farmacológico"
+                toolautosubmit="true"
                 className={`p-4 border-t flex items-center space-x-3 ${
                   theme === 'dark' ? 'bg-[#03060C] border-white/10' : 'bg-slate-100 border-slate-300'
                 }`}
@@ -1278,7 +1352,13 @@ export default function App() {
                 Verifica la validez y fabricante de cualquier microchip FDX-B de 15 dígitos internacional o códigos registrados en la red privada de clínicas de {selectedCity.name}.
               </p>
 
-              <form onSubmit={handleValidateMicrochip} className="space-y-4 pt-2">
+              <form
+                onSubmit={handleValidateMicrochip}
+                toolname="pawlo_verify_microchip"
+                tooldescription="Valida microchip biométrico ISO 11784/11785 FDX-B de 15 dígitos de forma local"
+                toolautosubmit="true"
+                className="space-y-4 pt-2"
+              >
                 <div>
                   <label htmlFor="pawlo-chip-input" className="text-xs sm:text-sm font-bold block mb-1">
                     Número de Microchip (15 dígitos ISO o Código Clínico):
@@ -1446,6 +1526,13 @@ export default function App() {
           Capacitor iOS/Android Ready | ISO 11784/11785 | PostGIS Spatial Engine
         </div>
       </footer>
+
+      {/* MODAL / CONSOLA INTERACTIVA DE WEBMCP & COMERCIO AGÉNTICO */}
+      <AgenticWebMCPConsole
+        theme={theme}
+        isOpen={isAgentConsoleOpen}
+        onClose={() => setIsAgentConsoleOpen(false)}
+      />
     </div>
   );
 }

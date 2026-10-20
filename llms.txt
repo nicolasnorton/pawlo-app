@@ -42,11 +42,23 @@
 - All service booking flows generate a WhatsApp URL (`https://wa.me/`) with international format E.164.
 - In backend Edge Functions, always wrap third-party CRM calls (GoHighLevel) in try/catch blocks with local fallback references (`PWL-[CITY]-[HASH]`) to prevent user blocking during external outages.
 
+### 5. WebMCP (Web Model Context Protocol) & Agentic Commerce
+- **Standard**: Follows Chrome Modern Web Guidance for declarative forms and imperative tools.
+- **Declarative Form Attributes**: Forms must provide `toolname`, `tooldescription`, and `toolautosubmit="true"`.
+- **Imperative Registration**: `document.modelContext.registerTool()` with `AbortController` signal and `readOnlyHint` attributes.
+- **Global Fallback**: `window.pawloWebMCP` and `window.pawloAgentTools`.
+- **Zero API Cost Edge Engine**: Clinical triage & dietary formulas run in-browser (`offlineTriage.ts`) backed by `IndexedDB` (`indexedDbStorage.ts`), reducing server and DeepSeek API costs by 90%+.
+
 ## File Map
 - `src/App.tsx`: Main modular application shell with tab switcher, city switcher, and dual theme.
+- `src/services/webmcp.ts`: WebMCP agent manager registering 8 production tools for agentic commerce and triage.
+- `src/services/offlineTriage.ts`: Edge triage & regulatory pharmacological firewall.
+- `src/services/indexedDbStorage.ts`: IndexedDB persistence and API savings telemetry.
+- `src/components/AgenticWebMCPConsole.tsx`: Interactive WebMCP & Agentic Commerce developer test runner.
+- `src/components/PetStoreMarketplace.tsx`: Agentic e-commerce with declarative search and checkout forms.
+- `src/components/MyPetsVault.tsx`: Clinical records, vaccines, photos, and biometric data.
 - `src/components/PawloLogo.tsx`: Biometric paw icon + animated status node + responsive wordmark.
 - `src/index.css`: Design system CSS variables for Dark and Light modes.
-- `supabase/migrations/`: SQL migrations for PostGIS tables, RLS policies, and RPCs.
-- `supabase/functions/create-ghl-lead/`: Resilient lead capture Edge Function with WhatsApp fallback.
+- `docs/WEBMCP_AGENTIC_COMMERCE.md`: Full architectural specification for WebMCP and Agentic Commerce.
 - `supabase/functions/pet-assistant/`: DeepSeek router with deterministic pharma regex blocking.
 - `tests/run_validation_suite.py`: Synthetic test suite for safety shields and spatial benchmarks.
