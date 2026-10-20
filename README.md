@@ -27,10 +27,32 @@ El primer nodo operativo de la red es **Cuenca (Ecuador)**, con soporte para exp
 
 ---
 
-## 🚀 Módulos Principales
+## 🚀 Módulos Principales (Super-App v2.0)
 
-### 1. 🗺️ Radar Geoespacial en Vivo
-* **Motor Espacial**: Basado en **PostgreSQL 15 + PostGIS (EPSG:4326)** con índices `GiST` y consultas `ST_DWithin`.
+### 0. 🐾 Mis Mascotas — Bóveda Biométrica & Expediente Clínico Individual
+* **Fichas Completas por Mascota**: Gestión ilimitada de perros y gatos del usuario con foto, raza, edad exacta, control de peso (kg), alergias, ración diaria (g) y código de Microchip ISO.
+* **Carnet Digital de Vacunación y Desparasitación**: Registro con número de lote, fecha de aplicación, fecha de próximo refuerzo, clínica y médico veterinario tratante.
+* **Historia Clínica Centralizada**: Consultas generales, profilaxis dental, laboratorios, cirugías, temperatura y evolución de peso.
+* **Álbum Fotográfico & Bitácora de Notas**: Galería de fotos de cada mascota y diario personal de dieta, medicación, conducta y recordatorios.
+
+### 1. 🛍️ Tienda & Farmacia Veterinaria Personalizada
+* **Catálogo Inteligente Filtrado por tu Mascota**: Comida super premium, Medicamentos y Antiparasitarios (con validación de carnet/receta electrónica), Juguetes de enriquecimiento, Camas ortopédicas viscoelásticas y Casas térmicas/Kennels IATA.
+* **Carrito & Checkout Directo**: Integración inmediata con WhatsApp y medios de pago locales (*Deuna P2P*, *Pichincha*, *Produbanco*, *Tarjeta*).
+
+### 2. ⚡ Servicios Integrales Direct-to-Care
+* **5 Verticales Especializadas**:
+  - 🚕 **Transporte Pet Taxi**: Vehículos climatizados con anclaje ISOFIX y GPS en vivo.
+  - 🏨 **Hospedaje & Guardería**: Suites libres de jaulas con cámaras 24/7.
+  - ✂️ **Grooming & Spa Móvil**: Ozonoterapia dermocosmética en la puerta de tu casa.
+  - 🩺 **Veterinaria & Especialidades 24/7**: Sincronizada con el Carnet Digital PAWLO.
+  - 🧠 **Etología & Paseo Educativo**: Rehabilitación conductual certificada.
+
+### 3. 📱 Preparado para Apple App Store (iOS) & Google Play Store (Android)
+* **Ionic Capacitor 7 (`app.pawlo.os`)**: Configuración nativa lista en [`capacitor.config.ts`](capacitor.config.ts), manifiesto PWA ([`public/manifest.webmanifest`](public/manifest.webmanifest)), soporte `viewport-fit=cover` y barra de navegación inferior nativa para móviles.
+* Consulta la guía paso a paso en [`docs/APP_STORE_DEPLOYMENT.md`](docs/APP_STORE_DEPLOYMENT.md).
+
+### 4. 🗺️ Radar Geoespacial en Vivo & Adopciones Comunitarias
+* **Motor Espacial**: Basado en **PostgreSQL 15 + PostGIS (EPSG:4326)** con índices `GiST` y consultas `ST_DWithin` para proteger también a todos los animales de la ciudad.
 * **Latencia Ultra-Baja**: Respuestas sub-10ms (benchmark verificado de **0.172 ms** en 5,000 registros).
 * **Filtros Dinámicos**: Escaneo por radio (1 km a 8 km) con círculos de cobertura WGS84 reactivos en **Leaflet**.
 

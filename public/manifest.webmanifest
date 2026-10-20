@@ -1,0 +1,19 @@
+{
+  "name": "PAWLO™ — Urban Pet Super-App",
+  "short_name": "PAWLO",
+  "description": "El sistema operativo definitivo para dueños de mascotas: Ficha clínica digital, carnets de vacunación, tienda especializada, servicios integrales y radar de protección animal.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#03060C",
+  "theme_color": "#00F5A0",
+  "categories": ["lifestyle", "medical", "shopping", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

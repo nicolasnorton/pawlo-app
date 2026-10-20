@@ -1,18 +1,37 @@
 {
-  "name": "cuenca-mascotas-mvp",
-  "version": "1.0.0",
-  "description": "Arquitectura productiva Full-Stack y Geoespacial para cuidado animal, tenencia responsable homologada con la **Comisión de Gestión Ambiental (CGA) de Cuenca**, red de adopciones articulada con **Fundación ARCA**, comercio conversacional con **GoHighLevel (GHL) CRM API v2 + WhatsApp** y **Asistente de Triaje y Conducta Canina** impulsado por **DeepSeek API**.",
+  "name": "pawlo-urban-pet-superapp",
+  "version": "2.0.0",
+  "description": "PAWLO™ — The Urban Pet Super-App: Bóveda Digital de Mascotas (Carnets, Historia Clínica, Fotos, Peso, Edad, Notas), Tienda & Farmacia Especializada, Servicios Integrales (Transporte, Hospedaje, Grooming, Veterinaria), Triaje IA y Radar Geoespacial Comunitario. Preparado para Web, iOS App Store y Google Play Store con Capacitor.",
   "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "cap:sync": "vite build && npx cap sync",
+    "cap:add:ios": "npx cap add ios",
+    "cap:add:android": "npx cap add android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android",
+    "build:mobile": "vite build && npx cap copy"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "pawlo",
+    "pets",
+    "veterinary",
+    "pet-store",
+    "capacitor",
+    "ios",
+    "android",
+    "postgis",
+    "react"
+  ],
+  "author": "PAWLO Global Inc.",
+  "license": "MIT",
   "dependencies": {
+    "@capacitor/app": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/haptics": "^7.0.0",
+    "@capacitor/status-bar": "^7.0.0",
     "@supabase/supabase-js": "^2.118.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.59.0",
@@ -21,6 +40,9 @@
     "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/leaflet": "^1.9.22",
     "@types/react": "^19.3.0",

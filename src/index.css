@@ -201,3 +201,22 @@ html.light .bg-grid-pattern {
   height: 100%;
   border-radius: 1.5rem;
 }
+
+/* Mobile App Store Safe Area & Ergonomics (iOS / Android Capacitor) */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0.5rem);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

@@ -2,13 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { 
   Heart, MessageSquare, PhoneCall, ShieldCheck, 
   MapPin, CheckCircle2, Sparkles, Navigation, 
-  ShieldAlert, ArrowRight, Send, Check, AlertCircle,
-  Activity, Compass, Zap, Globe, ChevronDown, Sun, Moon,
-  Radio, Cpu, Fingerprint, Star, Clock, Layers, PlusCircle, Lock
+  ArrowRight, Send, Check, AlertCircle,
+  Compass, Zap, Globe, ChevronDown, Sun, Moon,
+  Radio, Cpu, Fingerprint, Star, PlusCircle, Lock,
+  PawPrint, ShoppingBag, Smartphone, Car, Building2, Scissors, Stethoscope, Brain
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import { PawloLogo } from './components/PawloLogo';
+import { MyPetsVault } from './components/MyPetsVault';
+import { PetStoreMarketplace } from './components/PetStoreMarketplace';
+import {
+  INITIAL_USER_PETS,
+  STORE_CATALOG,
+  EXPANDED_SERVICES_CATALOG,
+  UserPet,
+  PetNote,
+  VaccineRecord,
+  ClinicalEntry,
+  PetServiceItem
+} from './data/pawloData';
 
 // Corrección de íconos de Leaflet en React / Vite
 const defaultIcon = L.icon({
@@ -112,57 +125,6 @@ const GEO_ALERTS = [
   }
 ];
 
-const SERVICES_CATALOG = [
-  {
-    id: "srv-01",
-    title: "Consulta Clínica Integral & Ecografía",
-    category: "Medicina Veterinaria",
-    provider: "Hospital Veterinario El Paraíso",
-    price: 25.00,
-    sector: "Parque El Paraíso / Av. 10 de Agosto",
-    badge: "Urgencias 24/7",
-    rating: "4.98",
-    reviews: 312,
-    whatsapp: "593998408369"
-  },
-  {
-    id: "srv-02",
-    title: "Full Grooming & Ozonoterapia Dermocosmética",
-    category: "Spa & Estética Móvil",
-    provider: "Tomebamba Pet Spa Studio",
-    price: 28.00,
-    sector: "Unidad Móvil (Puerta a Puerta)",
-    badge: "A Domicilio",
-    rating: "4.95",
-    reviews: 184,
-    whatsapp: "593998408369"
-  },
-  {
-    id: "srv-03",
-    title: "Etología Clínica & Rehabilitación Conductual",
-    category: "Conducta Canina",
-    provider: "K9 Behavior Lab",
-    price: 35.00,
-    sector: "Puertas del Sol / Ordóñez Lasso",
-    badge: "Especialista Certificado",
-    rating: "5.00",
-    reviews: 97,
-    whatsapp: "593998408369"
-  },
-  {
-    id: "srv-04",
-    title: "Implantación de Microchip ISO 11784 + Pasaporte",
-    category: "Identificación Biométrica",
-    provider: "Centro Clínico San Blas",
-    price: 22.00,
-    sector: "San Blas / Simón Bolívar",
-    badge: "Norma Global ISO",
-    rating: "4.92",
-    reviews: 215,
-    whatsapp: "593998408369"
-  }
-];
-
 const COMMUNITY_ADOPTIONS = [
   {
     id: "adp-01",
@@ -190,12 +152,22 @@ const COMMUNITY_ADOPTIONS = [
   }
 ];
 
+type MainTab = 'my_pets' | 'store' | 'services' | 'alerts' | 'assistant' | 'adoptions' | 'chip_lookup';
+
 export default function App() {
   const [selectedCity, setSelectedCity] = useState<CityNode>(CITY_NODES[0]);
-  const [activeTab, setActiveTab] = useState<'alerts' | 'assistant' | 'services' | 'adoptions' | 'chip_lookup'>('alerts');
+  const [activeTab, setActiveTab] = useState<MainTab>('my_pets');
   const [radiusKm, setRadiusKm] = useState(3);
   const [viewMode, setViewMode] = useState<'both' | 'map' | 'cards'>('both');
   const [citySelectorOpen, setCitySelectorOpen] = useState(false);
+
+  // Estado de las Mascotas del Usuario Individual
+  const [userPets, setUserPets] = useState<UserPet[]>(INITIAL_USER_PETS);
+  const [selectedPetId, setSelectedPetId] = useState<string>(INITIAL_USER_PETS[0].id);
+  const [storeCategoryFilter, setStoreCategoryFilter] = useState<string>('Todos');
+  const [serviceCategoryFilter, setServiceCategoryFilter] = useState<string>('Todos');
+
+  const activeUserPet = userPets.find(p => p.id === selectedPetId) || userPets[0];
 
   // Soporte Light / Dark Mode
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -213,6 +185,41 @@ export default function App() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
+  // Handlers de la Bóveda de Mascotas
+  const handleAddPet = (newPet: UserPet) => {
+    setUserPets(prev => [...prev, newPet]);
+  };
+
+  const handleAddNote = (petId: string, note: PetNote) => {
+    setUserPets(prev =>
+      prev.map(p => (p.id === petId ? { ...p, notes: [note, ...p.notes] } : p))
+    );
+  };
+
+  const handleAddVaccine = (petId: string, vaccine: VaccineRecord) => {
+    setUserPets(prev =>
+      prev.map(p => (p.id === petId ? { ...p, vaccines: [vaccine, ...p.vaccines] } : p))
+    );
+  };
+
+  const handleAddClinicalRecord = (petId: string, record: ClinicalEntry) => {
+    setUserPets(prev =>
+      prev.map(p => (p.id === petId ? { ...p, clinicalHistory: [record, ...p.clinicalHistory] } : p))
+    );
+  };
+
+  const handleAddPhoto = (petId: string, photo: { url: string; caption: string; date: string }) => {
+    setUserPets(prev =>
+      prev.map(p => (p.id === petId ? { ...p, gallery: [photo, ...p.gallery] } : p))
+    );
+  };
+
+  const handleUpdateWeight = (petId: string, newWeight: number) => {
+    setUserPets(prev =>
+      prev.map(p => (p.id === petId ? { ...p, weightKg: newWeight } : p))
+    );
+  };
+
   // Validador de Microchips Universal ISO
   const [chipInput, setChipInput] = useState('');
   const [chipResult, setChipResult] = useState<{ isValid: boolean; standard: string; message: string; timestamp?: string } | null>(null);
@@ -228,15 +235,16 @@ export default function App() {
   const [inputMsg, setInputMsg] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  // Comercio Conversacional & WhatsApp Directo
-  const [selectedService, setSelectedService] = useState<any>(null);
+  // Comercio Conversacional & Servicios Integrales (Transporte, Hospedaje, Grooming, Vet, Etología)
+  const [selectedService, setSelectedService] = useState<PetServiceItem | null>(null);
   const [leadForm, setLeadForm] = useState({
     fullName: '',
     phone: '',
     paymentPreference: 'Deuna_P2P',
     sector: 'El Vergel',
-    petName: '',
-    petBreed: ''
+    petName: activeUserPet.name,
+    petBreed: activeUserPet.breed,
+    dateOrSchedule: 'Hoy / Mañana por la mañana'
   });
   const [leadSuccess, setLeadSuccess] = useState<{ waUrl: string; refId: string } | null>(null);
 
@@ -290,7 +298,7 @@ export default function App() {
         setChatMessages(prev => [...prev, {
           sender: 'bot',
           triageLevel: 'RED',
-          text: '🚨 CORTAFUEGOS FARMACOLÓGICO ACTIVADO: Los medicamentos humanos (como ibuprofeno o paracetamol) y las dosis empíricas provocan necrosis hepática o fallo renal agudo en caninos y felinos. PAWLO prohíbe la prescripción no autorizada.',
+          text: `🚨 CORTAFUEGOS FARMACOLÓGICO ACTIVADO PARA ${activeUserPet.name.toUpperCase()}: Los medicamentos humanos (como ibuprofeno o paracetamol) y las dosis empíricas provocan necrosis hepática o fallo renal agudo en caninos y felinos. PAWLO prohíbe la prescripción sin examen médico.`,
           action: 'Derivación inmediata a Hospital Veterinario 24/7'
         }]);
       } else if (lower.includes('sangre') || lower.includes('convulsi') || lower.includes('desmayo') || lower.includes('atropell') || lower.includes('veneno')) {
@@ -298,21 +306,21 @@ export default function App() {
           sender: 'bot',
           triageLevel: 'RED',
           text: '🚨 CÓDIGO ROJO (EMERGENCIA VITAL 0h): Signos agudos de compromiso vital detectados. Mantén la vía respiratoria despejada, no suministres líquidos orales y traslada al paciente de urgencia.',
-          action: 'Traslado prioritario al centro de urgencias 24h más cercano'
+          action: 'Solicitar Pet Taxi de Urgencia o acudir a Clínica 24h'
         }]);
       } else if (lower.includes('vomit') || lower.includes('diarrea') || lower.includes('no come') || lower.includes('decai')) {
         setChatMessages(prev => [...prev, {
           sender: 'bot',
           triageLevel: 'YELLOW',
-          text: '⚠️ CÓDIGO AMARILLO (ATENCIÓN PRIORITARIA < 12h): Cuadro con riesgo de deshidratación. Suspende la comida sólida por 4-6 horas, ofrece sorbos pequeños de agua y acude a evaluación médica presencial hoy mismo.',
+          text: `⚠️ CÓDIGO AMARILLO (ATENCIÓN PRIORITARIA < 12h): Cuadro con riesgo de deshidratación en ${activeUserPet.name} (${activeUserPet.weightKg} kg). Suspende la comida sólida por 4-6 horas, ofrece sorbos pequeños de agua y acude a evaluación médica presencial hoy mismo.`,
           action: 'Agendar cita clínica prioritaria en el día'
         }]);
       } else {
         setChatMessages(prev => [...prev, {
           sender: 'bot',
           triageLevel: 'GREEN',
-          text: '🟢 CÓDIGO VERDE (CONDUCTA & BIENESTAR): Para canalizar energía y mejorar la conducta, implementa paseos con correa larga, juegos de olfato estructurados de 15 minutos y refuerzo positivo.',
-          action: 'Consultar especialista de conducta en PAWLO Direct Care'
+          text: `🟢 CÓDIGO VERDE (CONDUCTA & BIENESTAR PARA ${activeUserPet.name.toUpperCase()}): Para canalizar energía y mejorar la conducta, implementa paseos con correa larga, juegos de olfato estructurados de 15 minutos y refuerzo positivo.`,
+          action: 'Consultar especialista de conducta o juguetes de olfato en Tienda'
         }]);
       }
     }, 550);
@@ -320,18 +328,32 @@ export default function App() {
 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedService) return;
     const refId = `PWL-${selectedCity.id.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     const targetWa = selectedService.whatsapp || "593998408369";
-    const waText = `Hola ${selectedService.provider}, solicito confirmar cita para "${selectedService.title}" vía PAWLO (${selectedCity.name}). Paciente: ${leadForm.petName}. Código: ${refId}. Sector: ${leadForm.sector}. Pago acordado: ${leadForm.paymentPreference}.`;
+    const waText = `Hola ${selectedService.provider}, solicito confirmar reserva de "${selectedService.title}" vía PAWLO (${selectedCity.name}). Mascota: ${leadForm.petName} (${leadForm.petBreed}, Chip ISO: ${activeUserPet.microchipIso}). Horario: ${leadForm.dateOrSchedule}. Código: ${refId}. Sector: ${leadForm.sector}. Pago acordado: ${leadForm.paymentPreference}.`;
     const waUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(waText)}`;
 
     setLeadSuccess({ waUrl, refId });
   };
 
   const visibleAlerts = GEO_ALERTS.filter(a => a.distance_km <= radiusKm);
+  const filteredServices = EXPANDED_SERVICES_CATALOG.filter(
+    s => serviceCategoryFilter === 'Todos' || s.category === serviceCategoryFilter
+  );
+
+  const navTabs = [
+    { id: 'my_pets', label: 'Mis Mascotas', icon: PawPrint },
+    { id: 'store', label: 'Tienda & Farmacia', icon: ShoppingBag },
+    { id: 'services', label: 'Servicios', icon: Zap },
+    { id: 'alerts', label: 'Radar', icon: Compass },
+    { id: 'assistant', label: 'Neural AI', icon: Sparkles },
+    { id: 'adoptions', label: 'Adopciones', icon: Heart },
+    { id: 'chip_lookup', label: 'Biometría ISO', icon: Fingerprint },
+  ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-grid-pattern relative selection:bg-[#00F5A0] selection:text-[#03060C]">
+    <div className="min-h-screen flex flex-col bg-grid-pattern relative selection:bg-[#00F5A0] selection:text-[#03060C] pb-20 lg:pb-0">
       
       {/* Iluminación Atmosférica Boreal */}
       <div className={`fixed -top-24 left-1/2 -translate-x-1/2 w-[950px] h-[380px] rounded-full blur-[130px] pointer-events-none -z-0 transition-opacity duration-700 ${
@@ -340,8 +362,8 @@ export default function App() {
           : 'bg-gradient-to-r from-emerald-500/10 via-sky-500/10 to-indigo-500/10 opacity-60'
       }`}></div>
 
-      {/* BARRA DE TELEMETRÍA SUPERIOR */}
-      <div className={`border-b text-xs font-mono py-2 px-4 lg:px-8 flex items-center justify-between z-50 transition-colors ${
+      {/* BARRA DE TELEMETRÍA SUPERIOR + ESTADO DE PREPARACIÓN APP STORES */}
+      <div className={`safe-area-top border-b text-xs font-mono py-2 px-4 lg:px-8 flex items-center justify-between z-50 transition-colors ${
         theme === 'dark' 
           ? 'bg-[#020409]/95 border-white/10 text-slate-300' 
           : 'bg-slate-900 text-slate-200 border-slate-800'
@@ -349,32 +371,36 @@ export default function App() {
         <div className="flex items-center space-x-4 overflow-x-auto no-scrollbar">
           <span className="flex items-center space-x-2 text-[#00F5A0] font-bold shrink-0">
             <Radio className="w-3.5 h-3.5 animate-pulse text-[#00F5A0]" />
-            <span>PAWLO SPATIAL GRID: ONLINE</span>
+            <span>PAWLO SUPER-APP OS v2.0</span>
           </span>
           <span className="opacity-40">|</span>
           <span className="shrink-0">NODO: <strong className="text-white font-bold">{selectedCity.code} ({selectedCity.name})</strong></span>
           <span className="opacity-40 hidden sm:inline">|</span>
-          <span className="hidden sm:inline shrink-0">POSTGIS LATENCY: <strong className="text-[#00D9F5] font-bold">{selectedCity.latencyMs}</strong></span>
+          <span className="hidden sm:inline shrink-0">MASCOTA ACTIVA: <strong className="text-[#00F5A0] font-bold">{activeUserPet.name} ({activeUserPet.weightKg} kg)</strong></span>
           <span className="opacity-40 hidden md:inline">|</span>
-          <span className="hidden md:inline shrink-0">GUARDIANES ACTIVOS: <strong className="text-white font-bold">{selectedCity.activeDevices.toLocaleString()}</strong></span>
+          <span className="hidden md:inline shrink-0">GUARDIANES COMUNIDAD: <strong className="text-white font-bold">{selectedCity.activeDevices.toLocaleString()}</strong></span>
         </div>
-        <div className="flex items-center space-x-3 shrink-0">
-          <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-xs text-white border border-white/15 font-bold hidden sm:inline">
+        <div className="flex items-center space-x-2.5 shrink-0">
+          <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-[#00F5A0] border border-[#00F5A0]/30 font-bold hidden sm:inline-flex items-center gap-1.5">
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>iOS & Google Play Ready</span>
+          </span>
+          <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-xs text-white border border-white/15 font-bold hidden lg:inline">
             ISO 11784/11785
           </span>
         </div>
       </div>
 
       {/* HEADER PRINCIPAL PAWLO FLAGSHIP */}
-      <header className={`border-b sticky top-0 z-40 px-4 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4 backdrop-blur-2xl transition-colors duration-300 ${
+      <header className={`border-b sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 backdrop-blur-2xl transition-colors duration-300 ${
         theme === 'dark' 
           ? 'border-white/10 bg-[#050914]/90' 
           : 'border-slate-300/80 bg-white/95 shadow-sm'
       }`}>
         
         {/* BRANDING + SELECTOR DE NODO URBANO */}
-        <div className="flex items-center gap-4 sm:gap-6">
-          <div onClick={() => setActiveTab('alerts')} className="cursor-pointer">
+        <div className="flex items-center gap-3 sm:gap-5">
+          <div onClick={() => setActiveTab('my_pets')} className="cursor-pointer">
             <PawloLogo size="md" cityBadge={selectedCity.name} theme={theme} />
           </div>
 
@@ -382,15 +408,14 @@ export default function App() {
           <div className="relative">
             <button 
               onClick={() => setCitySelectorOpen(!citySelectorOpen)}
-              className={`flex items-center space-x-2.5 border px-4 py-2.5 rounded-2xl text-sm font-bold transition-all shadow-xs ${
+              className={`flex items-center space-x-2 border px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer ${
                 theme === 'dark' 
                   ? 'bg-white/5 hover:bg-white/10 border-white/15 text-slate-100' 
                   : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-900'
               }`}
             >
-              <Globe className="w-4 h-4 text-[#00F5A0] dark:text-[#00F5A0]" />
+              <Globe className="w-4 h-4 text-[#00F5A0]" />
               <span>{selectedCity.name}</span>
-              <span className="text-xs font-mono opacity-60 hidden sm:inline">{selectedCity.country}</span>
               <ChevronDown className="w-4 h-4 opacity-75" />
             </button>
 
@@ -410,7 +435,7 @@ export default function App() {
                   <button
                     key={city.id}
                     onClick={() => { setSelectedCity(city); setCitySelectorOpen(false); }}
-                    className={`w-full text-left px-3.5 py-3 rounded-2xl text-xs sm:text-sm flex items-center justify-between transition ${
+                    className={`w-full text-left px-3.5 py-3 rounded-2xl text-xs sm:text-sm flex items-center justify-between transition cursor-pointer ${
                       selectedCity.id === city.id 
                         ? (theme === 'dark' ? 'bg-[#00F5A0]/20 text-[#00F5A0] font-bold border border-[#00F5A0]/40' : 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-300') 
                         : (theme === 'dark' ? 'text-slate-200 hover:bg-white/10' : 'text-slate-800 hover:bg-slate-100')
@@ -442,29 +467,23 @@ export default function App() {
           </div>
         </div>
 
-        {/* DOCK DE NAVEGACIÓN */}
-        <div className="flex items-center gap-3">
-          <nav className={`flex items-center p-1.5 rounded-2xl border text-sm font-bold transition-all shadow-xs ${
+        {/* DOCK DE NAVEGACIÓN PRINCIPAL */}
+        <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar max-w-full">
+          <nav className={`flex items-center p-1.5 rounded-2xl border text-xs sm:text-sm font-bold transition-all shadow-xs ${
             theme === 'dark' 
               ? 'bg-[#03060C] border-white/15' 
               : 'bg-slate-100 border-slate-300'
           }`}>
-            {[
-              { id: 'alerts', label: 'Radar', icon: Compass },
-              { id: 'assistant', label: 'Neural AI', icon: Sparkles },
-              { id: 'services', label: 'Direct Care', icon: Zap },
-              { id: 'chip_lookup', label: 'Biometría ISO', icon: Fingerprint },
-              { id: 'adoptions', label: 'Adopciones', icon: Heart },
-            ].map(tab => {
+            {navTabs.map(tab => {
               const IconComponent = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button 
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-4 py-2.5 rounded-xl transition-all duration-200 flex items-center space-x-2 ${
+                  onClick={() => setActiveTab(tab.id as MainTab)}
+                  className={`px-3.5 py-2 rounded-xl transition-all duration-200 flex items-center space-x-2 shrink-0 cursor-pointer ${
                     isActive 
-                      ? 'btn-primary-2026 !rounded-xl !py-2.5 !px-4' 
+                      ? 'btn-primary-2026 !rounded-xl !py-2 !px-3.5' 
                       : (theme === 'dark' ? 'text-slate-300 hover:text-white hover:bg-white/10' : 'text-slate-700 hover:text-slate-950 hover:bg-white')
                   }`}
                 >
@@ -478,7 +497,7 @@ export default function App() {
           {/* Conmutador de Tema (Sol / Luna) */}
           <button
             onClick={toggleTheme}
-            className={`p-3 rounded-2xl border transition-all duration-200 flex items-center justify-center cursor-pointer ${
+            className={`p-2.5 rounded-2xl border transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 ${
               theme === 'dark' 
                 ? 'bg-white/10 hover:bg-white/15 border-white/15 text-amber-300' 
                 : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-800 shadow-sm'
@@ -493,7 +512,326 @@ export default function App() {
       {/* CONTENIDO PRINCIPAL */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative z-10">
 
-        {/* 1. MÓDULO: RADAR GEOESPACIAL PAWLO */}
+        {/* 1. MÓDULO ESTRELLA: MIS MASCOTAS (BÓVEDA DIGITAL PERSONAL) */}
+        {activeTab === 'my_pets' && (
+          <MyPetsVault
+            pets={userPets}
+            selectedPetId={selectedPetId}
+            onSelectPet={setSelectedPetId}
+            onAddPet={handleAddPet}
+            onAddNote={handleAddNote}
+            onAddVaccine={handleAddVaccine}
+            onAddClinicalRecord={handleAddClinicalRecord}
+            onAddPhoto={handleAddPhoto}
+            onUpdateWeight={handleUpdateWeight}
+            onNavigateToStore={(cat) => {
+              if (cat) setStoreCategoryFilter(cat);
+              setActiveTab('store');
+            }}
+            onNavigateToServices={(cat) => {
+              if (cat) setServiceCategoryFilter(cat);
+              setActiveTab('services');
+            }}
+            cityName={selectedCity.name}
+            theme={theme}
+          />
+        )}
+
+        {/* 2. MÓDULO: TIENDA & FARMACIA PERSONALIZADA (COMIDA, MEDICAMENTOS, JUGUETES, CAMAS, CASAS) */}
+        {activeTab === 'store' && (
+          <PetStoreMarketplace
+            products={STORE_CATALOG}
+            pets={userPets}
+            selectedPetId={selectedPetId}
+            onSelectPet={setSelectedPetId}
+            initialCategory={storeCategoryFilter}
+            cityName={selectedCity.name}
+            currency={selectedCity.currency}
+            paymentRail={selectedCity.paymentRail}
+            theme={theme}
+          />
+        )}
+
+        {/* 3. MÓDULO: SERVICIOS INTEGRALES (TRANSPORTE, HOSPEDAJE, GROOMING, VETERINARIA, ETOLOGÍA) */}
+        {activeTab === 'services' && (
+          <section className="space-y-6">
+            <div className="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="space-y-2 max-w-2xl">
+                <span className="text-xs font-mono uppercase font-bold tracking-wider badge-emerald px-3 py-1 rounded-full">
+                  PAWLO SERVICIOS INTEGRALES • {selectedCity.name.toUpperCase()}
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">
+                  Transporte, Hospedaje, Grooming, Veterinaria & Etología
+                </h2>
+                <p className={`text-sm sm:text-base mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Contrata profesionales verificados para <strong>{activeUserPet.name}</strong> con su ficha clínica y carnet sincronizados. Pago directo vía <strong>{selectedCity.paymentRail}</strong>.
+                </p>
+              </div>
+
+              {/* Selector de Mascota Activa para el Servicio */}
+              <div className={`p-3.5 rounded-2xl border flex items-center gap-3 ${
+                theme === 'dark' ? 'bg-[#03060C]/90 border-white/15' : 'bg-slate-50 border-slate-300'
+              }`}>
+                <img src={activeUserPet.avatar} alt={activeUserPet.name} className="w-11 h-11 rounded-xl object-cover" />
+                <div>
+                  <label htmlFor="service-pet-selector" className="text-xs font-mono uppercase opacity-75 block">Servicio para:</label>
+                  <select
+                    id="service-pet-selector"
+                    name="servicePetSelector"
+                    value={activeUserPet.id}
+                    onChange={e => {
+                      setSelectedPetId(e.target.value);
+                      const found = userPets.find(p => p.id === e.target.value);
+                      if (found) {
+                        setLeadForm(prev => ({ ...prev, petName: found.name, petBreed: found.breed }));
+                      }
+                    }}
+                    className="font-extrabold text-sm bg-transparent focus:outline-none cursor-pointer"
+                  >
+                    {userPets.map(pet => (
+                      <option key={pet.id} value={pet.id} className="text-slate-900">
+                        {pet.name} ({pet.breed} • {pet.weightKg}kg)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Filtros de Categorías de Servicios */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {[
+                { id: 'Todos', label: 'Todos los Servicios', icon: Zap },
+                { id: 'Transporte', label: 'Transporte Pet Taxi', icon: Car },
+                { id: 'Hospedaje', label: 'Hospedaje & Hotel', icon: Building2 },
+                { id: 'Grooming', label: 'Grooming & Spa', icon: Scissors },
+                { id: 'Veterinaria', label: 'Veterinaria 24/7', icon: Stethoscope },
+                { id: 'Etología', label: 'Etología & Paseo', icon: Brain },
+              ].map(cat => {
+                const Icon = cat.icon;
+                const isSel = serviceCategoryFilter === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setServiceCategoryFilter(cat.id)}
+                    className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 border transition cursor-pointer ${
+                      isSel
+                        ? 'btn-primary-2026 !rounded-2xl border-transparent'
+                        : (theme === 'dark'
+                            ? 'bg-white/5 border-white/15 text-slate-300 hover:bg-white/10'
+                            : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100')
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{cat.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredServices.map(srv => (
+                <div key={srv.id} className="glass-panel rounded-3xl p-6 flex flex-col justify-between space-y-5 hover:border-emerald-500/60 dark:hover:border-[#00F5A0]/60 transition-all duration-300">
+                  <div className="space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold badge-emerald px-3 py-1 rounded-full">
+                        {srv.category.toUpperCase()} • {srv.badge}
+                      </span>
+                      <div className="text-right">
+                        <span className="text-2xl font-extrabold font-display">${srv.price.toFixed(2)}</span>
+                        <span className="block text-[11px] font-mono opacity-70">{srv.priceUnit}</span>
+                      </div>
+                    </div>
+
+                    <h3 className="font-extrabold text-base sm:text-lg leading-snug">{srv.title}</h3>
+                    <p className={`text-xs sm:text-sm font-bold ${theme === 'dark' ? 'text-emerald-400' : 'text-emerald-800'}`}>
+                      {srv.provider}
+                    </p>
+
+                    <p className={`text-xs sm:text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                      {srv.description}
+                    </p>
+
+                    <div className="space-y-1.5 pt-1">
+                      {srv.includes.map((inc, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs font-semibold">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-[#00F5A0] shrink-0" />
+                          <span>{inc}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-slate-300 dark:border-white/10">
+                      <span className="flex items-center text-emerald-700 dark:text-[#00F5A0] font-semibold">
+                        <MapPin className="w-4 h-4 mr-1 shrink-0" /> {srv.sector}
+                      </span>
+                      <span className="flex items-center text-amber-500 font-bold">
+                        <Star className="w-4 h-4 fill-amber-500 mr-1" /> {srv.rating} ({srv.reviews})
+                      </span>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setSelectedService(srv);
+                      setLeadForm(prev => ({
+                        ...prev,
+                        petName: activeUserPet.name,
+                        petBreed: activeUserPet.breed
+                      }));
+                      setLeadSuccess(null);
+                    }}
+                    className="btn-primary-2026 w-full py-3.5 px-4 text-xs sm:text-sm font-bold flex items-center justify-center space-x-2 cursor-pointer"
+                  >
+                    <span>Reservar para {activeUserPet.name}</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Modal de Reserva de Servicio */}
+            {selectedService && (
+              <div className="glass-panel-glow rounded-3xl p-6 sm:p-8 max-w-xl mx-auto space-y-5">
+                <div className={`flex items-center justify-between border-b pb-4 ${
+                  theme === 'dark' ? 'border-white/10' : 'border-slate-300'
+                }`}>
+                  <div>
+                    <span className="text-xs font-mono uppercase text-emerald-700 dark:text-[#00F5A0] font-bold">
+                      RESERVA DIRECTA CON EXPEDIENTE PAWLO
+                    </span>
+                    <h3 className="font-extrabold text-xl">{selectedService.provider}</h3>
+                    <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                      {selectedService.title} — <strong>${selectedService.price.toFixed(2)} {selectedCity.currency}</strong>
+                    </p>
+                  </div>
+                  <button onClick={() => setSelectedService(null)} className="opacity-70 hover:opacity-100 font-bold text-base p-2 cursor-pointer">✕</button>
+                </div>
+
+                {!leadSuccess ? (
+                  <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs sm:text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="lead-fullname" className="font-bold block mb-1">Nombre del Tutor:</label>
+                        <input 
+                          id="lead-fullname"
+                          name="fullName"
+                          type="text" 
+                          required
+                          placeholder="Ej. Nicolás Norton"
+                          value={leadForm.fullName}
+                          onChange={e => setLeadForm({...leadForm, fullName: e.target.value})}
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="lead-phone" className="font-bold block mb-1">WhatsApp:</label>
+                        <input 
+                          id="lead-phone"
+                          name="phone"
+                          type="text" 
+                          required
+                          placeholder="0998408369"
+                          value={leadForm.phone}
+                          onChange={e => setLeadForm({...leadForm, phone: e.target.value})}
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="lead-petname" className="font-bold block mb-1">Mascota Seleccionada:</label>
+                        <input 
+                          id="lead-petname"
+                          name="petName"
+                          type="text" 
+                          required
+                          value={leadForm.petName}
+                          onChange={e => setLeadForm({...leadForm, petName: e.target.value})}
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="lead-schedule" className="font-bold block mb-1">Fecha / Horario requerido:</label>
+                        <input 
+                          id="lead-schedule"
+                          name="dateOrSchedule"
+                          type="text" 
+                          required
+                          value={leadForm.dateOrSchedule}
+                          onChange={e => setLeadForm({...leadForm, dateOrSchedule: e.target.value})}
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor="lead-sector" className="font-bold block mb-1">Dirección / Sector en {selectedCity.name}:</label>
+                        <input 
+                          id="lead-sector"
+                          name="sector"
+                          type="text" 
+                          required
+                          placeholder="Ej. El Vergel"
+                          value={leadForm.sector}
+                          onChange={e => setLeadForm({...leadForm, sector: e.target.value})}
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="lead-payment" className="font-bold block mb-1">Medio de Pago:</label>
+                        <select 
+                          id="lead-payment"
+                          name="paymentPreference"
+                          value={leadForm.paymentPreference}
+                          onChange={e => setLeadForm({...leadForm, paymentPreference: e.target.value})}
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
+                        >
+                          <option value="Deuna_P2P">Deuna (P2P Instantáneo)</option>
+                          <option value="Pichincha">Transferencia Bancaria Pichincha</option>
+                          <option value="Produbanco">Produbanco / Be</option>
+                          <option value="Contraentrega">Pago Presencial</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit"
+                      className="btn-primary-2026 w-full py-4 text-xs sm:text-sm font-bold mt-3 cursor-pointer"
+                    >
+                      Confirmar Reserva y Enviar Carnet Digital por WhatsApp
+                    </button>
+                  </form>
+                ) : (
+                  <div className="space-y-4 text-center py-4">
+                    <div className="w-14 h-14 bg-emerald-500/20 text-emerald-700 dark:text-[#00F5A0] rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/30">
+                      <CheckCircle2 className="w-7 h-7" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-xl">¡Servicio Reservado para {leadForm.petName}!</h4>
+                      <p className={`text-xs sm:text-sm font-mono mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                        CÓDIGO: {leadSuccess.refId}
+                      </p>
+                    </div>
+                    <a 
+                      href={leadSuccess.waUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary-2026 inline-flex items-center space-x-2.5 py-4 px-8 text-xs sm:text-sm font-bold cursor-pointer"
+                    >
+                      <MessageSquare className="w-5 h-5 stroke-[2.5]" />
+                      <span>Abrir WhatsApp con el Proveedor</span>
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* 4. MÓDULO: RADAR GEOESPACIAL COMUNITARIO (PROTECCIÓN AL RESTO DE ANIMALES) */}
         {activeTab === 'alerts' && (
           <section className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -501,13 +839,13 @@ export default function App() {
                 <div className="space-y-3 max-w-2xl">
                   <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full badge-emerald text-xs font-mono font-bold uppercase tracking-wider">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                    <span>MALLA ESPACIAL EN VIVO • {selectedCity.name.toUpperCase()}</span>
+                    <span>MALLA COMUNITARIA EN VIVO • {selectedCity.name.toUpperCase()}</span>
                   </div>
                   <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15]">
-                    Radar Biométrico de Búsqueda y Protección Animal.
+                    Radar de Protección y Rescate para Todos los Animales.
                   </h2>
                   <p className={`text-base leading-relaxed ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                    Localización instantánea geodésica sobre anillos de proximidad en <strong>{selectedCity.name}</strong>. Cada alerta se sincroniza con tutores y centros de cuidado dentro del radio.
+                    Porque cuidar a nuestras mascotas también significa proteger a los animales de la comunidad en <strong>{selectedCity.name}</strong>. Localización instantánea en anillos de proximidad.
                   </p>
                 </div>
 
@@ -526,7 +864,7 @@ export default function App() {
                         <button
                           key={m.id}
                           onClick={() => setViewMode(m.id as any)}
-                          className={`px-3 py-1.5 rounded-lg font-bold transition ${
+                          className={`px-3 py-1.5 rounded-lg font-bold transition cursor-pointer ${
                             viewMode === m.id 
                               ? (theme === 'dark' ? 'bg-white/15 text-[#00F5A0]' : 'bg-white text-slate-950 shadow-sm border border-slate-200') 
                               : (theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-950')
@@ -547,7 +885,7 @@ export default function App() {
                         <button 
                           key={r}
                           onClick={() => setRadiusKm(r)}
-                          className={`px-3.5 py-1.5 rounded-lg font-bold transition ${
+                          className={`px-3.5 py-1.5 rounded-lg font-bold transition cursor-pointer ${
                             radiusKm === r 
                               ? (theme === 'dark' ? 'bg-[#00F5A0] text-slate-950 shadow-sm' : 'bg-emerald-600 text-white shadow-sm') 
                               : (theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-700 hover:text-slate-950')
@@ -568,7 +906,7 @@ export default function App() {
                     Nodo {selectedCity.name}
                   </span>
                   <span className="px-3 py-1 rounded-full text-xs font-mono font-bold badge-emerald">
-                    99.98% DISPONIBILIDAD
+                    RED SOLIDARIA ACTIVA
                   </span>
                 </div>
 
@@ -584,11 +922,11 @@ export default function App() {
                 </div>
 
                 <button 
-                  onClick={() => alert(`Abriendo panel de emisión de alerta para el nodo ${selectedCity.name}.`)}
-                  className="btn-primary-2026 w-full py-3.5 px-4 text-sm flex items-center justify-center space-x-2"
+                  onClick={() => alert(`Abriendo emisión de alerta comunitaria en ${selectedCity.name}. Puedes reportar un animal visto en calle o activar alerta SOS de ${activeUserPet.name}.`)}
+                  className="btn-primary-2026 w-full py-3.5 px-4 text-sm flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   <PlusCircle className="w-4 h-4 stroke-[2.5]" />
-                  <span>Reportar Mascota Extraviada / Vista</span>
+                  <span>Reportar Animal Extraviado / En Calle</span>
                 </button>
               </div>
             </div>
@@ -699,7 +1037,7 @@ export default function App() {
                         className="btn-primary-2026 w-full py-3 px-4 text-xs sm:text-sm font-bold flex items-center justify-center space-x-2"
                       >
                         <PhoneCall className="w-4 h-4 stroke-[2.5]" />
-                        <span>Contactar al Tutor</span>
+                        <span>Contactar / Ayudar</span>
                       </a>
                     </div>
                   </div>
@@ -709,7 +1047,7 @@ export default function App() {
           </section>
         )}
 
-        {/* 2. MÓDULO: PAWLO NEURAL AI TRIAGE */}
+        {/* 5. MÓDULO: PAWLO NEURAL AI TRIAGE */}
         {activeTab === 'assistant' && (
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-4 glass-panel rounded-3xl p-6 sm:p-7 space-y-5 flex flex-col justify-between">
@@ -727,7 +1065,7 @@ export default function App() {
                 </div>
 
                 <p className={`text-xs sm:text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                  Asistente inteligente entrenado para orientación de urgencias y conducta en <strong>{selectedCity.name}</strong>.
+                  Asistente conectado al perfil de <strong>{activeUserPet.name}</strong> ({activeUserPet.breed}, {activeUserPet.weightKg} kg) en <strong>{selectedCity.name}</strong>.
                 </p>
 
                 <div className={`p-4 rounded-2xl border space-y-2 ${
@@ -740,7 +1078,7 @@ export default function App() {
                     Cortafuegos Farmacológico Activo
                   </p>
                   <p className="text-xs leading-relaxed">
-                    Bloqueo estricto del 100% ante consultas de dosis o medicamentos humanos y veterinarios. Todo fármaco requiere examen físico presencial.
+                    Bloqueo estricto del 100% ante consultas de dosis empíricas. Para comprar antiparasitarios o recetas validadas usa la pestaña <strong>Tienda & Farmacia</strong>.
                   </p>
                 </div>
 
@@ -786,7 +1124,7 @@ export default function App() {
               }`}>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 rounded-full bg-[#00F5A0] shadow-[0_0_10px_#00F5A0] animate-pulse"></div>
-                  <span className="font-bold text-sm sm:text-base">PAWLO Neural Copilot</span>
+                  <span className="font-bold text-sm sm:text-base">PAWLO Neural Copilot ({activeUserPet.name})</span>
                   <span className="text-xs font-mono px-2.5 py-1 rounded-md badge-indigo font-bold">
                     DeepSeek R1 Reasoner
                   </span>
@@ -828,7 +1166,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => handleSendMessage("¿Cuántos mg de ibuprofeno le puedo dar a mi perro por dolor?")}
-                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold ${
+                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold cursor-pointer ${
                           theme === 'dark' 
                             ? 'border-rose-500/40 bg-rose-500/15 text-rose-300 hover:bg-rose-500/25' 
                             : 'border-rose-300 bg-rose-50 text-rose-900 hover:bg-rose-100'
@@ -838,8 +1176,8 @@ export default function App() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleSendMessage("Mi perro tiene vómito desde la mañana y está decaído")}
-                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold ${
+                        onClick={() => handleSendMessage("Mi mascota tiene vómito desde la mañana y está decaída")}
+                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold cursor-pointer ${
                           theme === 'dark' 
                             ? 'border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/25' 
                             : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100'
@@ -849,8 +1187,8 @@ export default function App() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleSendMessage("Mi cachorro tira mucho de la correa en el parque, ¿cómo mejoro su paseo?")}
-                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold ${
+                        onClick={() => handleSendMessage("Tira mucho de la correa en el parque, ¿cómo mejoro su paseo?")}
+                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold cursor-pointer ${
                           theme === 'dark' 
                             ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25' 
                             : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
@@ -868,7 +1206,7 @@ export default function App() {
                       theme === 'dark' ? 'bg-[#03060C] border-white/15 text-[#00F5A0]' : 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold'
                     }`}>
                       <span className="w-2.5 h-2.5 rounded-full bg-[#00F5A0] animate-ping"></span>
-                      <span>ANALIZANDO SIGNOS CLÍNICOS CON DEEPSEEK...</span>
+                      <span>ANALIZANDO EXPEDIENTE DE {activeUserPet.name.toUpperCase()}...</span>
                     </div>
                   </div>
                 )}
@@ -888,7 +1226,7 @@ export default function App() {
                   type="text"
                   value={inputMsg}
                   onChange={(e) => setInputMsg(e.target.value)}
-                  placeholder={disclaimerAccepted ? "Describe síntomas o dudas de conducta..." : "Activa la casilla a la izquierda para consultar..."}
+                  placeholder={disclaimerAccepted ? `Describe síntomas o conducta de ${activeUserPet.name}...` : "Activa la casilla a la izquierda para consultar..."}
                   disabled={!disclaimerAccepted}
                   className="flex-1 glass-input rounded-2xl px-4 py-3.5 text-xs sm:text-sm placeholder-slate-400 focus:outline-none"
                 />
@@ -905,185 +1243,7 @@ export default function App() {
           </section>
         )}
 
-        {/* 3. MÓDULO: DIRECT CARE MARKETPLACE */}
-        {activeTab === 'services' && (
-          <section className="space-y-6">
-            <div className="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <span className="text-xs font-mono uppercase font-bold tracking-wider badge-emerald px-3 py-1 rounded-full">
-                  PAWLO DIRECT-TO-CARE • {selectedCity.name.toUpperCase()}
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">Clínicas & Servicios Veterinarios Verificados</h2>
-                <p className={`text-xs sm:text-sm mt-1 max-w-2xl ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                  Reserva sin comisiones intermedias. Sincronización instantánea por WhatsApp y pago directo vía <strong>{selectedCity.paymentRail}</strong>.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {SERVICES_CATALOG.map(srv => (
-                <div key={srv.id} className="glass-panel rounded-3xl p-6 flex flex-col justify-between space-y-5 hover:border-emerald-500/60 dark:hover:border-[#00F5A0]/60 transition-all duration-300">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold badge-emerald px-3 py-1 rounded-full">
-                        {srv.badge}
-                      </span>
-                      <span className="text-2xl font-extrabold font-display">${srv.price.toFixed(2)}</span>
-                    </div>
-                    <h3 className="font-extrabold text-base leading-snug pt-1">{srv.title}</h3>
-                    <p className={`text-xs font-semibold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{srv.provider}</p>
-                    
-                    <div className="flex items-center space-x-2 text-xs sm:text-sm pt-1">
-                      <span className="flex items-center text-amber-500 font-bold">
-                        <Star className="w-4 h-4 fill-amber-500 mr-1" /> {srv.rating}
-                      </span>
-                      <span className="opacity-40">•</span>
-                      <span className={`text-xs font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>({srv.reviews} reseñas)</span>
-                    </div>
-
-                    <p className="text-xs sm:text-sm font-semibold pt-1 flex items-center text-emerald-700 dark:text-[#00F5A0]">
-                      <MapPin className="w-4 h-4 mr-1.5 shrink-0" /> {srv.sector}
-                    </p>
-                  </div>
-
-                  <button 
-                    onClick={() => { setSelectedService(srv); setLeadSuccess(null); }}
-                    className="btn-primary-2026 w-full py-3 px-4 text-xs sm:text-sm font-bold flex items-center justify-center space-x-2 cursor-pointer"
-                  >
-                    <span>Agendar Servicio</span>
-                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* Modal de Reserva */}
-            {selectedService && (
-              <div className="glass-panel-glow rounded-3xl p-6 sm:p-8 max-w-xl mx-auto space-y-5">
-                <div className={`flex items-center justify-between border-b pb-4 ${
-                  theme === 'dark' ? 'border-white/10' : 'border-slate-300'
-                }`}>
-                  <div>
-                    <span className="text-xs font-mono uppercase text-emerald-700 dark:text-[#00F5A0] font-bold">
-                      ORDEN DIRECT-TO-CARE
-                    </span>
-                    <h3 className="font-extrabold text-xl">{selectedService.provider}</h3>
-                    <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                      {selectedService.title} — <strong>${selectedService.price.toFixed(2)} {selectedCity.currency}</strong>
-                    </p>
-                  </div>
-                  <button onClick={() => setSelectedService(null)} className="opacity-70 hover:opacity-100 font-bold text-base p-2 cursor-pointer">✕</button>
-                </div>
-
-                {!leadSuccess ? (
-                  <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs sm:text-sm">
-                    <div>
-                      <label htmlFor="lead-fullname" className="font-bold block mb-1">Nombre Completo del Tutor:</label>
-                      <input 
-                        id="lead-fullname"
-                        name="fullName"
-                        type="text" 
-                        required
-                        placeholder="Ej. Mateo Valdivieso"
-                        value={leadForm.fullName}
-                        onChange={e => setLeadForm({...leadForm, fullName: e.target.value})}
-                        className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label htmlFor="lead-phone" className="font-bold block mb-1">WhatsApp:</label>
-                        <input 
-                          id="lead-phone"
-                          name="phone"
-                          type="text" 
-                          required
-                          placeholder="0998408369"
-                          value={leadForm.phone}
-                          onChange={e => setLeadForm({...leadForm, phone: e.target.value})}
-                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="lead-sector" className="font-bold block mb-1">Zona en {selectedCity.name}:</label>
-                        <input 
-                          id="lead-sector"
-                          name="sector"
-                          type="text" 
-                          required
-                          placeholder="Ej. El Vergel"
-                          value={leadForm.sector}
-                          onChange={e => setLeadForm({...leadForm, sector: e.target.value})}
-                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label htmlFor="lead-petname" className="font-bold block mb-1">Nombre de la Mascota:</label>
-                        <input 
-                          id="lead-petname"
-                          name="petName"
-                          type="text" 
-                          required
-                          placeholder="Ej. Bruno"
-                          value={leadForm.petName}
-                          onChange={e => setLeadForm({...leadForm, petName: e.target.value})}
-                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="lead-payment" className="font-bold block mb-1">Medio de Pago:</label>
-                        <select 
-                          id="lead-payment"
-                          name="paymentPreference"
-                          value={leadForm.paymentPreference}
-                          onChange={e => setLeadForm({...leadForm, paymentPreference: e.target.value})}
-                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
-                        >
-                          <option value="Deuna_P2P">Deuna (P2P Instantáneo)</option>
-                          <option value="Pichincha">Transferencia Bancaria Pichincha</option>
-                          <option value="Produbanco">Produbanco / Be</option>
-                          <option value="Contraentrega">Pago Presencial en Clínica</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <button 
-                      type="submit"
-                      className="btn-primary-2026 w-full py-4 text-xs sm:text-sm font-bold mt-3 cursor-pointer"
-                    >
-                      Continuar a WhatsApp con el Profesional
-                    </button>
-                  </form>
-                ) : (
-                  <div className="space-y-4 text-center py-4">
-                    <div className="w-14 h-14 bg-emerald-500/20 text-emerald-700 dark:text-[#00F5A0] rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/30">
-                      <CheckCircle2 className="w-7 h-7" />
-                    </div>
-                    <div>
-                      <h4 className="font-extrabold text-xl">¡Orden Directa Preparada!</h4>
-                      <p className={`text-xs sm:text-sm font-mono mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                        CÓDIGO: {leadSuccess.refId}
-                      </p>
-                    </div>
-                    <a 
-                      href={leadSuccess.waUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-primary-2026 inline-flex items-center space-x-2.5 py-4 px-8 text-xs sm:text-sm font-bold cursor-pointer"
-                    >
-                      <MessageSquare className="w-5 h-5 stroke-[2.5]" />
-                      <span>Abrir WhatsApp Ahora</span>
-                    </a>
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* 4. MÓDULO: BIOMETRÍA & ESCÁNER ISO UNIVERSAL */}
+        {/* 6. MÓDULO: BIOMETRÍA & ESCÁNER ISO UNIVERSAL */}
         {activeTab === 'chip_lookup' && (
           <section className="max-w-2xl mx-auto space-y-6">
             <div className="glass-panel rounded-3xl p-7 sm:p-9 space-y-6">
@@ -1100,7 +1260,7 @@ export default function App() {
               </div>
 
               <p className={`text-xs sm:text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                Verifica la validez y fabricante de cualquier microchip FDX-B de 15 dígitos internacional o códigos registrados en la red privada de clínicas de Cuenca.
+                Verifica la validez y fabricante de cualquier microchip FDX-B de 15 dígitos internacional o códigos registrados en la red privada de clínicas de {selectedCity.name}.
               </p>
 
               <form onSubmit={handleValidateMicrochip} className="space-y-4 pt-2">
@@ -1115,7 +1275,7 @@ export default function App() {
                       type="text" 
                       value={chipInput}
                       onChange={e => setChipInput(e.target.value)}
-                      placeholder="Ej. 981098123456789"
+                      placeholder="Ej. 981098104592831"
                       className="flex-1 glass-input rounded-2xl px-4 py-3.5 text-xs sm:text-sm focus:outline-none font-mono tracking-wider"
                     />
                     <button 
@@ -1127,22 +1287,18 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 text-xs sm:text-sm font-mono font-semibold">
-                  <span className="opacity-60">Probar:</span>
-                  <button 
-                    type="button" 
-                    onClick={() => setChipInput('981098123456789')}
-                    className="text-emerald-700 dark:text-[#00F5A0] hover:underline"
-                  >
-                    [981098123456789 • ISO]
-                  </button>
-                  <button 
-                    type="button" 
-                    onClick={() => setChipInput('PWL-EC-90412')}
-                    className="text-sky-700 dark:text-[#00D9F5] hover:underline"
-                  >
-                    [PWL-EC-90412 • Red Privada]
-                  </button>
+                <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm font-mono font-semibold">
+                  <span className="opacity-60">Probar chips de tus mascotas:</span>
+                  {userPets.map(pet => (
+                    <button
+                      key={pet.id}
+                      type="button"
+                      onClick={() => setChipInput(pet.microchipIso)}
+                      className="text-emerald-700 dark:text-[#00F5A0] hover:underline cursor-pointer"
+                    >
+                      [{pet.name}: {pet.microchipIso}]
+                    </button>
+                  ))}
                 </div>
               </form>
 
@@ -1170,7 +1326,7 @@ export default function App() {
           </section>
         )}
 
-        {/* 5. MÓDULO: ADOPCIONES VERIFICADAS */}
+        {/* 7. MÓDULO: ADOPCIONES COMUNITARIAS VERIFICADAS */}
         {activeTab === 'adoptions' && (
           <section className="space-y-6">
             <div className="glass-panel rounded-3xl p-6 sm:p-8">
@@ -1179,7 +1335,7 @@ export default function App() {
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">Adopción Responsable Directa en {selectedCity.name}</h2>
               <p className={`text-xs sm:text-sm mt-1 max-w-2xl ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                Conectamos tutores temporales y rescatistas independientes con familias adoptantes responsables, con ficha médica al día y sin burocracia.
+                Conectamos hogares temporales y rescatistas independientes con familias responsables. Al adoptar, la mascota recibe automáticamente su bóveda digital PAWLO con carnet e historial clínico.
               </p>
             </div>
 
@@ -1228,16 +1384,51 @@ export default function App() {
         )}
       </main>
 
+      {/* BARRA DE NAVEGACIÓN INFERIOR NATIVA PARA MÓVILES (iOS App Store / Google Play Ergonomics) */}
+      <nav
+        aria-label="Navegación móvil nativa"
+        className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-2xl safe-area-bottom px-2 pt-2 flex items-center justify-around ${
+          theme === 'dark'
+            ? 'bg-[#040812]/95 border-white/15 text-slate-300'
+            : 'bg-white/95 border-slate-300 text-slate-700 shadow-2xl'
+        }`}
+      >
+        {[
+          { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
+          { id: 'store', label: 'Tienda', icon: ShoppingBag },
+          { id: 'services', label: 'Servicios', icon: Zap },
+          { id: 'alerts', label: 'Radar', icon: Compass },
+          { id: 'assistant', label: 'Triaje IA', icon: Sparkles },
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isAct = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as MainTab)}
+              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[11px] font-bold transition cursor-pointer ${
+                isAct
+                  ? (theme === 'dark' ? 'text-[#00F5A0]' : 'text-emerald-700 font-extrabold')
+                  : 'opacity-75'
+              }`}
+            >
+              <Icon className="w-5 h-5 mb-0.5 stroke-[2.2]" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
       {/* FOOTER */}
       <footer className={`border-t py-6 px-6 lg:px-8 text-xs sm:text-sm flex flex-wrap items-center justify-between gap-4 relative z-10 transition-colors duration-300 ${
         theme === 'dark' ? 'border-white/10 bg-[#020409] text-slate-400' : 'border-slate-300 bg-white text-slate-600'
       }`}>
         <div className="flex items-center space-x-3">
           <PawloLogo size="sm" showWordmark={false} theme={theme} />
-          <span className="font-bold">PAWLO™ Urban Pet Operating System • Nodo Activo: {selectedCity.name} ({selectedCity.code})</span>
+          <span className="font-bold">PAWLO™ Urban Pet Super-App • Nodo Activo: {selectedCity.name} ({selectedCity.code})</span>
         </div>
         <div className="font-mono text-xs opacity-75">
-          ISO 11784/11785 FDX-B | PostGIS Spatial Engine | WCAG AA Compliant
+          Capacitor iOS/Android Ready | ISO 11784/11785 | PostGIS Spatial Engine
         </div>
       </footer>
     </div>
