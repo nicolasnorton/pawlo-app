@@ -4,6 +4,7 @@ interface PawloLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showWordmark?: boolean;
   cityBadge?: string;
+  theme?: 'dark' | 'light';
   className?: string;
 }
 
@@ -11,107 +12,161 @@ export const PawloLogo: React.FC<PawloLogoProps> = ({
   size = 'md',
   showWordmark = true,
   cityBadge,
+  theme = 'dark',
   className = ''
 }) => {
   const sizeMap = {
-    sm: { icon: 30, text: 'text-lg', badge: 'text-[9px] px-1.5 py-0.5' },
-    md: { icon: 40, text: 'text-xl', badge: 'text-[10px] px-2 py-0.5' },
-    lg: { icon: 52, text: 'text-2xl', badge: 'text-xs px-2.5 py-0.5' },
-    xl: { icon: 68, text: 'text-3xl', badge: 'text-xs px-3 py-1' }
+    sm: { box: 36, svg: 32, title: 'text-xl', sub: 'text-[8px]', badge: 'text-[9px] px-2 py-0.5' },
+    md: { box: 44, svg: 40, title: 'text-2xl', sub: 'text-[9px]', badge: 'text-[10px] px-2.5 py-0.5' },
+    lg: { box: 56, svg: 50, title: 'text-3xl', sub: 'text-[10px]', badge: 'text-xs px-3 py-1' },
+    xl: { box: 72, svg: 64, title: 'text-4xl', sub: 'text-xs', badge: 'text-xs px-3.5 py-1' }
   };
 
-  const currentSize = sizeMap[size];
+  const s = sizeMap[size];
 
   return (
-    <div className={`flex items-center gap-3 select-none ${className}`}>
-      {/* Símbolo Isotipo: Huella Biométrica + Nodo Inteligente */}
+    <div className={`inline-flex items-center gap-3.5 select-none group cursor-pointer ${className}`}>
+      {/* Isotipo de Precisión: The Orbital Paw */}
       <div 
-        className="relative flex items-center justify-center rounded-2xl p-2 bg-gradient-to-br from-[#10E7A6]/20 via-[#00F5FF]/10 to-transparent border border-[#10E7A6]/30 shadow-[0_0_20px_rgba(16,231,166,0.2)] group-hover:shadow-[0_0_25px_rgba(16,231,166,0.35)] transition-all duration-300"
-        style={{ width: currentSize.icon + 10, height: currentSize.icon + 10 }}
+        className="relative flex items-center justify-center rounded-2xl transition-all duration-500 group-hover:scale-105"
+        style={{ width: s.box, height: s.box }}
       >
+        {/* Halo de luz posterior reactivo */}
+        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-[#00F5A0]/30 via-[#00D9F5]/20 to-[#6366F1]/30 blur-md opacity-70 group-hover:opacity-100 transition duration-500"></div>
+
         <svg
-          width={currentSize.icon}
-          height={currentSize.icon}
-          viewBox="0 0 100 100"
+          width={s.box}
+          height={s.box}
+          viewBox="0 0 120 120"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className="transform transition-transform duration-300 group-hover:scale-105"
+          className="relative z-10 drop-shadow-sm"
         >
           <defs>
-            <linearGradient id="pawlo-grad-primary" x1="10%" y1="0%" x2="90%" y2="100%">
-              <stop offset="0%" stopColor="#10E7A6" />
-              <stop offset="60%" stopColor="#00F5FF" />
-              <stop offset="100%" stopColor="#0099FF" />
+            <radialGradient id="pawlo-bg-core" cx="50%" cy="0%" r="95%">
+              <stop offset="0%" stopColor={theme === 'dark' ? '#131F3A' : '#0B1325'} />
+              <stop offset="100%" stopColor="#040710" />
+            </radialGradient>
+
+            <linearGradient id="pawlo-spectrum" x1="10%" y1="5%" x2="90%" y2="95%">
+              <stop offset="0%" stopColor="#00F5A0" />
+              <stop offset="52%" stopColor="#00D9F5" />
+              <stop offset="100%" stopColor="#6366F1" />
             </linearGradient>
-            <linearGradient id="pawlo-grad-accent" x1="0%" y1="100%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#FF3366" />
+
+            <linearGradient id="pawlo-heart-core" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FF2A5F" />
               <stop offset="100%" stopColor="#FF758C" />
             </linearGradient>
-            <filter id="pawlo-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#10E7A6" floodOpacity="0.4" />
-            </filter>
+
+            <linearGradient id="pawlo-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.45" />
+              <stop offset="50%" stopColor="#00F5A0" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#6366F1" stopOpacity="0.1" />
+            </linearGradient>
           </defs>
 
-          {/* Dedo 1 (Izquierda) */}
-          <path
-            d="M26 35 C20 35, 16 43, 19 50 C22 57, 30 55, 33 48 C36 41, 32 35, 26 35 Z"
-            fill="url(#pawlo-grad-primary)"
-          />
-          {/* Dedo 2 (Centro-Izquierda) */}
-          <path
-            d="M40 20 C34 20, 31 29, 34 37 C37 45, 45 44, 48 36 C51 28, 46 20, 40 20 Z"
-            fill="url(#pawlo-grad-primary)"
-          />
-          {/* Dedo 3 (Centro-Derecha) */}
-          <path
-            d="M60 20 C54 20, 49 28, 52 36 C55 44, 63 45, 66 37 C69 29, 66 20, 60 20 Z"
-            fill="url(#pawlo-grad-primary)"
-          />
-          {/* Dedo 4 (Derecha) */}
-          <path
-            d="M74 35 C68 35, 64 41, 67 48 C70 55, 78 57, 81 50 C84 43, 80 35, 74 35 Z"
-            fill="url(#pawlo-grad-primary)"
+          {/* Escudo Squircle de Titanio/Obsidiana */}
+          <rect
+            x="3"
+            y="3"
+            width="114"
+            height="114"
+            rx="32"
+            fill="url(#pawlo-bg-core)"
+            stroke="url(#pawlo-rim)"
+            strokeWidth="2.5"
           />
 
-          {/* Almohadilla Central: Huella / Corazón Geoespacial */}
-          <path
-            d="M50 48 C34 48, 25 61, 29 74 C32 84, 42 89, 50 89 C58 89, 68 84, 71 74 C75 61, 66 48, 50 48 Z"
-            fill="url(#pawlo-grad-primary)"
-            filter="url(#pawlo-glow)"
+          {/* Anillo de Telemetría Espacial */}
+          <circle
+            cx="60"
+            cy="64"
+            r="41"
+            stroke="url(#pawlo-spectrum)"
+            strokeOpacity="0.22"
+            strokeWidth="1.5"
+            strokeDasharray="4 4"
+            className="origin-center group-hover:rotate-45 transition-transform duration-1000"
           />
 
-          {/* Núcleo Biométrico / Pulso Interior (Corazón de Cuidado) */}
-          <circle cx="50" cy="69" r="6.5" fill="#050811" />
+          {/* 4 Nodos Satelitales en Proporción Áurea */}
+          <g transform="rotate(-27 29 52)">
+            <rect x="20" y="39" width="17.5" height="25" rx="8.75" fill="url(#pawlo-spectrum)" />
+          </g>
+          <g transform="rotate(-9 47 36)">
+            <rect x="38" y="22" width="18" height="27" rx="9" fill="url(#pawlo-spectrum)" />
+          </g>
+          <g transform="rotate(9 73 36)">
+            <rect x="64" y="22" width="18" height="27" rx="9" fill="url(#pawlo-spectrum)" />
+          </g>
+          <g transform="rotate(27 91 52)">
+            <rect x="82.5" y="39" width="17.5" height="25" rx="8.75" fill="url(#pawlo-spectrum)" />
+          </g>
+
+          {/* Almohadilla Central (Arco Orgánico + Pin Geodésico) */}
           <path
-            d="M50 64 C48.5 62, 45.5 63, 45.5 65 C45.5 67.5, 50 71.5, 50 71.5 C50 71.5, 54.5 67.5, 54.5 65 C54.5 63, 51.5 62, 50 64 Z"
-            fill="url(#pawlo-grad-accent)"
+            d="M60 52 C41 52, 30 66, 35 82 C38.5 92, 49 97, 60 97 C71 97, 81.5 92, 85 82 C90 66, 79 52, 60 52 Z"
+            fill="url(#pawlo-spectrum)"
+          />
+
+          {/* Cámara Oscura del Pulso */}
+          <circle cx="60" cy="76" r="11.5" fill="#040710" />
+
+          {/* Corazón Biométrico Interior */}
+          <path
+            d="M60 71.5 C58 68.5, 53.5 69.5, 53.5 73 C53.5 76.5, 60 81.5, 60 81.5 C60 81.5, 66.5 76.5, 66.5 73 C66.5 69.5, 62 68.5, 60 71.5 Z"
+            fill="url(#pawlo-heart-core)"
           />
         </svg>
 
-        {/* Punto de estado activo (Pulsing Node) */}
-        <span className="absolute -top-1 -right-1 flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10E7A6] opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-[#10E7A6] border-2 border-[#050811]"></span>
+        {/* Indicador de Nodo en Vivo */}
+        <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3 z-20">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F5A0] opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00F5A0] border-2 border-[#03060C]"></span>
         </span>
       </div>
 
-      {/* Logotipo Tipográfico / Wordmark */}
+      {/* Logotipo Tipográfico Personalizado (Custom Wordmark) */}
       {showWordmark && (
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className={`font-black tracking-tight text-white font-sans ${currentSize.text} leading-none flex items-center`}>
-              PAWLO<span className="text-[#10E7A6] font-bold">.</span>
+        <div className="flex flex-col justify-center">
+          <div className="flex items-center gap-2.5">
+            <span 
+              className={`font-display font-black tracking-[-0.04em] leading-none flex items-center ${s.title} ${
+                theme === 'dark' ? 'text-white' : 'text-slate-950'
+              }`}
+              style={{ fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif" }}
+            >
+              PAWL
+              <span className="bg-gradient-to-tr from-[#00F5A0] via-[#00D9F5] to-[#6366F1] bg-clip-text text-transparent">
+                O
+              </span>
+              <span className="text-[#00F5A0] ml-0.5 font-black">.</span>
             </span>
+
             {cityBadge && (
-              <span className={`font-mono font-bold uppercase rounded-full bg-[#10E7A6]/10 text-[#10E7A6] border border-[#10E7A6]/30 flex items-center gap-1 ${currentSize.badge}`}>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10E7A6] inline-block animate-pulse"></span>
+              <span 
+                className={`font-mono font-bold uppercase tracking-wider rounded-full border flex items-center gap-1.5 transition-colors ${s.badge} ${
+                  theme === 'dark'
+                    ? 'bg-[#00F5A0]/10 text-[#00F5A0] border-[#00F5A0]/30 shadow-[0_0_12px_rgba(0,245,160,0.12)]'
+                    : 'bg-emerald-500/10 text-emerald-700 border-emerald-500/30'
+                }`}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#00F5A0] animate-pulse"></span>
                 {cityBadge}
               </span>
             )}
           </div>
-          <span className="text-[10px] tracking-widest uppercase text-slate-400 font-semibold mt-0.5">
-            Pet Care Operating System
-          </span>
+          <div className="flex items-center gap-1.5 mt-1">
+            <span className={`font-mono uppercase tracking-[0.22em] font-semibold ${s.sub} ${
+              theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+            }`}>
+              URBAN PET OS
+            </span>
+            <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-indigo-500/15 text-indigo-400 font-bold">
+              v2.6
+            </span>
+          </div>
         </div>
       )}
     </div>

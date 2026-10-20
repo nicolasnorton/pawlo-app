@@ -2,69 +2,86 @@
 
 @layer base {
   :root {
-    --primary: #05B382;
-    --primary-glow: rgba(5, 179, 130, 0.25);
-    --secondary: #00B4D8;
-    --accent: #FF3366;
+    --primary: #00F5A0;
+    --primary-dark: #00C480;
+    --secondary: #00D9F5;
+    --indigo: #6366F1;
+    --accent: #FF2A5F;
     
-    /* Variables para Dark Mode por defecto */
-    --bg-main: #050811;
-    --bg-header: rgba(8, 13, 26, 0.85);
-    --bg-glass: rgba(13, 20, 36, 0.72);
-    --bg-glass-input: rgba(5, 8, 17, 0.85);
+    /* Dark Mode Flagship (Obsidian Void) */
+    --bg-main: #03060C;
+    --bg-elevated: #080E1C;
+    --bg-header: rgba(6, 10, 21, 0.82);
+    --bg-glass: rgba(11, 18, 34, 0.72);
+    --bg-glass-subtle: rgba(15, 23, 42, 0.55);
+    --bg-glass-input: rgba(4, 7, 15, 0.9);
     --border-glass: rgba(255, 255, 255, 0.08);
+    --border-highlight: rgba(255, 255, 255, 0.16);
     --text-primary: #F8FAFC;
     --text-secondary: #94A3B8;
     --text-tertiary: #64748B;
-    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
-    --glow-opacity: 0.15;
+    --card-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
   }
 
-  /* Modo Claro 2026: Fresh Clean Ceramic & Soft Teal Glass */
+  /* Light Mode Flagship (Ceramic Alabaster & Studio Slate) */
   html.light {
-    --primary: #05B382;
-    --primary-glow: rgba(5, 179, 130, 0.2);
+    --primary: #059669;
+    --primary-dark: #047857;
     --secondary: #0284C7;
+    --indigo: #4F46E5;
     --accent: #E11D48;
     
-    --bg-main: #F4F6FB;
-    --bg-header: rgba(255, 255, 255, 0.88);
-    --bg-glass: rgba(255, 255, 255, 0.82);
+    --bg-main: #F6F8FC;
+    --bg-elevated: #FFFFFF;
+    --bg-header: rgba(255, 255, 255, 0.86);
+    --bg-glass: rgba(255, 255, 255, 0.88);
+    --bg-glass-subtle: rgba(241, 245, 249, 0.8);
     --bg-glass-input: #FFFFFF;
     --border-glass: rgba(15, 23, 42, 0.08);
-    --text-primary: #0F172A;
+    --border-highlight: rgba(15, 23, 42, 0.14);
+    --text-primary: #090D16;
     --text-secondary: #475569;
     --text-tertiary: #64748B;
-    --card-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
-    --glow-opacity: 0.08;
+    --card-shadow: 0 14px 34px -8px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03), inset 0 1px 0 0 #FFFFFF;
   }
 
   body {
     background-color: var(--bg-main);
     color: var(--text-primary);
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
   }
 }
 
-/* Glass Panels Adaptativos */
+/* Superficies Flagship 2026 con borde especular superior */
 .glass-panel {
   background: var(--bg-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
   box-shadow: var(--card-shadow);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-panel:hover {
+  border-color: var(--border-highlight);
 }
 
 .glass-panel-glow {
   background: var(--bg-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(5, 179, 130, 0.4);
-  box-shadow: 0 0 25px rgba(5, 179, 130, 0.15), var(--card-shadow);
-  transition: all 0.3s ease;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 245, 160, 0.35);
+  box-shadow: 0 0 35px rgba(0, 245, 160, 0.14), var(--card-shadow);
 }
 
 .glass-input {
@@ -75,37 +92,48 @@
 }
 
 .glass-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 15px rgba(5, 179, 130, 0.25);
+  border-color: #00F5A0;
+  box-shadow: 0 0 0 3px rgba(0, 245, 160, 0.16);
 }
 
-/* Botón Neomórfico & Gradiente 2026 */
+/* Botón Principal Espectral PAWLO */
 .btn-primary-2026 {
-  background: linear-gradient(135deg, #10E7A6 0%, #00B4D8 100%);
-  color: #050811;
-  font-weight: 700;
-  border-radius: 0.875rem;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 20px rgba(16, 231, 166, 0.28);
+  background: linear-gradient(135deg, #00F5A0 0%, #00D9F5 60%, #3B82F6 100%);
+  color: #03060C;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  border-radius: 1rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 6px 22px -4px rgba(0, 245, 160, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.45);
 }
 
 .btn-primary-2026:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(16, 231, 166, 0.42);
-  filter: brightness(1.05);
+  transform: translateY(-1.5px);
+  box-shadow: 0 10px 28px -4px rgba(0, 217, 245, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  filter: brightness(1.04);
 }
 
 .btn-primary-2026:active {
   transform: translateY(0);
 }
 
-/* Leaflet Container */
+/* Malla de Precisión Sutil en el Fondo */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+}
+
+html.light .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+}
+
+/* Contenedor de Mapa Leaflet */
 .leaflet-container {
   width: 100%;
   height: 100%;
-  border-radius: 1.25rem;
-}
-
-html.light .leaflet-container {
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.05);
+  border-radius: 1.5rem;
 }
