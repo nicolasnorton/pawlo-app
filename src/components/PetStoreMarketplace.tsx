@@ -150,9 +150,9 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
         </div>
       </div>
 
-      {/* FILTROS POR CATEGORÍA + COMPATIBILIDAD CON LA MASCOTA */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
+      {/* FILTROS POR CATEGORÍA + COMPATIBILIDAD CON LA MASCOTA (Scroll horizontal suave en móviles) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1 sm:pb-0">
           {categories.map(cat => {
             const Icon = cat.icon;
             const isSel = selectedCategory === cat.id;
@@ -160,22 +160,22 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 border transition cursor-pointer ${
+                className={`px-3.5 py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 border transition cursor-pointer shrink-0 min-h-[44px] active:scale-[0.98] ${
                   isSel
-                    ? 'btn-primary-2026 !rounded-2xl border-transparent'
+                    ? 'btn-primary-2026 !rounded-xl sm:!rounded-2xl border-transparent'
                     : (theme === 'dark'
                         ? 'bg-white/5 border-white/15 text-slate-300 hover:bg-white/10'
                         : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100')
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                <span>{cat.label}</span>
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">{cat.label}</span>
               </button>
             );
           })}
         </div>
 
-        <label htmlFor="filter-pet-species" className="flex items-center space-x-2.5 text-xs sm:text-sm font-bold cursor-pointer select-none">
+        <label htmlFor="filter-pet-species" className="flex items-center space-x-2.5 text-xs sm:text-sm font-bold cursor-pointer select-none pt-1 sm:pt-0">
           <input
             id="filter-pet-species"
             name="filterByPetSpecies"
@@ -184,7 +184,7 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
             onChange={e => setFilterByPetSpecies(e.target.checked)}
             className="rounded border-slate-400 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
           />
-          <span>Mostrar solo compatibles con {activePet.name} ({activePet.species === 'canine' ? 'Canino' : 'Felino'})</span>
+          <span className="text-xs sm:text-sm leading-snug">Filtrar para {activePet.name} ({activePet.species === 'canine' ? 'Perro' : 'Gato'})</span>
         </label>
       </div>
 

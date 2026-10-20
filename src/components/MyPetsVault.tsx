@@ -263,9 +263,9 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
   };
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 sm:space-y-6">
       {/* BARRA SUPERIOR DE SELECCIÓN DE MASCOTAS DEL USUARIO */}
-      <div className="glass-panel rounded-3xl p-5 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+      <div className="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-7 flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-5">
         <div className="space-y-1.5">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full badge-emerald text-xs font-mono font-bold uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4" />
@@ -279,8 +279,8 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
           </p>
         </div>
 
-        {/* Selector de Mascotas + Botón Añadir */}
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Selector de Mascotas + Botón Añadir (Scroll horizontal con snap en móvil) */}
+        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1 sm:pb-0 w-full lg:w-auto -mx-1 px-1">
           {pets.map(pet => {
             const isSelected = pet.id === activePet.id;
             return (
@@ -290,7 +290,7 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
                   onSelectPet(pet.id);
                   setWeightInput(pet.weightKg.toString());
                 }}
-                className={`flex items-center space-x-3 px-4 py-2.5 rounded-2xl border transition-all cursor-pointer ${
+                className={`flex items-center space-x-3 px-4 py-2.5 rounded-2xl border transition-all cursor-pointer shrink-0 min-h-[48px] active:scale-[0.98] ${
                   isSelected
                     ? (theme === 'dark'
                         ? 'bg-[#00F5A0]/20 border-[#00F5A0] text-white shadow-lg shadow-[#00F5A0]/10'
@@ -320,7 +320,7 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
 
           <button
             onClick={() => setShowNewPetModal(true)}
-            className={`flex items-center space-x-2 px-4 py-3.5 rounded-2xl border border-dashed font-bold text-xs sm:text-sm transition cursor-pointer ${
+            className={`flex items-center space-x-2 px-4 py-3 rounded-2xl border border-dashed font-bold text-xs sm:text-sm transition cursor-pointer shrink-0 min-h-[48px] active:scale-[0.98] ${
               theme === 'dark'
                 ? 'border-[#00F5A0]/50 text-[#00F5A0] hover:bg-[#00F5A0]/10'
                 : 'border-emerald-600 text-emerald-800 hover:bg-emerald-50'
@@ -469,11 +469,11 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
       )}
 
       {/* FICHA MAESTRA DE LA MASCOTA SELECCIONADA */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6">
         {/* COLUMNA IZQUIERDA: PASAPORTE BIOMÉTRICO, EDAD, PESO, NUTRICIÓN Y ACCIONES */}
-        <div className="lg:col-span-4 space-y-5">
-          <div className="glass-panel rounded-3xl overflow-hidden">
-            <div className="relative h-64 bg-slate-900">
+        <div className="lg:col-span-4 space-y-4 sm:space-y-5">
+          <div className="glass-panel rounded-2xl sm:rounded-3xl overflow-hidden">
+            <div className="relative h-56 sm:h-64 bg-slate-900">
               <img
                 src={activePet.avatar}
                 alt={activePet.name}
@@ -481,27 +481,27 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
 
-              <div className="absolute top-4 left-4 flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-black/80 text-[#00F5A0] border border-[#00F5A0]/40">
+              <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex items-center gap-2">
+                <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-mono font-bold bg-black/80 text-[#00F5A0] border border-[#00F5A0]/40">
                   CHIP ISO: {activePet.microchipIso}
                 </span>
               </div>
 
-              <div className="absolute bottom-4 left-5 right-5 text-white">
+              <div className="absolute bottom-3 sm:bottom-4 left-4 sm:left-5 right-4 sm:right-5 text-white">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-3xl font-extrabold !text-white">{activePet.name}</h3>
-                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500 text-slate-950">
+                  <h3 className="text-2xl sm:text-3xl font-extrabold !text-white">{activePet.name}</h3>
+                  <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-mono font-bold bg-emerald-500 text-slate-950">
                     {activePet.gender} • {activePet.isSterilized ? 'Esterilizado' : 'Intacto'}
                   </span>
                 </div>
-                <p className="text-sm text-slate-200 font-semibold mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-200 font-semibold mt-0.5">
                   {activePet.breed} • Pelaje {activePet.coatColor}
                 </p>
               </div>
             </div>
 
             {/* Métricas Vitales: EDAD, PESO, RACIÓN, SANGRE */}
-            <div className="p-6 space-y-5">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
               <div className="grid grid-cols-2 gap-3.5">
                 <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#03060C]/70 border-white/10' : 'bg-slate-50 border-slate-300'}`}>
                   <div className="flex items-center justify-between text-xs font-mono uppercase opacity-75">
@@ -518,7 +518,7 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
                     <Scale className="w-4 h-4 text-sky-600 dark:text-[#00D9F5]" />
                   </div>
                   {!editingWeight ? (
-                    <div className="flex items-baseline justify-between mt-1">
+                    <div className="flex flex-wrap items-baseline justify-between gap-1 mt-1">
                       <span className="text-xl sm:text-2xl font-extrabold text-emerald-700 dark:text-[#00F5A0]">
                         {activePet.weightKg} kg
                       </span>
@@ -527,7 +527,7 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
                           setWeightInput(activePet.weightKg.toString());
                           setEditingWeight(true);
                         }}
-                        className="text-xs font-mono underline opacity-80 hover:opacity-100 cursor-pointer"
+                        className="text-xs font-mono underline opacity-80 hover:opacity-100 cursor-pointer min-h-[32px] flex items-center"
                       >
                         Actualizar
                       </button>
@@ -547,7 +547,7 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
                           if (parsed > 0) onUpdateWeight(activePet.id, parsed);
                           setEditingWeight(false);
                         }}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 text-xs font-bold cursor-pointer"
+                        className="px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950 text-xs font-bold cursor-pointer min-h-[32px]"
                       >
                         OK
                       </button>
@@ -618,13 +618,13 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
 
         {/* COLUMNA DERECHA: CARNETS, HISTORIA CLÍNICA, FOTOS Y NOTAS */}
         <div className="lg:col-span-8 space-y-5">
-          {/* Sub-navegación del Expediente de la Mascota */}
-          <div className="glass-panel rounded-3xl p-2 flex flex-wrap items-center gap-2">
+          {/* Sub-navegación del Expediente de la Mascota (Tabs táctiles con scroll horizontal) */}
+          <div className="glass-panel rounded-2xl sm:rounded-3xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
             {[
-              { id: 'carnet', label: 'Carnet de Vacunas & Desparasitación', icon: Syringe, count: activePet.vaccines.length },
+              { id: 'carnet', label: 'Carnet Vacunas', icon: Syringe, count: activePet.vaccines.length },
               { id: 'historia', label: 'Historia Clínica', icon: FileText, count: activePet.clinicalHistory.length },
-              { id: 'fotos', label: 'Álbum de Fotos', icon: Camera, count: activePet.gallery.length },
-              { id: 'notas', label: 'Notas & Diario', icon: StickyNote, count: activePet.notes.length }
+              { id: 'fotos', label: 'Fotos', icon: Camera, count: activePet.gallery.length },
+              { id: 'notas', label: 'Notas', icon: StickyNote, count: activePet.notes.length }
             ].map(tab => {
               const Icon = tab.icon;
               const isAct = dossierTab === tab.id;
@@ -632,9 +632,9 @@ export const MyPetsVault: React.FC<MyPetsVaultProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setDossierTab(tab.id as any)}
-                  className={`flex-1 min-w-[160px] py-3 px-4 rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition cursor-pointer ${
+                  className={`flex-1 min-w-[130px] sm:min-w-[160px] py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition cursor-pointer shrink-0 min-h-[44px] active:scale-[0.98] ${
                     isAct
-                      ? 'btn-primary-2026 !rounded-2xl'
+                      ? 'btn-primary-2026 !rounded-xl sm:!rounded-2xl'
                       : (theme === 'dark' ? 'text-slate-300 hover:bg-white/10' : 'text-slate-700 hover:bg-slate-100')
                   }`}
                 >

@@ -392,14 +392,14 @@ export default function App() {
       </div>
 
       {/* HEADER PRINCIPAL PAWLO FLAGSHIP */}
-      <header className={`border-b sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 backdrop-blur-2xl transition-colors duration-300 ${
+      <header className={`border-b sticky top-0 z-40 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4 backdrop-blur-2xl transition-colors duration-300 ${
         theme === 'dark' 
           ? 'border-white/10 bg-[#050914]/90' 
           : 'border-slate-300/80 bg-white/95 shadow-sm'
       }`}>
         
         {/* BRANDING + SELECTOR DE NODO URBANO */}
-        <div className="flex items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-2 sm:gap-5">
           <div onClick={() => setActiveTab('my_pets')} className="cursor-pointer">
             <PawloLogo size="md" cityBadge={selectedCity.name} theme={theme} />
           </div>
@@ -408,15 +408,16 @@ export default function App() {
           <div className="relative">
             <button 
               onClick={() => setCitySelectorOpen(!citySelectorOpen)}
-              className={`flex items-center space-x-2 border px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer ${
+              className={`flex items-center space-x-1.5 sm:space-x-2 border px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer min-h-[40px] ${
                 theme === 'dark' 
                   ? 'bg-white/5 hover:bg-white/10 border-white/15 text-slate-100' 
                   : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-900'
               }`}
             >
-              <Globe className="w-4 h-4 text-[#00F5A0]" />
-              <span>{selectedCity.name}</span>
-              <ChevronDown className="w-4 h-4 opacity-75" />
+              <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00F5A0]" />
+              <span className="hidden xs:inline">{selectedCity.name}</span>
+              <span className="xs:hidden font-mono">{selectedCity.code.split('-')[1]}</span>
+              <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-75" />
             </button>
 
             {citySelectorOpen && (
@@ -467,9 +468,10 @@ export default function App() {
           </div>
         </div>
 
-        {/* DOCK DE NAVEGACIÓN PRINCIPAL */}
-        <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar max-w-full">
-          <nav className={`flex items-center p-1.5 rounded-2xl border text-xs sm:text-sm font-bold transition-all shadow-xs ${
+        {/* DOCK DE NAVEGACIÓN DESKTOP & ACCIONES HEADER */}
+        <div className="flex items-center gap-2">
+          {/* Navegación desktop (oculta en móvil para dar espacio y evitar doble nav) */}
+          <nav className={`hidden lg:flex items-center p-1.5 rounded-2xl border text-xs sm:text-sm font-bold transition-all shadow-xs ${
             theme === 'dark' 
               ? 'bg-[#03060C] border-white/15' 
               : 'bg-slate-100 border-slate-300'
@@ -494,23 +496,36 @@ export default function App() {
             })}
           </nav>
 
+          {/* Selector de Mascota Activa Rápido en Móvil */}
+          <div className="lg:hidden flex items-center">
+            <button
+              onClick={() => setActiveTab('my_pets')}
+              className={`flex items-center gap-2 px-2.5 py-1 rounded-xl border text-xs font-bold ${
+                theme === 'dark' ? 'bg-white/5 border-white/15 text-slate-200' : 'bg-slate-100 border-slate-300 text-slate-800'
+              }`}
+            >
+              <img src={activeUserPet.avatar} alt={activeUserPet.name} className="w-6 h-6 rounded-lg object-cover" />
+              <span>{activeUserPet.name}</span>
+            </button>
+          </div>
+
           {/* Conmutador de Tema (Sol / Luna) */}
           <button
             onClick={toggleTheme}
-            className={`p-2.5 rounded-2xl border transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 ${
+            className={`p-2 sm:p-2.5 rounded-xl sm:rounded-2xl border transition-all duration-200 flex items-center justify-center cursor-pointer shrink-0 min-h-[40px] min-w-[40px] ${
               theme === 'dark' 
                 ? 'bg-white/10 hover:bg-white/15 border-white/15 text-amber-300' 
                 : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-800 shadow-sm'
             }`}
             title={`Cambiar a ${theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}`}
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {theme === 'dark' ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
         </div>
       </header>
 
       {/* CONTENIDO PRINCIPAL */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 relative z-10">
+      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-5 sm:space-y-8 relative z-10">
 
         {/* 1. MÓDULO ESTRELLA: MIS MASCOTAS (BÓVEDA DIGITAL PERSONAL) */}
         {activeTab === 'my_pets' && (
@@ -598,12 +613,12 @@ export default function App() {
               </div>
             </div>
 
-            {/* Filtros de Categorías de Servicios */}
-            <div className="flex flex-wrap items-center gap-2.5">
+            {/* Filtros de Categorías de Servicios (Scroll horizontal suave en móviles) */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1 sm:pb-0">
               {[
-                { id: 'Todos', label: 'Todos los Servicios', icon: Zap },
-                { id: 'Transporte', label: 'Transporte Pet Taxi', icon: Car },
-                { id: 'Hospedaje', label: 'Hospedaje & Hotel', icon: Building2 },
+                { id: 'Todos', label: 'Todos', icon: Zap },
+                { id: 'Transporte', label: 'Pet Taxi', icon: Car },
+                { id: 'Hospedaje', label: 'Hotel & Suites', icon: Building2 },
                 { id: 'Grooming', label: 'Grooming & Spa', icon: Scissors },
                 { id: 'Veterinaria', label: 'Veterinaria 24/7', icon: Stethoscope },
                 { id: 'Etología', label: 'Etología & Paseo', icon: Brain },
@@ -614,16 +629,16 @@ export default function App() {
                   <button
                     key={cat.id}
                     onClick={() => setServiceCategoryFilter(cat.id)}
-                    className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-2 border transition cursor-pointer ${
+                    className={`px-3.5 py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 border transition cursor-pointer shrink-0 min-h-[44px] active:scale-[0.98] ${
                       isSel
-                        ? 'btn-primary-2026 !rounded-2xl border-transparent'
+                        ? 'btn-primary-2026 !rounded-xl sm:!rounded-2xl border-transparent'
                         : (theme === 'dark'
                             ? 'bg-white/5 border-white/15 text-slate-300 hover:bg-white/10'
                             : 'bg-white border-slate-300 text-slate-800 hover:bg-slate-100')
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{cat.label}</span>
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span className="whitespace-nowrap">{cat.label}</span>
                   </button>
                 );
               })}
@@ -1387,7 +1402,7 @@ export default function App() {
       {/* BARRA DE NAVEGACIÓN INFERIOR NATIVA PARA MÓVILES (iOS App Store / Google Play Ergonomics) */}
       <nav
         aria-label="Navegación móvil nativa"
-        className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-2xl safe-area-bottom px-2 pt-2 flex items-center justify-around ${
+        className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-2xl safe-area-bottom px-1 pt-1.5 flex items-center justify-around shadow-2xl ${
           theme === 'dark'
             ? 'bg-[#040812]/95 border-white/15 text-slate-300'
             : 'bg-white/95 border-slate-300 text-slate-700 shadow-2xl'
@@ -1406,14 +1421,14 @@ export default function App() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as MainTab)}
-              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl text-[11px] font-bold transition cursor-pointer ${
+              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[11px] font-bold transition cursor-pointer min-h-[50px] active:scale-95 ${
                 isAct
-                  ? (theme === 'dark' ? 'text-[#00F5A0]' : 'text-emerald-700 font-extrabold')
-                  : 'opacity-75'
+                  ? (theme === 'dark' ? 'text-[#00F5A0] bg-white/5' : 'text-emerald-700 font-extrabold bg-emerald-50')
+                  : 'opacity-75 hover:opacity-100'
               }`}
             >
               <Icon className="w-5 h-5 mb-0.5 stroke-[2.2]" />
-              <span>{tab.label}</span>
+              <span className="leading-tight">{tab.label}</span>
             </button>
           );
         })}
