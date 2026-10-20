@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import {
   ShoppingBag, Star, ShieldCheck, CheckCircle2, MessageSquare,
   Plus, Minus, Trash2, Sparkles, Package, Pill, Bone, Bed, Home,
-  Search, Bot, Cpu
+  Search, Bot, Cpu, User, Edit3
 } from 'lucide-react';
 import { StoreProduct, UserPet } from '../data/pawloData';
 import { loadLocalState, saveLocalState, subscribeLocalState } from '../services/localStore';
 import { webMCPManager } from '../services/webmcp';
+import { loadUserProfile, SimpleProfileModal, PawloUserProfile } from './SimpleProfileModal';
+import { SimplePaymentFlow } from './SimplePaymentFlow';
 
 interface PetStoreMarketplaceProps {
   products: StoreProduct[];
@@ -58,15 +60,31 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
 
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState<{ waUrl: string; orderId: string } | null>(null);
-  const [orderForm, setOrderForm] = useState(() =>
-    loadLocalState('pawlo_order_form', {
-      fullName: '',
-      phone: '',
-      address: 'Sector El Vergel, Calle Larga',
-      paymentMethod: 'Payphone',
-      prescriptionVerified: true
-    })
-  );
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+
+  // Formulario de despacho prellenado automáticamente desde el perfil local
+  const [orderForm, setOrderForm] = useState(() => {
+    const profile = loadUserProfile();
+    const saved = loadLocalState<{
+      fullName?: string;
+      phone?: string;
+      address?: string;
+      paymentMethod?: string;
+      prescriptionVerified?: boolean;
+    }>('pawlo_order_form', {} as any);
+
+    const defaultAddress = profile.addressReference
+      ? `${profile.sector ? profile.sector + ', ' : ''}${profile.addressReference}`
+      : 'Sector El Vergel, Calle Larga y Borrero';
+
+    return {
+      fullName: (saved && saved.fullName) ? saved.fullName : (profile.fullName || 'Nicolás Norton'),
+      phone: (saved && saved.phone) ? saved.phone : (profile.phone || '0998408369'),
+      address: (saved && saved.address) ? saved.address : defaultAddress,
+      paymentMethod: (saved && saved.paymentMethod) ? saved.paymentMethod : (profile.preferredPayment || 'QR_Deuna_Sipy_Peigo'),
+      prescriptionVerified: saved?.prescriptionVerified ?? true
+    };
+  });
 
   // Persistir formulario y carrito
   useEffect(() => {
@@ -349,7 +367,13 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
             </p>
           ) : !checkoutSuccess ? (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-7 space-y-3">
+              {/* Columna Izquierda: Productos en Carrito & Verificación de Recetas */}
+              <div className="lg:col-span-5 space-y-3">
+                <div className="flex items-center justify-between pb-1 font-bold text-xs uppercase font-mono opacity-80">
+                  <span>Productos ({totalItems})</span>
+                  <span>Subtotal</span>
+                </div>
+
                 {cart.map(item => (
                   <div
                     key={item.product.id}
@@ -377,6 +401,7 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
                         type="button"
                         onClick={() => updateQty(item.product.id, -1)}
                         className="p-2 rounded-lg border border-slate-300 dark:border-white/15 cursor-pointer"
+                        aria-label="Disminuir cantidad"
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
@@ -385,6 +410,7 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
                         type="button"
                         onClick={() => updateQty(item.product.id, 1)}
                         className="p-2 rounded-lg border border-slate-300 dark:border-white/15 cursor-pointer"
+                        aria-label="Aumentar cantidad"
                       >
                         <Plus className="w-3.5 h-3.5" />
                       </button>
@@ -404,68 +430,105 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
                 )}
               </div>
 
+              {/* Columna Derecha: Formulario 1-Toque & Pasarela Visual Simple de Pago */}
               <form
                 onSubmit={handleCompleteOrder}
                 toolname="pawlo_checkout_cart"
                 tooldescription="Formulario para despachar el pedido con dirección de entrega y forma de pago"
                 toolautosubmit="true"
-                className="lg:col-span-5 space-y-4 text-xs sm:text-sm"
+                className="lg:col-span-7 space-y-4 text-xs sm:text-sm"
               >
-                <div>
-                  <label className="font-bold block mb-1">Nombre del Tutor *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ej. Nicolás Norton"
-                    value={orderForm.fullName}
-                    onChange={e => setOrderForm({ ...orderForm, fullName: e.target.value })}
-                    className="w-full glass-input rounded-xl px-4 py-3"
-                  />
+                {/* Banner de Datos del Tutor con botón rápido para editar perfil */}
+                <div className={`p-4 rounded-2xl border flex items-center justify-between gap-3 ${
+                  theme === 'dark' ? 'bg-[#060B18] border-white/10' : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-[#00F5A0] flex items-center justify-center font-bold shrink-0">
+                      <User className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-xs sm:text-sm flex items-center gap-1.5">
+                        <span>Datos de Entrega en 1 Toque</span>
+                        <span className="text-[10px] font-mono text-emerald-600 dark:text-[#00F5A0] font-bold">
+                          ● Activo
+                        </span>
+                      </div>
+                      <div className={`text-[11px] ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {orderForm.fullName} • {orderForm.phone}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setProfileModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold border border-emerald-500/30 text-emerald-600 dark:text-[#00F5A0] hover:bg-emerald-500/10 transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Editar Mis Datos</span>
+                  </button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                {/* Campos de Nombre y Celular */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="font-bold block mb-1">WhatsApp *</label>
+                    <label className="font-bold block mb-1">Nombre del Tutor *</label>
                     <input
                       type="text"
+                      required
+                      placeholder="Ej. Nicolás Norton"
+                      value={orderForm.fullName}
+                      onChange={e => setOrderForm({ ...orderForm, fullName: e.target.value })}
+                      className="w-full glass-input rounded-xl px-4 py-3 text-xs sm:text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold block mb-1">WhatsApp para Notificación *</label>
+                    <input
+                      type="tel"
                       required
                       placeholder="0998408369"
                       value={orderForm.phone}
                       onChange={e => setOrderForm({ ...orderForm, phone: e.target.value })}
-                      className="w-full glass-input rounded-xl px-4 py-3"
+                      className="w-full glass-input rounded-xl px-4 py-3 text-xs sm:text-sm"
                     />
                   </div>
-                  <div>
-                    <label className="font-bold block mb-1">Medio de Pago</label>
-                    <select
-                      value={orderForm.paymentMethod}
-                      onChange={e => setOrderForm({ ...orderForm, paymentMethod: e.target.value })}
-                      className="w-full glass-input rounded-xl px-4 py-3"
-                    >
-                      <option value="Payphone">Payphone (Tarjeta Crédito / Débito)</option>
-                      <option value="QR_Deuna_Sipy_Peigo">Pago QR Instantáneo (DeUna / Sipy / Peigo)</option>
-                      <option value="Transferencia_Bancaria">Transferencia Bancaria Directa</option>
-                      <option value="Efectivo_Contraentrega">Pago al Recibir</option>
-                    </select>
-                  </div>
                 </div>
+
+                {/* Dirección y Referencia */}
                 <div>
-                  <label className="font-bold block mb-1">Dirección de Entrega en {cityName} *</label>
+                  <label className="font-bold block mb-1">Dirección y Referencia de Entrega en {cityName} *</label>
                   <input
                     type="text"
                     required
+                    placeholder="Ej. Sector El Vergel, Calle Larga y Borrero"
                     value={orderForm.address}
                     onChange={e => setOrderForm({ ...orderForm, address: e.target.value })}
-                    className="w-full glass-input rounded-xl px-4 py-3"
+                    className="w-full glass-input rounded-xl px-4 py-3 text-xs sm:text-sm"
                   />
                 </div>
 
-                <div className="pt-2 border-t border-slate-300 dark:border-white/10 flex items-center justify-between font-extrabold text-base">
+                {/* PASARELA VISUAL DE PAGO ULTRA-SIMPLE (QR / Payphone / Transferencia / Efectivo) */}
+                <div className="pt-2">
+                  <SimplePaymentFlow
+                    selectedMethod={orderForm.paymentMethod}
+                    onSelectMethod={(method) => setOrderForm({ ...orderForm, paymentMethod: method })}
+                    amountUSD={totalAmount}
+                    currency={currency}
+                    orderReference={`PWL-${Date.now().toString(36).toUpperCase()}`}
+                    theme={theme}
+                  />
+                </div>
+
+                {/* Total y Confirmación */}
+                <div className="pt-3 border-t border-slate-300 dark:border-white/10 flex items-center justify-between font-extrabold text-base">
                   <span>Total a Pagar ({totalItems} prod.):</span>
                   <span className="text-2xl text-emerald-700 dark:text-[#00F5A0]">${totalAmount.toFixed(2)} {currency}</span>
                 </div>
 
-                <button type="submit" className="btn-primary-2026 w-full py-4 font-bold text-sm cursor-pointer">
-                  Confirmar Pedido Directo por WhatsApp
+                <button type="submit" className="btn-primary-2026 w-full py-4 font-bold text-sm sm:text-base cursor-pointer shadow-lg flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>Confirmar Pedido Directo por WhatsApp</span>
                 </button>
               </form>
             </div>
@@ -568,6 +631,25 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
           </div>
         ))}
       </div>
+      {/* MODAL DE PERFIL LOCAL EN 1 TOQUE */}
+      <SimpleProfileModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        theme={theme}
+        onSave={(updatedProfile) => {
+          const fullAddress = updatedProfile.addressReference
+            ? `${updatedProfile.sector ? updatedProfile.sector + ', ' : ''}${updatedProfile.addressReference}`
+            : updatedProfile.addressReference || '';
+
+          setOrderForm(prev => ({
+            ...prev,
+            fullName: updatedProfile.fullName,
+            phone: updatedProfile.phone,
+            address: fullAddress || prev.address,
+            paymentMethod: updatedProfile.preferredPayment
+          }));
+        }}
+      />
     </section>
   );
 };

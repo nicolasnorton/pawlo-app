@@ -6,7 +6,7 @@ import {
   Compass, Zap, Globe, ChevronDown, Sun, Moon,
   Radio, Cpu, Fingerprint, Star, PlusCircle, Lock,
   PawPrint, ShoppingBag, Smartphone, Car, Building2, Scissors, Stethoscope, Brain,
-  Bot, Database, Store, Server, Flame, Users, ShieldAlert, Rocket, Layers
+  Bot, Database, Store, Server, Flame, Users, ShieldAlert, Rocket, Layers, User
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
@@ -17,6 +17,10 @@ import { AgenticWebMCPConsole } from './components/AgenticWebMCPConsole';
 import { StaffAdminPortals } from './components/StaffAdminPortals';
 import { PartnerPortals } from './components/PartnerPortals';
 import { PawloPetAssistantDrawer } from './components/PawloPetAssistantDrawer';
+import { SimpleUserHome } from './components/SimpleUserHome';
+import { QuickSosModal } from './components/QuickSosModal';
+import { SimpleProfileModal, useUserProfile } from './components/SimpleProfileModal';
+import { SimplePaymentFlow } from './components/SimplePaymentFlow';
 import { webMCPManager } from './services/webmcp';
 import { processOfflineTriage } from './services/offlineTriage';
 import { pawloDB, AgentTelemetryStats } from './services/indexedDbStorage';
@@ -168,7 +172,7 @@ const COMMUNITY_ADOPTIONS = [
   }
 ];
 
-type MainTab = 'my_pets' | 'store' | 'services' | 'alerts' | 'assistant' | 'adoptions' | 'chip_lookup';
+type MainTab = 'home' | 'my_pets' | 'store' | 'services' | 'alerts' | 'assistant' | 'adoptions' | 'chip_lookup';
 
 const ORDERED_ROLES: PawloRoleId[] = [
   'usuario',
@@ -264,11 +268,22 @@ function getRoleIcon(roleId: PawloRoleId) {
 
 export default function App() {
   const [selectedCity, setSelectedCity] = useState<CityNode>(CITY_NODES[0]);
-  const [activeTab, setActiveTab] = useState<MainTab>('my_pets');
+  const [activeTab, setActiveTab] = useState<MainTab>('home');
   const [radiusKm, setRadiusKm] = useState(3);
   const [viewMode, setViewMode] = useState<'both' | 'map' | 'cards'>('both');
   const [citySelectorOpen, setCitySelectorOpen] = useState(false);
   const [roleSelectorOpen, setRoleSelectorOpen] = useState(false);
+
+  // Perfil del Usuario Local-First & Modo Fácil vs Pro
+  const [userProfile, setUserProfile] = useUserProfile();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isQuickSosOpen, setIsQuickSosOpen] = useState(false);
+  const [quickSosType, setQuickSosType] = useState<'lost' | 'medical' | 'found'>('lost');
+
+  const toggleUiExperienceMode = () => {
+    const nextMode = userProfile.uiExperienceMode === 'simple' ? 'pro' : 'simple';
+    setUserProfile(prev => ({ ...prev, uiExperienceMode: nextMode }));
+  };
 
   // MVP v1.0 vs Suite Completa v2.0 Scope Mode Toggle (1-Click)
   const [scopeMode, setScopeMode] = useState<'mvp_v1' | 'suite_v2'>(() =>
@@ -346,8 +361,8 @@ export default function App() {
       if (!['usuario', 'supervisor', 'admin'].includes(currentUserRole)) {
         setCurrentUserRole('usuario');
       }
-      if (!['my_pets', 'services', 'alerts', 'assistant'].includes(activeTab)) {
-        setActiveTab('my_pets');
+      if (!['home', 'my_pets', 'services', 'alerts', 'assistant'].includes(activeTab)) {
+        setActiveTab('home');
       }
     }
   };
@@ -457,11 +472,13 @@ export default function App() {
 
   const handleNavigateTabId = (tabId: string) => {
     if (tabId === 'sos') {
+      setQuickSosType('lost');
+      setIsQuickSosOpen(true);
       setActiveTab('alerts');
     } else if (tabId === 'assistant') {
       setActiveTab('assistant');
       setIsAssistantDrawerOpen(true);
-    } else if (['my_pets', 'store', 'services', 'alerts', 'assistant', 'adoptions', 'chip_lookup'].includes(tabId)) {
+    } else if (['home', 'my_pets', 'store', 'services', 'alerts', 'assistant', 'adoptions', 'chip_lookup'].includes(tabId)) {
       setActiveTab(tabId as MainTab);
     }
   };
@@ -543,18 +560,54 @@ export default function App() {
   const [inputMsg, setInputMsg] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
 
+  // Repetición Rápida de Comida para la Mascota
+  const handleQuickRepeatFoodOrder = (pet: UserPet) => {
+    const matchingFood = STORE_CATALOG.find(p => 
+      p.category === 'Comida' && (
+        (pet.dietBrand && (p.title.toLowerCase().includes(pet.dietBrand.toLowerCase()) || p.brand.toLowerCase().includes(pet.dietBrand.toLowerCase()))) ||
+        (pet.species === 'feline' 
+          ? (p.title.toLowerCase().includes('cat') || p.title.toLowerCase().includes('gato') || p.species === 'feline')
+          : (p.title.toLowerCase().includes('dog') || p.title.toLowerCase().includes('can') || p.title.toLowerCase().includes('adulto') || p.species === 'canine'))
+      )
+    ) || STORE_CATALOG.find(p => p.category === 'Comida') || STORE_CATALOG[0];
+
+    if (matchingFood) {
+      webMCPManager.addToCart(matchingFood, 1);
+      const currentCart = loadLocalState<any[]>('pawlo_cart', []);
+      const exists = currentCart.find(i => i.product.id === matchingFood.id);
+      const updated = exists 
+        ? currentCart.map(i => i.product.id === matchingFood.id ? { ...i, qty: i.qty + 1 } : i)
+        : [...currentCart, { product: matchingFood, qty: 1 }];
+      saveLocalState('pawlo_cart', updated);
+      saveLocalState('pawlo_store_cart', updated);
+      setStoreCategoryFilter('Comida');
+      setActiveTab('store');
+    }
+  };
+
   // Comercio Conversacional & Servicios Integrales (Transporte, Hospedaje, Grooming, Vet, Etología)
   const [selectedService, setSelectedService] = useState<PetServiceItem | null>(null);
   const [leadForm, setLeadForm] = useState({
-    fullName: '',
-    phone: '',
-    paymentPreference: 'QR_Deuna_Sipy_Peigo',
-    sector: 'El Vergel',
+    fullName: userProfile.fullName || 'Nicolás Norton',
+    phone: userProfile.phone || '0998408369',
+    paymentPreference: userProfile.preferredPayment || 'QR_Deuna_Sipy_Peigo',
+    sector: userProfile.sector || 'El Vergel',
     petName: activeUserPet.name,
     petBreed: activeUserPet.breed,
     dateOrSchedule: 'Hoy / Mañana por la mañana'
   });
   const [leadSuccess, setLeadSuccess] = useState<{ waUrl: string; refId: string } | null>(null);
+
+  // Sincronizar leadForm reactivamente cuando el perfil de usuario cambie
+  useEffect(() => {
+    setLeadForm(prev => ({
+      ...prev,
+      fullName: userProfile.fullName || prev.fullName,
+      phone: userProfile.phone || prev.phone,
+      sector: userProfile.sector || prev.sector,
+      paymentPreference: userProfile.preferredPayment || prev.paymentPreference
+    }));
+  }, [userProfile]);
 
   const handleValidateMicrochip = (e: React.FormEvent) => {
     e.preventDefault();
@@ -646,7 +699,26 @@ export default function App() {
   const MVP_ROLES: PawloRoleId[] = ['usuario', 'supervisor', 'admin'];
   const activeRolesList = scopeMode === 'mvp_v1' ? MVP_ROLES : ORDERED_ROLES;
 
+  const SIMPLE_NAV_TABS = [
+    { id: 'home', label: 'Inicio', icon: Heart },
+    { id: 'my_pets', label: 'Mis Mascotas', icon: PawPrint },
+    { id: 'store', label: 'Tienda', icon: ShoppingBag },
+    { id: 'services', label: 'Veterinario y Servicios', icon: Zap },
+    { id: 'alerts', label: 'Mascotas Perdidas', icon: Compass },
+    { id: 'assistant', label: 'Preguntar a Pawlo', icon: Sparkles },
+  ];
+
+  const SIMPLE_MOBILE_NAV = [
+    { id: 'home', label: 'Inicio', icon: Heart },
+    { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
+    { id: 'store', label: 'Tienda', icon: ShoppingBag },
+    { id: 'services', label: 'Servicios', icon: Zap },
+    { id: 'alerts', label: 'Perdidas', icon: Compass },
+    { id: 'assistant', label: 'Preguntar', icon: Sparkles },
+  ];
+
   const ALL_NAV_TABS = [
+    { id: 'home', label: 'Inicio', icon: Heart },
     { id: 'my_pets', label: 'Mis Mascotas', icon: PawPrint },
     { id: 'store', label: 'Tienda & Farmacia', icon: ShoppingBag },
     { id: 'services', label: 'Servicios', icon: Zap },
@@ -657,15 +729,19 @@ export default function App() {
   ];
 
   const MVP_NAV_TABS = [
+    { id: 'home', label: 'Inicio', icon: Heart },
     { id: 'my_pets', label: 'Mis Mascotas', icon: PawPrint },
     { id: 'services', label: 'Servicios', icon: Zap },
     { id: 'alerts', label: 'Radar Comunitario', icon: Compass },
     { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
   ];
 
-  const navTabs = scopeMode === 'mvp_v1' ? MVP_NAV_TABS : ALL_NAV_TABS;
+  const navTabs = userProfile.uiExperienceMode === 'simple'
+    ? SIMPLE_NAV_TABS
+    : (scopeMode === 'mvp_v1' ? MVP_NAV_TABS : ALL_NAV_TABS);
 
   const ALL_MOBILE_NAV = [
+    { id: 'home', label: 'Inicio', icon: Heart },
     { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
     { id: 'store', label: 'Tienda', icon: ShoppingBag },
     { id: 'services', label: 'Servicios', icon: Zap },
@@ -674,13 +750,16 @@ export default function App() {
   ];
 
   const MVP_MOBILE_NAV = [
+    { id: 'home', label: 'Inicio', icon: Heart },
     { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
     { id: 'services', label: 'Servicios', icon: Zap },
     { id: 'alerts', label: 'Radar', icon: Compass },
     { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
   ];
 
-  const mobileNavTabs = scopeMode === 'mvp_v1' ? MVP_MOBILE_NAV : ALL_MOBILE_NAV;
+  const mobileNavTabs = userProfile.uiExperienceMode === 'simple'
+    ? SIMPLE_MOBILE_NAV
+    : (scopeMode === 'mvp_v1' ? MVP_MOBILE_NAV : ALL_MOBILE_NAV);
 
   return (
     <div className={`min-h-screen flex flex-col bg-grid-pattern relative selection:bg-[#00F5A0] selection:text-[#03060C] ${
@@ -694,57 +773,59 @@ export default function App() {
           : 'bg-gradient-to-r from-emerald-500/10 via-sky-500/10 to-indigo-500/10 opacity-60'
       }`}></div>
 
-      {/* BARRA DE TELEMETRÍA SUPERIOR + ESTADO DE PREPARACIÓN APP STORES */}
-      <div className={`safe-area-top border-b text-xs font-mono py-2 px-4 lg:px-8 flex items-center justify-between z-50 transition-colors ${
-        theme === 'dark' 
-          ? 'bg-[#020409]/95 border-white/10 text-slate-300' 
-          : 'bg-slate-900 text-slate-200 border-slate-800'
-      }`}>
-        <div className="flex items-center space-x-4 overflow-x-auto no-scrollbar">
-          <span className="flex items-center space-x-2 text-[#00F5A0] font-bold shrink-0">
-            <Radio className="w-3.5 h-3.5 animate-pulse text-[#00F5A0]" />
-            <span>PAWLO SUPER-APP OS v2.0</span>
-          </span>
-          <span className="opacity-40">|</span>
-          <span className="shrink-0">NODO: <strong className="text-white font-bold">{selectedCity.code} ({selectedCity.name})</strong></span>
-          <span className="opacity-40 hidden sm:inline">|</span>
-          <span className="hidden sm:inline shrink-0">MASCOTA ACTIVA: <strong className="text-[#00F5A0] font-bold">{activeUserPet.name} ({activeUserPet.weightKg} kg)</strong></span>
-          <span className="opacity-40 hidden md:inline">|</span>
-          <span className="hidden md:inline shrink-0">GUARDIANES COMUNIDAD: <strong className="text-white font-bold">{selectedCity.activeDevices.toLocaleString()}</strong></span>
-          <span className="opacity-40 hidden sm:inline">|</span>
-          <div className="hidden sm:flex items-center space-x-1.5 shrink-0">
-            <span className="text-slate-400">PANEL:</span>
-            <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${currentRoleMeta.badgeColor}`}>
-              {currentRoleMeta.shortLabel}
+      {/* BARRA DE TELEMETRÍA SUPERIOR + ESTADO DE PREPARACIÓN APP STORES (Modo Pro o Roles no-usuario) */}
+      {(userProfile.uiExperienceMode === 'pro' || currentUserRole !== 'usuario') && (
+        <div className={`safe-area-top border-b text-xs font-mono py-2 px-4 lg:px-8 flex items-center justify-between z-50 transition-colors ${
+          theme === 'dark' 
+            ? 'bg-[#020409]/95 border-white/10 text-slate-300' 
+            : 'bg-slate-900 text-slate-200 border-slate-800'
+        }`}>
+          <div className="flex items-center space-x-4 overflow-x-auto no-scrollbar">
+            <span className="flex items-center space-x-2 text-[#00F5A0] font-bold shrink-0">
+              <Radio className="w-3.5 h-3.5 animate-pulse text-[#00F5A0]" />
+              <span>PAWLO SUPER-APP OS v2.0</span>
+            </span>
+            <span className="opacity-40">|</span>
+            <span className="shrink-0">NODO: <strong className="text-white font-bold">{selectedCity.code} ({selectedCity.name})</strong></span>
+            <span className="opacity-40 hidden sm:inline">|</span>
+            <span className="hidden sm:inline shrink-0">MASCOTA ACTIVA: <strong className="text-[#00F5A0] font-bold">{activeUserPet.name} ({activeUserPet.weightKg} kg)</strong></span>
+            <span className="opacity-40 hidden md:inline">|</span>
+            <span className="hidden md:inline shrink-0">GUARDIANES COMUNIDAD: <strong className="text-white font-bold">{selectedCity.activeDevices.toLocaleString()}</strong></span>
+            <span className="opacity-40 hidden sm:inline">|</span>
+            <div className="hidden sm:flex items-center space-x-1.5 shrink-0">
+              <span className="text-slate-400">PANEL:</span>
+              <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${currentRoleMeta.badgeColor}`}>
+                {currentRoleMeta.shortLabel}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2.5 shrink-0">
+            <button
+              onClick={() => setIsAssistantDrawerOpen(true)}
+              className="px-2.5 py-0.5 rounded-md bg-gradient-to-r from-[#00F5A0]/20 via-[#00D9F5]/20 to-[#7B2CBF]/20 hover:brightness-125 text-[#00F5A0] border border-[#00F5A0]/40 font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer text-xs shadow-xs"
+              title="Abrir Asistente Agéntico PAWLO IA (Atajo: ⌘K / Ctrl+K)"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#00F5A0]" />
+              <span>PAWLO IA (⌘K)</span>
+            </button>
+            <button
+              onClick={() => setIsAgentConsoleOpen(true)}
+              className="px-2.5 py-0.5 rounded-md bg-[#00F5A0]/20 hover:bg-[#00F5A0]/30 text-[#00F5A0] border border-[#00F5A0]/40 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
+              title="Abrir consola de herramientas WebMCP y Comercio Agéntico"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span>WebMCP Agéntico</span>
+            </button>
+            <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-[#00F5A0] border border-[#00F5A0]/30 font-bold hidden sm:inline-flex items-center gap-1.5">
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>iOS & Google Play Ready</span>
+            </span>
+            <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-xs text-white border border-white/15 font-bold hidden lg:inline">
+              ISO 11784/11785
             </span>
           </div>
         </div>
-        <div className="flex items-center space-x-2.5 shrink-0">
-          <button
-            onClick={() => setIsAssistantDrawerOpen(true)}
-            className="px-2.5 py-0.5 rounded-md bg-gradient-to-r from-[#00F5A0]/20 via-[#00D9F5]/20 to-[#7B2CBF]/20 hover:brightness-125 text-[#00F5A0] border border-[#00F5A0]/40 font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer text-xs shadow-xs"
-            title="Abrir Asistente Agéntico PAWLO IA (Atajo: ⌘K / Ctrl+K)"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#00F5A0]" />
-            <span>PAWLO IA (⌘K)</span>
-          </button>
-          <button
-            onClick={() => setIsAgentConsoleOpen(true)}
-            className="px-2.5 py-0.5 rounded-md bg-[#00F5A0]/20 hover:bg-[#00F5A0]/30 text-[#00F5A0] border border-[#00F5A0]/40 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
-            title="Abrir consola de herramientas WebMCP y Comercio Agéntico"
-          >
-            <Bot className="w-3.5 h-3.5" />
-            <span>WebMCP Agéntico</span>
-          </button>
-          <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-[#00F5A0] border border-[#00F5A0]/30 font-bold hidden sm:inline-flex items-center gap-1.5">
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>iOS & Google Play Ready</span>
-          </span>
-          <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-xs text-white border border-white/15 font-bold hidden lg:inline">
-            ISO 11784/11785
-          </span>
-        </div>
-      </div>
+      )}
 
       {/* HEADER PRINCIPAL PAWLO FLAGSHIP */}
       <header className={`border-b sticky top-0 z-40 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2 sm:gap-4 backdrop-blur-2xl transition-colors duration-300 ${
@@ -755,7 +836,7 @@ export default function App() {
         
         {/* BRANDING + SELECTOR DE NODO URBANO + ROLE SWITCHER */}
         <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-          <div onClick={() => { setActiveTab('my_pets'); setCurrentUserRole('usuario'); }} className="cursor-pointer" title="Ir al inicio (Vista Tutor)">
+          <div onClick={() => { setActiveTab('home'); setCurrentUserRole('usuario'); }} className="cursor-pointer" title="Ir al inicio (Vista Tutor)">
             <PawloLogo size="md" cityBadge={selectedCity.name} theme={theme} />
           </div>
 
@@ -825,8 +906,9 @@ export default function App() {
             )}
           </div>
 
-          {/* Conmutador de Rol & Portal ("Rol Activo / Cambiar Panel") */}
-          <div className="relative">
+          {/* Conmutador de Rol & Portal ("Rol Activo / Cambiar Panel" en Modo Pro o Roles no-usuario) */}
+          {(userProfile.uiExperienceMode === 'pro' || currentUserRole !== 'usuario') && (
+            <div className="relative">
             <button 
               onClick={() => {
                 setRoleSelectorOpen(!roleSelectorOpen);
@@ -942,7 +1024,8 @@ export default function App() {
                 </div>
               </>
             )}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* DOCK DE NAVEGACIÓN DESKTOP & ACCIONES HEADER */}
@@ -998,10 +1081,80 @@ export default function App() {
             </div>
           )}
 
+          {/* BOTÓN PROMINENTE 🚨 EMERGENCIA (1-TAP DESDE CUALQUIER PANTALLA) */}
+          <button
+            type="button"
+            onClick={() => {
+              setQuickSosType('lost');
+              setIsQuickSosOpen(true);
+            }}
+            className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:brightness-110 text-white font-extrabold text-xs shadow-md shadow-red-600/30 border border-red-500/40 flex items-center gap-1.5 cursor-pointer shrink-0 min-h-[40px] active:scale-95 transition-transform"
+            title="SOS Inmediato: Mascota perdida o emergencia médica veterinaria 24h"
+          >
+            <Flame className="w-3.5 h-3.5 fill-white text-white shrink-0 animate-pulse" />
+            <span className="tracking-wide font-extrabold">🚨 Emergencia</span>
+          </button>
+
+          {/* BOTÓN AMIGABLE 👤 MIS DATOS (PERFIL DE USUARIO & AUTORRELLENO) */}
+          <button
+            type="button"
+            onClick={() => setIsProfileModalOpen(true)}
+            className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 min-h-[40px] ${
+              theme === 'dark'
+                ? 'bg-white/5 hover:bg-white/10 border-white/15 text-slate-200'
+                : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+            }`}
+            title="Editar mis datos de contacto, sector y pago para compras y citas rápidas"
+          >
+            <User className="w-3.5 h-3.5 text-[#00F5A0] shrink-0" />
+            <span className="hidden sm:inline">👤 Mis Datos</span>
+            <span className="sm:hidden">👤 Datos</span>
+          </button>
+
+          {/* TOGGLE 1-CLIC: 🟢 MODO FÁCIL vs 🛠️ MODO PRO / ROLES */}
+          <button
+            type="button"
+            onClick={toggleUiExperienceMode}
+            className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 min-h-[40px] shadow-xs ${
+              userProfile.uiExperienceMode === 'simple'
+                ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/25'
+                : 'bg-indigo-500/15 border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/25'
+            }`}
+            title="Conmutar entre Modo Fácil (hogares y familias) y Modo Pro / Roles (8 paneles técnicos y consola agéntica)"
+          >
+            {userProfile.uiExperienceMode === 'simple' ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-[#00F5A0] animate-pulse" />
+                <span className="hidden sm:inline">🟢 Modo Fácil</span>
+                <span className="sm:hidden">🟢 Fácil</span>
+              </>
+            ) : (
+              <>
+                <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                <span className="hidden sm:inline">🛠️ Modo Pro / Roles</span>
+                <span className="sm:hidden">🛠️ Pro</span>
+              </>
+            )}
+          </button>
+
+          {/* Botón Consola WebMCP si está en Modo Pro */}
+          {(userProfile.uiExperienceMode === 'pro' || currentUserRole !== 'usuario') && (
+            <button
+              type="button"
+              onClick={() => setIsAgentConsoleOpen(true)}
+              className="hidden md:inline-flex px-2.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-[#00F5A0]/20 hover:bg-[#00F5A0]/30 text-[#00F5A0] border border-[#00F5A0]/40 font-bold items-center gap-1.5 transition-colors cursor-pointer text-xs shrink-0 min-h-[40px]"
+              title="Abrir consola de herramientas WebMCP y Comercio Agéntico"
+            >
+              <Bot className="w-3.5 h-3.5" />
+              <span>WebMCP</span>
+            </button>
+          )}
+
           {/* Selector de Mascota Activa Rápido en Móvil (solo en vista tutor) */}
           {currentUserRole === 'usuario' && (
             <div className="lg:hidden flex items-center">
               <button
+                type="button"
                 onClick={() => setActiveTab('my_pets')}
                 className={`flex items-center gap-2 px-2.5 py-1 rounded-xl border text-xs font-bold ${
                   theme === 'dark' ? 'bg-white/5 border-white/15 text-slate-200' : 'bg-slate-100 border-slate-300 text-slate-800'
@@ -1031,12 +1184,13 @@ export default function App() {
       {/* CONTENIDO PRINCIPAL */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-5 sm:space-y-8 relative z-10">
 
-        {/* BARRA DE CONTEXTO DE ROLES & CAMBIO EN 1-CLIC (SIEMPRE VISIBLE EN EL TOP DE MAIN) */}
-        <section aria-label="Selector de Rol y Panel Activo" className={`p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl border transition-all duration-300 shadow-md ${
-          theme === 'dark'
-            ? 'bg-[#050A18]/90 border-white/15 backdrop-blur-xl'
-            : 'bg-white/95 border-slate-300/80 backdrop-blur-xl shadow-slate-200/50'
-        }`}>
+        {/* BARRA DE CONTEXTO DE ROLES & CAMBIO EN 1-CLIC (Modo Pro o Roles no-usuario) */}
+        {(userProfile.uiExperienceMode === 'pro' || currentUserRole !== 'usuario') && (
+          <section aria-label="Selector de Rol y Panel Activo" className={`p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl border transition-all duration-300 shadow-md ${
+            theme === 'dark'
+              ? 'bg-[#050A18]/90 border-white/15 backdrop-blur-xl'
+              : 'bg-white/95 border-slate-300/80 backdrop-blur-xl shadow-slate-200/50'
+          }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-white/10">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="flex h-2 w-2 relative">
@@ -1125,6 +1279,7 @@ export default function App() {
             })}
           </div>
         </section>
+      )}
 
         {/* ENRUTADOR PRINCIPAL SEGÚN ROL ACTIVO */}
         {isStaffRole(currentUserRole) ? (
@@ -1150,6 +1305,37 @@ export default function App() {
           />
         ) : (
           <>
+            {/* 0. MÓDULO INICIO FAMILIAR / MODO FÁCIL: HOME PERSONALIZADO */}
+            {activeTab === 'home' && (
+              <SimpleUserHome
+                pets={userPets}
+                selectedPetId={selectedPetId}
+                onSelectPet={setSelectedPetId}
+                onNavigateTab={(tab) => {
+                  if (tab === 'assistant') {
+                    setIsAssistantDrawerOpen(true);
+                    setActiveTab('assistant');
+                  } else {
+                    setActiveTab(tab as MainTab);
+                  }
+                }}
+                onOpenAssistantWithPrompt={(prompt) => {
+                  setIsAssistantDrawerOpen(true);
+                  if (prompt) {
+                    handleSendMessage(prompt);
+                  }
+                }}
+                onOpenQuickSos={(type) => {
+                  setQuickSosType(type || 'lost');
+                  setIsQuickSosOpen(true);
+                }}
+                onQuickRepeatFoodOrder={handleQuickRepeatFoodOrder}
+                userName={userProfile.fullName || 'Nicolás Norton'}
+                cityName={selectedCity.name}
+                theme={theme}
+              />
+            )}
+
             {/* 1. MÓDULO ESTRELLA: MIS MASCOTAS (BÓVEDA DIGITAL PERSONAL) */}
         {activeTab === 'my_pets' && (
           <MyPetsVault
@@ -1411,35 +1597,33 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label htmlFor="lead-sector" className="font-bold block mb-1">Dirección / Sector en {selectedCity.name}:</label>
-                        <input 
-                          id="lead-sector"
-                          name="sector"
-                          type="text" 
-                          required
-                          placeholder="Ej. El Vergel"
-                          value={leadForm.sector}
-                          onChange={e => setLeadForm({...leadForm, sector: e.target.value})}
-                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label htmlFor="lead-payment" className="font-bold block mb-1">Medio de Pago:</label>
-                        <select 
-                          id="lead-payment"
-                          name="paymentPreference"
-                          value={leadForm.paymentPreference}
-                          onChange={e => setLeadForm({...leadForm, paymentPreference: e.target.value})}
-                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
-                        >
-                          <option value="QR_Deuna_Sipy_Peigo">Pago QR Instantáneo (DeUna / Sipy / Peigo)</option>
-                          <option value="Payphone">Payphone (Tarjeta Crédito / Débito)</option>
-                          <option value="Transferencia_Bancaria">Transferencia Bancaria Directa</option>
-                          <option value="Efectivo_Contraentrega">Pago al Recibir</option>
-                        </select>
-                      </div>
+                    <div>
+                      <label htmlFor="lead-sector" className="font-bold block mb-1">Dirección / Sector en {selectedCity.name}:</label>
+                      <input 
+                        id="lead-sector"
+                        name="sector"
+                        type="text" 
+                        required
+                        placeholder="Ej. El Vergel"
+                        value={leadForm.sector}
+                        onChange={e => setLeadForm({...leadForm, sector: e.target.value})}
+                        className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none text-xs sm:text-sm"
+                      />
+                    </div>
+
+                    {/* PASARELA VISUAL DE PAGO ULTRA-SIMPLE (QR / Payphone / Transferencia / Efectivo) */}
+                    <div className="pt-2">
+                      <label className="font-bold block mb-2 text-xs sm:text-sm">
+                        Selecciona el Método de Pago para el Servicio:
+                      </label>
+                      <SimplePaymentFlow
+                        selectedMethod={leadForm.paymentPreference}
+                        onSelectMethod={(method) => setLeadForm(prev => ({ ...prev, paymentPreference: method as any }))}
+                        amountUSD={selectedService.price}
+                        currency={selectedCity.currency}
+                        orderReference={`PWL-${selectedService.id.toUpperCase()}-${selectedCity.code}`}
+                        theme={theme}
+                      />
                     </div>
 
                     <button 
@@ -2155,6 +2339,38 @@ export default function App() {
         onNavigateTab={handleNavigateTabId}
         onSwitchRole={(role) => setCurrentUserRole(role)}
         onTriggerSosAlert={handleTriggerSosAlert}
+      />
+
+      {/* MODAL DE PERFIL Y DATOS PERSONALES DEL USUARIO (AUTORRELLENO EN 1 TOQUE) */}
+      <SimpleProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        theme={theme}
+        onSave={(savedProfile) => {
+          setUserProfile(savedProfile);
+          setLeadForm(prev => ({
+            ...prev,
+            fullName: savedProfile.fullName,
+            phone: savedProfile.phone,
+            sector: savedProfile.sector,
+            paymentPreference: savedProfile.preferredPayment
+          }));
+        }}
+      />
+
+      {/* MODAL DE EMERGENCIA SOS EN MENOS DE 10 SEGUNDOS */}
+      <QuickSosModal
+        isOpen={isQuickSosOpen}
+        onClose={() => setIsQuickSosOpen(false)}
+        activePet={activeUserPet}
+        cityName={selectedCity.name}
+        userPhone={userProfile.phone || '0998408369'}
+        userSector={userProfile.sector || 'El Vergel'}
+        onPublishAlert={(alertData) => {
+          handleTriggerSosAlert(alertData.description, alertData.sector);
+        }}
+        theme={theme}
+        initialType={quickSosType}
       />
     </div>
   );
