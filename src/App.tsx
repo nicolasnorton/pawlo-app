@@ -22,7 +22,6 @@ const defaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = defaultIcon;
 
-// Nodos Urbanos Disponibles (Arquitectura Multi-Ciudad de PAWLO)
 interface CityNode {
   id: string;
   name: string;
@@ -54,12 +53,12 @@ const GEO_ALERTS = [
     alert_type: "lost" as const,
     sector: "El Vergel / Av. Solano",
     coords: [-2.9041, -79.0041] as [number, number],
-    description: "Collar táctico rojo con tag QR. Muy noble pero asustadizo ante tráfico pesado.",
+    description: "Collar táctico rojo con placa de contacto directa. Muy dócil pero asustadizo ante ruidos vehiculares.",
     contact_phone: "+593 99 123 4567",
     distance_km: 0.8,
     time_ago: "Hace 22 min",
     reward: "$150",
-    chip_status: "ISO Verified",
+    chip_status: "ISO Verificado",
     photo: "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=600&q=80"
   },
   {
@@ -71,7 +70,7 @@ const GEO_ALERTS = [
     alert_type: "sighted" as const,
     sector: "Centro Histórico (San Blas)",
     coords: [-2.8974, -79.0045] as [number, number],
-    description: "Avistada en terraza colonial cerca de San Blas. Lleva collar reflectivo celeste.",
+    description: "Avistada en tejado residencial cerca a cafetería San Blas. Lleva collar reflectivo celeste.",
     contact_phone: "+593 98 765 4321",
     distance_km: 0.2,
     time_ago: "Hace 48 min",
@@ -87,12 +86,12 @@ const GEO_ALERTS = [
     alert_type: "lost" as const,
     sector: "Totoracocha / Hurtado de Mendoza",
     coords: [-2.8895, -78.9850] as [number, number],
-    description: "Corte recién hecho, responde a su nombre y se acerca amigablemente.",
+    description: "Corte recién hecho, responde entusiasmado a su nombre y silbido familiar.",
     contact_phone: "+593 99 888 2211",
     distance_km: 2.5,
     time_ago: "Hace 2 horas",
     reward: "$100",
-    chip_status: "ISO Verified",
+    chip_status: "ISO Verificado",
     photo: "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80"
   },
   {
@@ -104,7 +103,7 @@ const GEO_ALERTS = [
     alert_type: "sighted" as const,
     sector: "Parque Lineal Yanuncay",
     coords: [-2.9150, -79.0180] as [number, number],
-    description: "Corriendo por la ciclovía del río Yanuncay con arnés negro en buen estado.",
+    description: "Visto jugando cerca de la ciclovía del río Yanuncay con arnés negro en excelente estado.",
     contact_phone: "+593 99 444 3322",
     distance_km: 2.1,
     time_ago: "Hace 35 min",
@@ -223,7 +222,7 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'bot', text: string, triageLevel?: 'RED' | 'YELLOW' | 'GREEN', action?: string }>>([
     {
       sender: 'bot',
-      text: 'Bienvenido a PAWLO Neural Triage. Describe los signos clínicos o el comportamiento de tu mascota para realizar una clasificación de urgencia en tiempo real.'
+      text: 'Bienvenido a PAWLO Neural Triage. Describe los signos clínicos o las dudas de conducta de tu mascota para clasificar la urgencia con base en evidencia.'
     }
   ]);
   const [inputMsg, setInputMsg] = useState('');
@@ -250,22 +249,22 @@ export default function App() {
     if (/^[0-9]{15}$/.test(clean)) {
       setChipResult({
         isValid: true,
-        standard: "ISO 11784 / 11785 FDX-B COMPLIANT",
-        message: "Transponder biométrico de 15 dígitos verificado. Estructura de fabricante/país válida para lectura internacional.",
+        standard: "ISO 11784 / 11785 FDX-B VÁLIDO",
+        message: "Transponder biométrico de 15 dígitos verificado. Estructura de código de país y fabricante conforme para lectura clínica internacional.",
         timestamp: now
       });
     } else if (/^[A-Za-z0-9-]{8,16}$/.test(clean)) {
       setChipResult({
         isValid: true,
-        standard: "PAWLO PRIVATE CLINICAL REGISTRY",
-        message: "Identificador alfanumérico verificado en la red de hospitales veterinarios afiliados.",
+        standard: "REGISTRO CLÍNICO PRIVADO PAWLO",
+        message: "Identificador verificado en la red de clínicas privadas asociadas.",
         timestamp: now
       });
     } else {
       setChipResult({
         isValid: false,
-        standard: "FORMATO NO RECONOCIDO",
-        message: "El código debe contener exactamente 15 dígitos numéricos (estándar ISO) o un código clínico registrado.",
+        standard: "FORMATO INVÁLIDO O NO RECONOCIDO",
+        message: "El código debe contener exactamente 15 dígitos numéricos (estándar ISO universal) o un transponder clínico habilitado.",
         timestamp: now
       });
     }
@@ -275,7 +274,7 @@ export default function App() {
     const textToProcess = customPrompt ?? inputMsg;
     if (!textToProcess.trim()) return;
     if (!disclaimerAccepted) {
-      alert("Por favor activa el protocolo de consentimiento clínico a la izquierda antes de iniciar el triaje.");
+      alert("Por favor activa la casilla de consentimiento clínico a la izquierda antes de iniciar el triaje.");
       return;
     }
 
@@ -291,29 +290,29 @@ export default function App() {
         setChatMessages(prev => [...prev, {
           sender: 'bot',
           triageLevel: 'RED',
-          text: '🚨 CORTAFUEGOS FARMACOLÓGICO ACTIVADO: La administración de analgésicos humanos (paracetamol, ibuprofeno) o antibióticos sin prescripción causa fallo hepático/renal agudo. PAWLO bloquea toda posología empírica.',
+          text: '🚨 CORTAFUEGOS FARMACOLÓGICO ACTIVADO: Los medicamentos humanos (como ibuprofeno o paracetamol) y las dosis empíricas provocan necrosis hepática o fallo renal agudo en caninos y felinos. PAWLO prohíbe la prescripción no autorizada.',
           action: 'Derivación inmediata a Hospital Veterinario 24/7'
         }]);
       } else if (lower.includes('sangre') || lower.includes('convulsi') || lower.includes('desmayo') || lower.includes('atropell') || lower.includes('veneno')) {
         setChatMessages(prev => [...prev, {
           sender: 'bot',
           triageLevel: 'RED',
-          text: '🚨 CÓDIGO ROJO (EMERGENCIA VITAL 0h): Se detectan indicadores de compromiso hemodinámico o neurológico agudo. Mantén la vía aérea despejada y traslada al paciente de inmediato.',
-          action: 'Acudir a Urgencias Veterinarias 24h ahora mismo'
+          text: '🚨 CÓDIGO ROJO (EMERGENCIA VITAL 0h): Signos agudos de compromiso vital detectados. Mantén la vía respiratoria despejada, no suministres líquidos orales y traslada al paciente de urgencia.',
+          action: 'Traslado prioritario al centro de urgencias 24h más cercano'
         }]);
       } else if (lower.includes('vomit') || lower.includes('diarrea') || lower.includes('no come') || lower.includes('decai')) {
         setChatMessages(prev => [...prev, {
           sender: 'bot',
           triageLevel: 'YELLOW',
-          text: '⚠️ CÓDIGO AMARILLO (ATENCIÓN PRIORITARIA < 12h): Riesgo de deshidratación electrolítica. Suspende ingesta sólida por 6 horas, ofrece agua fresca en pequeñas tomas y agenda revisión presencial hoy.',
-          action: 'Agendar consulta clínica en las próximas horas'
+          text: '⚠️ CÓDIGO AMARILLO (ATENCIÓN PRIORITARIA < 12h): Cuadro con riesgo de deshidratación. Suspende la comida sólida por 4-6 horas, ofrece sorbos pequeños de agua y acude a evaluación médica presencial hoy mismo.',
+          action: 'Agendar cita clínica prioritaria en el día'
         }]);
       } else {
         setChatMessages(prev => [...prev, {
           sender: 'bot',
           triageLevel: 'GREEN',
-          text: '🟢 CÓDIGO VERDE (CONDUCTA & BIENESTAR): Para optimizar la conducta, aplica sesiones de olfato de 15 minutos, refuerzo positivo con premios de alto valor y paseos descompresivos.',
-          action: 'Explorar especialistas de conducta en PAWLO Care'
+          text: '🟢 CÓDIGO VERDE (CONDUCTA & BIENESTAR): Para canalizar energía y mejorar la conducta, implementa paseos con correa larga, juegos de olfato estructurados de 15 minutos y refuerzo positivo.',
+          action: 'Consultar especialista de conducta en PAWLO Direct Care'
         }]);
       }
     }, 550);
@@ -323,7 +322,7 @@ export default function App() {
     e.preventDefault();
     const refId = `PWL-${selectedCity.id.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     const targetWa = selectedService.whatsapp || "593998408369";
-    const waText = `Hola ${selectedService.provider}, solicito confirmar cita para "${selectedService.title}" vía PAWLO (${selectedCity.name}). Paciente: ${leadForm.petName}. Código: ${refId}. Zona: ${leadForm.sector}. Medio de pago: ${leadForm.paymentPreference}.`;
+    const waText = `Hola ${selectedService.provider}, solicito confirmar cita para "${selectedService.title}" vía PAWLO (${selectedCity.name}). Paciente: ${leadForm.petName}. Código: ${refId}. Sector: ${leadForm.sector}. Pago acordado: ${leadForm.paymentPreference}.`;
     const waUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(waText)}`;
 
     setLeadSuccess({ waUrl, refId });
@@ -338,44 +337,44 @@ export default function App() {
       <div className={`fixed -top-24 left-1/2 -translate-x-1/2 w-[950px] h-[380px] rounded-full blur-[130px] pointer-events-none -z-0 transition-opacity duration-700 ${
         theme === 'dark' 
           ? 'bg-gradient-to-r from-[#00F5A0]/15 via-[#00D9F5]/12 to-[#6366F1]/15 opacity-100' 
-          : 'bg-gradient-to-r from-emerald-400/15 via-sky-400/10 to-indigo-400/10 opacity-75'
+          : 'bg-gradient-to-r from-emerald-500/10 via-sky-500/10 to-indigo-500/10 opacity-60'
       }`}></div>
 
-      {/* BARRA DE TELEMETRÍA SUPERIOR (WORLD-CLASS STATUS BAR) */}
-      <div className={`border-b text-[11px] font-mono py-1.5 px-4 lg:px-8 flex items-center justify-between z-50 transition-colors ${
+      {/* BARRA DE TELEMETRÍA SUPERIOR */}
+      <div className={`border-b text-xs font-mono py-2 px-4 lg:px-8 flex items-center justify-between z-50 transition-colors ${
         theme === 'dark' 
-          ? 'bg-[#020409]/90 border-white/5 text-slate-400' 
-          : 'bg-slate-900 text-slate-300 border-slate-800'
+          ? 'bg-[#020409]/95 border-white/10 text-slate-300' 
+          : 'bg-slate-900 text-slate-200 border-slate-800'
       }`}>
         <div className="flex items-center space-x-4 overflow-x-auto no-scrollbar">
-          <span className="flex items-center space-x-1.5 text-[#00F5A0] font-semibold shrink-0">
-            <Radio className="w-3 h-3 animate-pulse" />
+          <span className="flex items-center space-x-2 text-[#00F5A0] font-bold shrink-0">
+            <Radio className="w-3.5 h-3.5 animate-pulse text-[#00F5A0]" />
             <span>PAWLO SPATIAL GRID: ONLINE</span>
           </span>
-          <span className="opacity-30">|</span>
-          <span className="shrink-0">NODE: <strong className="text-white">{selectedCity.code} ({selectedCity.name})</strong></span>
-          <span className="opacity-30 hidden sm:inline">|</span>
-          <span className="hidden sm:inline shrink-0">POSTGIS GI-INDEX: <strong className="text-[#00D9F5]">{selectedCity.latencyMs}</strong></span>
-          <span className="opacity-30 hidden md:inline">|</span>
-          <span className="hidden md:inline shrink-0">GUARDIANES ACTIVOS: <strong className="text-white">{selectedCity.activeDevices.toLocaleString()}</strong></span>
+          <span className="opacity-40">|</span>
+          <span className="shrink-0">NODO: <strong className="text-white font-bold">{selectedCity.code} ({selectedCity.name})</strong></span>
+          <span className="opacity-40 hidden sm:inline">|</span>
+          <span className="hidden sm:inline shrink-0">POSTGIS LATENCY: <strong className="text-[#00D9F5] font-bold">{selectedCity.latencyMs}</strong></span>
+          <span className="opacity-40 hidden md:inline">|</span>
+          <span className="hidden md:inline shrink-0">GUARDIANES ACTIVOS: <strong className="text-white font-bold">{selectedCity.activeDevices.toLocaleString()}</strong></span>
         </div>
         <div className="flex items-center space-x-3 shrink-0">
-          <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-slate-300 border border-white/10 hidden sm:inline">
-            ISO 11784/11785 READY
+          <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-xs text-white border border-white/15 font-bold hidden sm:inline">
+            ISO 11784/11785
           </span>
         </div>
       </div>
 
       {/* HEADER PRINCIPAL PAWLO FLAGSHIP */}
-      <header className={`border-b sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4 backdrop-blur-2xl transition-colors duration-300 ${
+      <header className={`border-b sticky top-0 z-40 px-4 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-4 backdrop-blur-2xl transition-colors duration-300 ${
         theme === 'dark' 
-          ? 'border-white/[0.07] bg-[#050914]/80' 
-          : 'border-slate-200/90 bg-white/85 shadow-xs'
+          ? 'border-white/10 bg-[#050914]/90' 
+          : 'border-slate-300/80 bg-white/95 shadow-sm'
       }`}>
         
         {/* BRANDING + SELECTOR DE NODO URBANO */}
         <div className="flex items-center gap-4 sm:gap-6">
-          <div onClick={() => setActiveTab('alerts')}>
+          <div onClick={() => setActiveTab('alerts')} className="cursor-pointer">
             <PawloLogo size="md" cityBadge={selectedCity.name} theme={theme} />
           </div>
 
@@ -383,56 +382,58 @@ export default function App() {
           <div className="relative">
             <button 
               onClick={() => setCitySelectorOpen(!citySelectorOpen)}
-              className={`flex items-center space-x-2.5 border px-3.5 py-2 rounded-2xl text-xs font-bold transition-all ${
+              className={`flex items-center space-x-2.5 border px-4 py-2.5 rounded-2xl text-sm font-bold transition-all shadow-xs ${
                 theme === 'dark' 
-                  ? 'bg-white/[0.04] hover:bg-white/[0.08] border-white/10 text-slate-200' 
-                  : 'bg-slate-100 hover:bg-slate-200/70 border-slate-200/80 text-slate-800'
+                  ? 'bg-white/5 hover:bg-white/10 border-white/15 text-slate-100' 
+                  : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-900'
               }`}
             >
-              <Globe className="w-3.5 h-3.5 text-[#00F5A0]" />
+              <Globe className="w-4 h-4 text-[#00F5A0] dark:text-[#00F5A0]" />
               <span>{selectedCity.name}</span>
-              <span className="text-[10px] font-mono opacity-50 hidden sm:inline">{selectedCity.country}</span>
-              <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+              <span className="text-xs font-mono opacity-60 hidden sm:inline">{selectedCity.country}</span>
+              <ChevronDown className="w-4 h-4 opacity-75" />
             </button>
 
             {citySelectorOpen && (
-              <div className={`absolute top-full left-0 mt-2.5 w-64 rounded-3xl p-2.5 z-50 shadow-2xl border space-y-1 backdrop-blur-2xl ${
+              <div className={`absolute top-full left-0 mt-2.5 w-72 rounded-3xl p-3 z-50 shadow-2xl border space-y-1.5 backdrop-blur-2xl ${
                 theme === 'dark' 
-                  ? 'bg-[#080E1E]/95 border-white/15' 
-                  : 'bg-white/95 border-slate-200 shadow-xl'
+                  ? 'bg-[#080E1E] border-white/20' 
+                  : 'bg-white border-slate-300 shadow-2xl'
               }`}>
-                <div className="text-[10px] font-mono font-bold uppercase tracking-widest opacity-50 px-3 py-1.5 flex items-center justify-between">
-                  <span>Seleccionar Nodo Urbano</span>
-                  <span>LATENCY</span>
+                <div className={`text-xs font-mono font-bold uppercase tracking-wider px-3 py-1 flex items-center justify-between ${
+                  theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
+                }`}>
+                  <span>Seleccionar Ciudad</span>
+                  <span>LATENCIA</span>
                 </div>
                 {CITY_NODES.map(city => (
                   <button
                     key={city.id}
                     onClick={() => { setSelectedCity(city); setCitySelectorOpen(false); }}
-                    className={`w-full text-left px-3 py-2.5 rounded-2xl text-xs flex items-center justify-between transition ${
+                    className={`w-full text-left px-3.5 py-3 rounded-2xl text-xs sm:text-sm flex items-center justify-between transition ${
                       selectedCity.id === city.id 
-                        ? 'bg-gradient-to-r from-[#00F5A0]/15 to-[#00D9F5]/10 text-[#00F5A0] font-bold border border-[#00F5A0]/30' 
-                        : (theme === 'dark' ? 'text-slate-300 hover:bg-white/5' : 'text-slate-700 hover:bg-slate-100')
+                        ? (theme === 'dark' ? 'bg-[#00F5A0]/20 text-[#00F5A0] font-bold border border-[#00F5A0]/40' : 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-300') 
+                        : (theme === 'dark' ? 'text-slate-200 hover:bg-white/10' : 'text-slate-800 hover:bg-slate-100')
                     }`}
                   >
                     <div>
                       <div className="font-bold flex items-center gap-1.5">
                         {city.name}
-                        <span className="text-[10px] font-mono opacity-60">({city.currency})</span>
+                        <span className="text-xs font-mono opacity-70">({city.currency})</span>
                       </div>
-                      <div className="text-[10px] opacity-60">{city.paymentRail}</div>
+                      <div className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{city.paymentRail}</div>
                     </div>
                     <div className="flex flex-col items-end">
                       {city.status === 'active' && (
-                        <span className="text-[9px] bg-[#00F5A0]/20 text-[#00F5A0] px-2 py-0.5 rounded-full font-mono font-bold">LIVE</span>
+                        <span className="text-xs bg-[#00F5A0]/20 text-emerald-800 dark:text-[#00F5A0] px-2 py-0.5 rounded-full font-mono font-bold">ACTIVO</span>
                       )}
                       {city.status === 'beta' && (
-                        <span className="text-[9px] bg-sky-500/20 text-sky-400 px-2 py-0.5 rounded-full font-mono font-bold">BETA</span>
+                        <span className="text-xs bg-sky-500/20 text-sky-800 dark:text-sky-300 px-2 py-0.5 rounded-full font-mono font-bold">BETA</span>
                       )}
                       {city.status === 'coming_soon' && (
-                        <span className="text-[9px] bg-slate-500/20 text-slate-400 px-2 py-0.5 rounded-full font-mono">SOON</span>
+                        <span className="text-xs bg-slate-500/20 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full font-mono">PRÓX.</span>
                       )}
-                      <span className="text-[9px] font-mono opacity-50 mt-0.5">{city.latencyMs}</span>
+                      <span className="text-xs font-mono opacity-60 mt-0.5">{city.latencyMs}</span>
                     </div>
                   </button>
                 ))}
@@ -441,12 +442,12 @@ export default function App() {
           </div>
         </div>
 
-        {/* DOCK DE NAVEGACIÓN ESTILO APPLE VISION / LINEAR */}
-        <div className="flex items-center gap-2.5">
-          <nav className={`flex items-center p-1.5 rounded-2xl border text-xs font-bold transition-all ${
+        {/* DOCK DE NAVEGACIÓN */}
+        <div className="flex items-center gap-3">
+          <nav className={`flex items-center p-1.5 rounded-2xl border text-sm font-bold transition-all shadow-xs ${
             theme === 'dark' 
-              ? 'bg-[#03060C]/90 border-white/[0.08] shadow-inner' 
-              : 'bg-slate-100/90 border-slate-200/80'
+              ? 'bg-[#03060C] border-white/15' 
+              : 'bg-slate-100 border-slate-300'
           }`}>
             {[
               { id: 'alerts', label: 'Radar', icon: Compass },
@@ -461,13 +462,13 @@ export default function App() {
                 <button 
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-2 rounded-xl transition-all duration-200 flex items-center space-x-2 ${
+                  className={`px-4 py-2.5 rounded-xl transition-all duration-200 flex items-center space-x-2 ${
                     isActive 
-                      ? 'btn-primary-2026 !rounded-xl !py-2 !px-4' 
-                      : (theme === 'dark' ? 'text-slate-400 hover:text-white hover:bg-white/5' : 'text-slate-600 hover:text-slate-950 hover:bg-white/70')
+                      ? 'btn-primary-2026 !rounded-xl !py-2.5 !px-4' 
+                      : (theme === 'dark' ? 'text-slate-300 hover:text-white hover:bg-white/10' : 'text-slate-700 hover:text-slate-950 hover:bg-white')
                   }`}
                 >
-                  <IconComponent className="w-3.5 h-3.5 stroke-[2.2]" />
+                  <IconComponent className="w-4 h-4 stroke-[2.2]" />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -477,14 +478,14 @@ export default function App() {
           {/* Conmutador de Tema (Sol / Luna) */}
           <button
             onClick={toggleTheme}
-            className={`p-2.5 rounded-2xl border transition-all duration-300 flex items-center justify-center ${
+            className={`p-3 rounded-2xl border transition-all duration-200 flex items-center justify-center cursor-pointer ${
               theme === 'dark' 
-                ? 'bg-white/[0.04] hover:bg-white/[0.1] border-white/10 text-amber-300' 
-                : 'bg-white hover:bg-slate-100 border-slate-200 text-slate-700 shadow-xs'
+                ? 'bg-white/10 hover:bg-white/15 border-white/15 text-amber-300' 
+                : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-800 shadow-sm'
             }`}
             title={`Cambiar a ${theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}`}
           >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
         </div>
       </header>
@@ -495,41 +496,40 @@ export default function App() {
         {/* 1. MÓDULO: RADAR GEOESPACIAL PAWLO */}
         {activeTab === 'alerts' && (
           <section className="space-y-6">
-            {/* Hero Bento Header */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
               <div className="lg:col-span-8 glass-panel rounded-3xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden">
                 <div className="space-y-3 max-w-2xl">
-                  <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#00F5A0]/10 border border-[#00F5A0]/30 text-[#059669] dark:text-[#00F5A0] text-[11px] font-mono font-bold uppercase tracking-wider">
-                    <span className="w-2 h-2 rounded-full bg-[#00F5A0] animate-ping"></span>
-                    <span>REAL-TIME SPATIAL MESH • {selectedCity.name.toUpperCase()}</span>
+                  <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full badge-emerald text-xs font-mono font-bold uppercase tracking-wider">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>MALLA ESPACIAL EN VIVO • {selectedCity.name.toUpperCase()}</span>
                   </div>
-                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.1]">
-                    Radar Biométrico de Búsqueda y Rescate Urbano.
+                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15]">
+                    Radar Biométrico de Búsqueda y Protección Animal.
                   </h2>
-                  <p className="text-sm opacity-75 leading-relaxed">
-                    Indexación geodésica instantánea sobre anillos de proximidad en <strong>{selectedCity.name}</strong>. Cada reporte activa alertas geolocalizadas a tutores y clínicas dentro del perímetro.
+                  <p className={`text-base leading-relaxed ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                    Localización instantánea geodésica sobre anillos de proximidad en <strong>{selectedCity.name}</strong>. Cada alerta se sincroniza con tutores y centros de cuidado dentro del radio.
                   </p>
                 </div>
 
-                {/* Controles de Radio y Modo de Vista */}
-                <div className="pt-6 mt-6 border-t border-slate-200/60 dark:border-white/[0.07] flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono uppercase opacity-60">Vista:</span>
-                    <div className={`flex items-center p-1 rounded-xl border text-xs ${
-                      theme === 'dark' ? 'bg-[#03060C] border-white/10' : 'bg-slate-100 border-slate-200'
+                {/* Controles de Radio y Vista */}
+                <div className="pt-6 mt-6 border-t border-slate-300 dark:border-white/10 flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-2.5">
+                    <span className={`text-xs font-mono font-bold uppercase ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>Vista:</span>
+                    <div className={`flex items-center p-1 rounded-xl border text-xs sm:text-sm font-semibold ${
+                      theme === 'dark' ? 'bg-[#03060C] border-white/15' : 'bg-slate-100 border-slate-300'
                     }`}>
                       {[
                         { id: 'both', label: 'Split Híbrido' },
-                        { id: 'map', label: 'Radar Completo' },
-                        { id: 'cards', label: 'Mosaico' }
+                        { id: 'map', label: 'Solo Mapa' },
+                        { id: 'cards', label: 'Tarjetas' }
                       ].map(m => (
                         <button
                           key={m.id}
                           onClick={() => setViewMode(m.id as any)}
                           className={`px-3 py-1.5 rounded-lg font-bold transition ${
                             viewMode === m.id 
-                              ? (theme === 'dark' ? 'bg-white/10 text-[#00F5A0]' : 'bg-white text-slate-900 shadow-xs') 
-                              : 'opacity-60 hover:opacity-100'
+                              ? (theme === 'dark' ? 'bg-white/15 text-[#00F5A0]' : 'bg-white text-slate-950 shadow-sm border border-slate-200') 
+                              : (theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-950')
                           }`}
                         >
                           {m.label}
@@ -538,20 +538,22 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono uppercase opacity-60">Perímetro:</span>
-                    <div className={`flex items-center p-1 rounded-xl border text-xs font-mono ${
-                      theme === 'dark' ? 'bg-[#03060C] border-white/10' : 'bg-slate-100 border-slate-200'
+                  <div className="flex items-center gap-2.5">
+                    <span className={`text-xs font-mono font-bold uppercase ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>Radio:</span>
+                    <div className={`flex items-center p-1 rounded-xl border text-xs sm:text-sm font-mono ${
+                      theme === 'dark' ? 'bg-[#03060C] border-white/15' : 'bg-slate-100 border-slate-300'
                     }`}>
                       {[1, 3, 5, 8].map(r => (
                         <button 
                           key={r}
                           onClick={() => setRadiusKm(r)}
-                          className={`px-3 py-1.5 rounded-lg font-bold transition ${
-                            radiusKm === r ? 'bg-[#00F5A0] text-[#03060C] shadow-xs' : 'opacity-60 hover:opacity-100'
+                          className={`px-3.5 py-1.5 rounded-lg font-bold transition ${
+                            radiusKm === r 
+                              ? (theme === 'dark' ? 'bg-[#00F5A0] text-slate-950 shadow-sm' : 'bg-emerald-600 text-white shadow-sm') 
+                              : (theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-700 hover:text-slate-950')
                           }`}
                         >
-                          {r}km
+                          {r} km
                         </button>
                       ))}
                     </div>
@@ -559,47 +561,48 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Tarjeta Bento de Telemetría en Tiempo Real */}
-              <div className="lg:col-span-4 glass-panel rounded-3xl p-6 flex flex-col justify-between space-y-4">
+              {/* Bento Telemetría */}
+              <div className="lg:col-span-4 glass-panel rounded-3xl p-6 sm:p-7 flex flex-col justify-between space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono uppercase tracking-wider opacity-60">Estado del Nodo</span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#00F5A0]/15 text-[#059669] dark:text-[#00F5A0] border border-[#00F5A0]/30">
-                    99.98% UPTIME
+                  <span className={`text-xs font-mono uppercase font-bold tracking-wider ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                    Nodo {selectedCity.name}
+                  </span>
+                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold badge-emerald">
+                    99.98% DISPONIBILIDAD
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 my-auto">
-                  <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#03060C]/60 border-white/5' : 'bg-slate-50 border-slate-200/70'}`}>
-                    <div className="text-2xl font-extrabold font-display text-[#059669] dark:text-[#00F5A0]">{visibleAlerts.length}</div>
-                    <div className="text-[11px] opacity-70 font-medium mt-0.5">Alertas en {radiusKm}km</div>
+                <div className="grid grid-cols-2 gap-3.5 my-auto">
+                  <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#03060C]/70 border-white/10' : 'bg-slate-50 border-slate-300'}`}>
+                    <div className="text-3xl font-extrabold font-display text-emerald-600 dark:text-[#00F5A0]">{visibleAlerts.length}</div>
+                    <div className={`text-xs font-bold mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>Alertas en {radiusKm} km</div>
                   </div>
-                  <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#03060C]/60 border-white/5' : 'bg-slate-50 border-slate-200/70'}`}>
-                    <div className="text-2xl font-extrabold font-display text-[#0284C7] dark:text-[#00D9F5]">{selectedCity.latencyMs}</div>
-                    <div className="text-[11px] opacity-70 font-medium mt-0.5">PostGIS Query</div>
+                  <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#03060C]/70 border-white/10' : 'bg-slate-50 border-slate-300'}`}>
+                    <div className="text-3xl font-extrabold font-display text-sky-600 dark:text-[#00D9F5]">{selectedCity.latencyMs}</div>
+                    <div className={`text-xs font-bold mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>Latencia GiST</div>
                   </div>
                 </div>
 
                 <button 
-                  onClick={() => alert(`Abriendo formulario de transmisión inmediata en el nodo ${selectedCity.name}.`)}
-                  className="btn-primary-2026 w-full py-3 px-4 text-xs flex items-center justify-center space-x-2"
+                  onClick={() => alert(`Abriendo panel de emisión de alerta para el nodo ${selectedCity.name}.`)}
+                  className="btn-primary-2026 w-full py-3.5 px-4 text-sm flex items-center justify-center space-x-2"
                 >
                   <PlusCircle className="w-4 h-4 stroke-[2.5]" />
-                  <span>Emitir Alerta Georreferenciada</span>
+                  <span>Reportar Mascota Extraviada / Vista</span>
                 </button>
               </div>
             </div>
 
-            {/* Mapa Leaflet con HUD Flotante */}
+            {/* Mapa Leaflet */}
             {(viewMode === 'both' || viewMode === 'map') && (
-              <div className={`h-[450px] w-full rounded-3xl overflow-hidden border shadow-2xl relative ${
-                theme === 'dark' ? 'border-white/10' : 'border-slate-200'
+              <div className={`h-[450px] w-full rounded-3xl overflow-hidden border shadow-xl relative ${
+                theme === 'dark' ? 'border-white/15' : 'border-slate-300'
               }`}>
-                {/* Overlay HUD Flotante Superior */}
-                <div className="absolute top-4 right-4 z-[400] glass-panel px-4 py-2.5 rounded-2xl text-xs font-mono flex items-center space-x-3 pointer-events-none">
-                  <span className="w-2 h-2 rounded-full bg-[#00F5A0]"></span>
+                <div className="absolute top-4 right-4 z-[400] glass-panel px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-mono flex items-center space-x-3 pointer-events-none font-bold">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#00F5A0]"></span>
                   <span>WGS84: {selectedCity.center[0].toFixed(4)}, {selectedCity.center[1].toFixed(4)}</span>
                   <span className="opacity-40">|</span>
-                  <span className="text-[#059669] dark:text-[#00F5A0] font-bold">RADIO: {radiusKm * 1000}m</span>
+                  <span className="text-emerald-700 dark:text-[#00F5A0]">RADIO: {radiusKm * 1000} m</span>
                 </div>
 
                 <MapContainer 
@@ -615,14 +618,14 @@ export default function App() {
                   <Circle 
                     center={selectedCity.center} 
                     radius={radiusKm * 1000} 
-                    pathOptions={{ color: '#00F5A0', fillColor: '#00F5A0', fillOpacity: 0.14, weight: 2 }} 
+                    pathOptions={{ color: theme === 'dark' ? '#00F5A0' : '#059669', fillColor: theme === 'dark' ? '#00F5A0' : '#059669', fillOpacity: 0.16, weight: 2.5 }} 
                   />
                   {visibleAlerts.map(alert => (
                     <Marker key={alert.id} position={alert.coords}>
                       <Popup>
                         <div className="p-1 space-y-1.5 text-slate-900 font-sans">
                           <strong className="block text-sm font-extrabold">{alert.pet_name} ({alert.breed})</strong>
-                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded text-white ${alert.alert_type === 'lost' ? 'bg-rose-600' : 'bg-amber-600'}`}>
+                          <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded text-white ${alert.alert_type === 'lost' ? 'bg-rose-600' : 'bg-amber-600'}`}>
                             {alert.alert_type === 'lost' ? 'Extraviado' : 'Avistado'}
                           </span>
                           <p className="text-xs text-slate-700 leading-snug">{alert.description}</p>
@@ -635,42 +638,42 @@ export default function App() {
               </div>
             )}
 
-            {/* Tarjetas de Alertas de Alta Precisión */}
+            {/* Tarjetas de Alertas */}
             {(viewMode === 'both' || viewMode === 'cards') && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {visibleAlerts.map(alert => (
-                  <div key={alert.id} className="glass-panel rounded-3xl overflow-hidden hover:border-[#00F5A0]/50 transition-all duration-300 flex flex-col group">
-                    <div className="relative h-52 bg-slate-900 overflow-hidden">
+                  <div key={alert.id} className="glass-panel rounded-3xl overflow-hidden hover:border-emerald-500/60 dark:hover:border-[#00F5A0]/60 transition-all duration-300 flex flex-col group">
+                    <div className="relative h-56 bg-slate-900 overflow-hidden">
                       <img 
                         src={alert.photo} 
                         alt={alert.pet_name} 
                         className="w-full h-full object-cover group-hover:scale-105 transition duration-700" 
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#03060C]/90 via-transparent to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent"></div>
                       
                       <div className="absolute top-3 left-3 flex items-center space-x-1.5">
-                        <span className={`text-[10px] font-mono font-extrabold uppercase px-2.5 py-1 rounded-full shadow-lg ${
-                          alert.alert_type === 'lost' ? 'bg-[#FF2A5F] text-white' : 'bg-amber-400 text-slate-950'
+                        <span className={`text-xs font-mono font-extrabold uppercase px-3 py-1 rounded-full shadow-md text-white ${
+                          alert.alert_type === 'lost' ? 'bg-rose-600' : 'bg-amber-600'
                         }`}>
                           {alert.alert_type === 'lost' ? '● PERDIDO' : '◉ AVISTADO'}
                         </span>
-                        <span className="text-[11px] font-mono font-bold bg-[#03060C]/80 backdrop-blur-md text-[#00F5A0] px-2.5 py-1 rounded-full border border-[#00F5A0]/30">
+                        <span className="text-xs font-mono font-bold bg-black/80 backdrop-blur-md text-[#00F5A0] px-3 py-1 rounded-full border border-white/20">
                           {alert.distance_km} km
                         </span>
                       </div>
 
                       {alert.reward && (
-                        <span className="absolute top-3 right-3 text-[11px] font-mono font-extrabold bg-[#00F5A0] text-[#03060C] px-2.5 py-0.5 rounded-full shadow-lg">
+                        <span className="absolute top-3 right-3 text-xs font-mono font-extrabold bg-[#00F5A0] text-slate-950 px-3 py-1 rounded-full shadow-lg">
                           RECOMPENSA {alert.reward}
                         </span>
                       )}
 
-                      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between text-white">
+                      <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between text-white">
                         <div>
-                          <h3 className="font-extrabold text-xl leading-none">{alert.pet_name}</h3>
-                          <span className="text-[11px] text-slate-300 font-medium">{alert.breed}</span>
+                          <h3 className="font-extrabold text-2xl leading-none text-white">{alert.pet_name}</h3>
+                          <span className="text-xs text-slate-200 font-semibold">{alert.breed}</span>
                         </div>
-                        <span className="text-[10px] font-mono bg-white/10 backdrop-blur-md px-2 py-0.5 rounded-md text-slate-200">
+                        <span className="text-xs font-mono bg-black/60 px-2.5 py-1 rounded-md text-slate-200 font-medium">
                           {alert.time_ago}
                         </span>
                       </div>
@@ -678,15 +681,14 @@ export default function App() {
 
                     <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                       <div className="space-y-2.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-[#059669] dark:text-[#00F5A0] flex items-center truncate">
-                            <MapPin className="w-3.5 h-3.5 mr-1 shrink-0" /> {alert.sector}
-                          </span>
+                        <div className="flex items-center text-xs sm:text-sm font-bold text-emerald-700 dark:text-[#00F5A0] truncate">
+                          <MapPin className="w-4 h-4 mr-1.5 shrink-0" />
+                          <span>{alert.sector}</span>
                         </div>
-                        <p className={`text-xs leading-relaxed p-3 rounded-2xl border ${
+                        <p className={`text-xs sm:text-sm leading-relaxed p-3.5 rounded-2xl border ${
                           theme === 'dark' 
-                            ? 'bg-[#03060C]/60 border-white/5 text-slate-300' 
-                            : 'bg-slate-50 border-slate-200/80 text-slate-700'
+                            ? 'bg-[#03060C]/70 border-white/10 text-slate-200' 
+                            : 'bg-slate-50 border-slate-300 text-slate-800'
                         }`}>
                           {alert.description}
                         </p>
@@ -694,10 +696,10 @@ export default function App() {
 
                       <a 
                         href={`tel:${alert.contact_phone}`}
-                        className="btn-primary-2026 w-full py-2.5 px-4 text-xs flex items-center justify-center space-x-2"
+                        className="btn-primary-2026 w-full py-3 px-4 text-xs sm:text-sm font-bold flex items-center justify-center space-x-2"
                       >
-                        <PhoneCall className="w-3.5 h-3.5 stroke-[2.5]" />
-                        <span>Conectar con Guardián</span>
+                        <PhoneCall className="w-4 h-4 stroke-[2.5]" />
+                        <span>Contactar al Tutor</span>
                       </a>
                     </div>
                   </div>
@@ -710,35 +712,39 @@ export default function App() {
         {/* 2. MÓDULO: PAWLO NEURAL AI TRIAGE */}
         {activeTab === 'assistant' && (
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-4 glass-panel rounded-3xl p-6 space-y-5 flex flex-col justify-between">
+            <div className="lg:col-span-4 glass-panel rounded-3xl p-6 sm:p-7 space-y-5 flex flex-col justify-between">
               <div className="space-y-5">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 rounded-2xl bg-[#00F5A0]/10 text-[#059669] dark:text-[#00F5A0] border border-[#00F5A0]/25">
-                    <Cpu className="w-6 h-6" />
+                <div className="flex items-center space-x-3.5">
+                  <div className="p-3.5 rounded-2xl bg-[#00F5A0]/15 text-emerald-800 dark:text-[#00F5A0] border border-[#00F5A0]/30">
+                    <Cpu className="w-7 h-7" />
                   </div>
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#059669] dark:text-[#00F5A0] font-bold">
-                      SAFETY ENGINE v4.2
+                    <span className="text-xs font-mono uppercase tracking-widest text-emerald-700 dark:text-[#00F5A0] font-bold">
+                      MOTOR DE SEGURIDAD v4.2
                     </span>
-                    <h3 className="font-extrabold text-lg leading-tight">PAWLO Clinical Shield™</h3>
+                    <h3 className="font-extrabold text-xl leading-tight">PAWLO Clinical Shield™</h3>
                   </div>
                 </div>
 
-                <p className="text-xs opacity-80 leading-relaxed">
-                  Motor neural entrenado para clasificación de urgencias veterinarias y etología en <strong>{selectedCity.name}</strong>.
+                <p className={`text-xs sm:text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Asistente inteligente entrenado para orientación de urgencias y conducta en <strong>{selectedCity.name}</strong>.
                 </p>
 
-                <div className="bg-[#FF2A5F]/10 border border-[#FF2A5F]/30 p-4 rounded-2xl space-y-1.5 text-rose-600 dark:text-rose-200">
-                  <p className="font-extrabold text-xs flex items-center">
-                    <Lock className="w-4 h-4 mr-1.5 text-[#FF2A5F]" />
+                <div className={`p-4 rounded-2xl border space-y-2 ${
+                  theme === 'dark' 
+                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-200' 
+                    : 'bg-rose-50 border-rose-200 text-rose-900'
+                }`}>
+                  <p className="font-extrabold text-sm flex items-center text-rose-600 dark:text-rose-400">
+                    <Lock className="w-4 h-4 mr-2 text-rose-600 dark:text-rose-400" />
                     Cortafuegos Farmacológico Activo
                   </p>
-                  <p className="text-[11px] opacity-90 leading-relaxed">
-                    Bloqueo determinista del 100% ante consultas sobre dosis, miligramos o fármacos humanos/veterinarios para erradicar intoxicaciones por automedicación.
+                  <p className="text-xs leading-relaxed">
+                    Bloqueo estricto del 100% ante consultas de dosis o medicamentos humanos y veterinarios. Todo fármaco requiere examen físico presencial.
                   </p>
                 </div>
 
-                <div className={`p-3.5 rounded-2xl border ${theme === 'dark' ? 'bg-[#03060C]/70 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                <div className={`p-4 rounded-2xl border ${theme === 'dark' ? 'bg-[#03060C]/80 border-white/15' : 'bg-slate-50 border-slate-300'}`}>
                   <label htmlFor="pawlo-clinical-consent" className="flex items-start space-x-3 cursor-pointer select-none">
                     <input 
                       id="pawlo-clinical-consent"
@@ -746,38 +752,46 @@ export default function App() {
                       type="checkbox"
                       checked={disclaimerAccepted}
                       onChange={(e) => setDisclaimerAccepted(e.target.checked)}
-                      className="mt-0.5 rounded border-slate-300 text-[#059669] focus:ring-[#00F5A0] h-4 w-4"
+                      className="mt-1 rounded border-slate-400 text-emerald-600 focus:ring-emerald-500 h-5 w-5 shrink-0"
                     />
-                    <span className="text-[11px] font-semibold leading-snug">
-                      Habilitar protocolo de triaje preventivo (Comprendo que no sustituye la consulta física presencial).
+                    <span className={`text-xs sm:text-sm font-semibold leading-snug ${theme === 'dark' ? 'text-slate-200' : 'text-slate-900'}`}>
+                      Habilitar protocolo de triaje preventivo (Comprendo que no sustituye la consulta médica física).
                     </span>
                   </label>
                 </div>
               </div>
 
-              <div className={`border-t pt-4 space-y-2.5 ${theme === 'dark' ? 'border-white/5' : 'border-slate-200'}`}>
-                <span className="text-[10px] font-mono font-bold opacity-60 uppercase tracking-wider block">Protocolo de Clasificación:</span>
-                <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-mono font-bold">
-                  <div className="bg-rose-500/15 text-rose-500 dark:text-rose-300 border border-rose-500/30 p-2 rounded-xl">ROJO • 0h Crítico</div>
-                  <div className="bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30 p-2 rounded-xl">AMARILLO • &lt;12h</div>
-                  <div className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 p-2 rounded-xl">VERDE • Rutina</div>
+              <div className={`border-t pt-4 space-y-2.5 ${theme === 'dark' ? 'border-white/10' : 'border-slate-300'}`}>
+                <span className={`text-xs font-mono font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                  Escala de Urgencias:
+                </span>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono font-bold">
+                  <div className={`p-2 rounded-xl border ${theme === 'dark' ? 'bg-rose-500/15 text-rose-300 border-rose-500/30' : 'bg-rose-100 text-rose-900 border-rose-300'}`}>
+                    ROJO • 0h Crítico
+                  </div>
+                  <div className={`p-2 rounded-xl border ${theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'}`}>
+                    AMARILLO • &lt;12h
+                  </div>
+                  <div className={`p-2 rounded-xl border ${theme === 'dark' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-900 border-emerald-300'}`}>
+                    VERDE • Rutina
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Consola de Triaje */}
-            <div className="lg:col-span-8 glass-panel rounded-3xl flex flex-col h-[560px] overflow-hidden">
+            <div className="lg:col-span-8 glass-panel rounded-3xl flex flex-col h-[580px] overflow-hidden">
               <div className={`px-6 py-4 border-b flex items-center justify-between ${
-                theme === 'dark' ? 'bg-white/[0.02] border-white/5' : 'bg-slate-50 border-slate-200'
+                theme === 'dark' ? 'bg-white/[0.03] border-white/10' : 'bg-slate-100 border-slate-300'
               }`}>
                 <div className="flex items-center space-x-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#00F5A0] shadow-[0_0_10px_#00F5A0] animate-pulse"></div>
-                  <span className="font-bold text-sm">PAWLO Neural Copilot</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-400 border border-indigo-500/20 font-bold">
+                  <div className="w-3 h-3 rounded-full bg-[#00F5A0] shadow-[0_0_10px_#00F5A0] animate-pulse"></div>
+                  <span className="font-bold text-sm sm:text-base">PAWLO Neural Copilot</span>
+                  <span className="text-xs font-mono px-2.5 py-1 rounded-md badge-indigo font-bold">
                     DeepSeek R1 Reasoner
                   </span>
                 </div>
-                <span className="text-[11px] font-mono opacity-60">
+                <span className={`text-xs font-mono font-bold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
                   Nodo: {selectedCity.name}
                 </span>
               </div>
@@ -786,17 +800,17 @@ export default function App() {
               <div className="flex-1 p-6 overflow-y-auto space-y-4">
                 {chatMessages.map((msg, idx) => (
                   <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] rounded-2xl p-4 text-xs leading-relaxed space-y-2 ${
+                    <div className={`max-w-[85%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed space-y-2 shadow-xs ${
                       msg.sender === 'user' 
                         ? 'btn-primary-2026 !shadow-none font-bold rounded-br-none' 
-                        : (theme === 'dark' ? 'bg-[#03060C]/90 border border-white/10 text-slate-200 rounded-bl-none' : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs')
+                        : (theme === 'dark' ? 'bg-[#03060C] border border-white/15 text-slate-100 rounded-bl-none' : 'bg-slate-50 border border-slate-300 text-slate-900 rounded-bl-none')
                     }`}>
                       <p>{msg.text}</p>
                       {msg.action && (
-                        <div className={`mt-2.5 pt-2.5 border-t font-mono font-bold text-[#059669] dark:text-[#00F5A0] flex items-center ${
-                          theme === 'dark' ? 'border-white/10' : 'border-slate-100'
+                        <div className={`mt-2.5 pt-2.5 border-t font-mono font-bold text-emerald-700 dark:text-[#00F5A0] flex items-center ${
+                          theme === 'dark' ? 'border-white/10' : 'border-slate-200'
                         }`}>
-                          <Navigation className="w-3.5 h-3.5 mr-1.5" />
+                          <Navigation className="w-4 h-4 mr-1.5 shrink-0" />
                           <span>DIRECTIVA: {msg.action}</span>
                         </div>
                       )}
@@ -806,27 +820,41 @@ export default function App() {
 
                 {/* Chips de Simulación Rápida */}
                 {disclaimerAccepted && chatMessages.length === 1 && (
-                  <div className="pt-2 space-y-2">
-                    <span className="text-[10px] font-mono uppercase opacity-50 block">Escenarios de Prueba Rápida:</span>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="pt-2 space-y-2.5">
+                    <span className={`text-xs font-mono uppercase font-bold block ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Escenarios de Prueba en 1 Clic:
+                    </span>
+                    <div className="flex flex-wrap gap-2.5">
                       <button
                         type="button"
                         onClick={() => handleSendMessage("¿Cuántos mg de ibuprofeno le puedo dar a mi perro por dolor?")}
-                        className="text-[11px] px-3 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition font-medium"
+                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold ${
+                          theme === 'dark' 
+                            ? 'border-rose-500/40 bg-rose-500/15 text-rose-300 hover:bg-rose-500/25' 
+                            : 'border-rose-300 bg-rose-50 text-rose-900 hover:bg-rose-100'
+                        }`}
                       >
                         🧪 Probar Bloqueo Farmacológico
                       </button>
                       <button
                         type="button"
                         onClick={() => handleSendMessage("Mi perro tiene vómito desde la mañana y está decaído")}
-                        className="text-[11px] px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition font-medium"
+                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold ${
+                          theme === 'dark' 
+                            ? 'border-amber-500/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/25' 
+                            : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100'
+                        }`}
                       >
                         ⚠️ Probar Triaje Amarillo
                       </button>
                       <button
                         type="button"
                         onClick={() => handleSendMessage("Mi cachorro tira mucho de la correa en el parque, ¿cómo mejoro su paseo?")}
-                        className="text-[11px] px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition font-medium"
+                        className={`text-xs px-3.5 py-2 rounded-xl border transition font-bold ${
+                          theme === 'dark' 
+                            ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25' 
+                            : 'border-emerald-300 bg-emerald-50 text-emerald-900 hover:bg-emerald-100'
+                        }`}
                       >
                         🌿 Probar Consulta de Conducta
                       </button>
@@ -836,11 +864,11 @@ export default function App() {
 
                 {isAiLoading && (
                   <div className="flex justify-start">
-                    <div className={`border rounded-2xl p-3.5 text-xs font-mono flex items-center space-x-2 ${
-                      theme === 'dark' ? 'bg-[#03060C] border-white/10 text-[#00F5A0]' : 'bg-white border-slate-200 text-emerald-700'
+                    <div className={`border rounded-2xl p-4 text-xs sm:text-sm font-mono flex items-center space-x-2.5 ${
+                      theme === 'dark' ? 'bg-[#03060C] border-white/15 text-[#00F5A0]' : 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold'
                     }`}>
-                      <span className="w-2 h-2 rounded-full bg-[#00F5A0] animate-ping"></span>
-                      <span>PROCESANDO TELEMETRÍA CLÍNICA...</span>
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#00F5A0] animate-ping"></span>
+                      <span>ANALIZANDO SIGNOS CLÍNICOS CON DEEPSEEK...</span>
                     </div>
                   </div>
                 )}
@@ -849,26 +877,26 @@ export default function App() {
               {/* Input */}
               <form 
                 onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-                className={`p-3.5 border-t flex items-center space-x-2.5 ${
-                  theme === 'dark' ? 'bg-[#03060C] border-white/5' : 'bg-slate-50 border-slate-200'
+                className={`p-4 border-t flex items-center space-x-3 ${
+                  theme === 'dark' ? 'bg-[#03060C] border-white/10' : 'bg-slate-100 border-slate-300'
                 }`}
               >
-                <label htmlFor="pawlo-chat-input" className="sr-only">Consulta clínica o etológica</label>
+                <label htmlFor="pawlo-chat-input" className="sr-only">Consulta clínica o de conducta</label>
                 <input 
                   id="pawlo-chat-input"
                   name="chatMessage"
                   type="text"
                   value={inputMsg}
                   onChange={(e) => setInputMsg(e.target.value)}
-                  placeholder={disclaimerAccepted ? "Describe síntomas clínicos o dudas de conducta..." : "Activa la casilla de consentimiento a la izquierda para consultar..."}
+                  placeholder={disclaimerAccepted ? "Describe síntomas o dudas de conducta..." : "Activa la casilla a la izquierda para consultar..."}
                   disabled={!disclaimerAccepted}
-                  className="flex-1 glass-input rounded-2xl px-4 py-3 text-xs placeholder-slate-400 focus:outline-none"
+                  className="flex-1 glass-input rounded-2xl px-4 py-3.5 text-xs sm:text-sm placeholder-slate-400 focus:outline-none"
                 />
                 <button 
                   type="submit"
                   aria-label="Enviar consulta"
                   disabled={!disclaimerAccepted || !inputMsg.trim()}
-                  className="btn-primary-2026 p-3 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                  className="btn-primary-2026 p-3.5 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
                 >
                   <Send className="w-4 h-4 stroke-[2.5]" />
                 </button>
@@ -882,48 +910,48 @@ export default function App() {
           <section className="space-y-6">
             <div className="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <span className="text-[11px] font-mono uppercase font-extrabold tracking-wider text-[#059669] dark:text-[#00F5A0] bg-[#00F5A0]/10 px-3 py-1 rounded-full border border-[#00F5A0]/25">
+                <span className="text-xs font-mono uppercase font-bold tracking-wider badge-emerald px-3 py-1 rounded-full">
                   PAWLO DIRECT-TO-CARE • {selectedCity.name.toUpperCase()}
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">Clínicas & Especialistas Verificados</h2>
-                <p className="text-xs sm:text-sm opacity-75 mt-1 max-w-2xl">
-                  Reserva sin comisiones ocultas. Sincronización instantánea por WhatsApp y pago directo vía <strong>{selectedCity.paymentRail}</strong>.
+                <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">Clínicas & Servicios Veterinarios Verificados</h2>
+                <p className={`text-xs sm:text-sm mt-1 max-w-2xl ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                  Reserva sin comisiones intermedias. Sincronización instantánea por WhatsApp y pago directo vía <strong>{selectedCity.paymentRail}</strong>.
                 </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {SERVICES_CATALOG.map(srv => (
-                <div key={srv.id} className="glass-panel rounded-3xl p-6 flex flex-col justify-between space-y-5 hover:border-[#00F5A0]/50 transition-all duration-300">
+                <div key={srv.id} className="glass-panel rounded-3xl p-6 flex flex-col justify-between space-y-5 hover:border-emerald-500/60 dark:hover:border-[#00F5A0]/60 transition-all duration-300">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-[#059669] dark:text-[#00F5A0] bg-[#00F5A0]/10 px-2.5 py-1 rounded-full border border-[#00F5A0]/20">
+                      <span className="text-xs font-mono font-bold badge-emerald px-3 py-1 rounded-full">
                         {srv.badge}
                       </span>
                       <span className="text-2xl font-extrabold font-display">${srv.price.toFixed(2)}</span>
                     </div>
                     <h3 className="font-extrabold text-base leading-snug pt-1">{srv.title}</h3>
-                    <p className="text-xs opacity-70 font-semibold">{srv.provider}</p>
+                    <p className={`text-xs font-semibold ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>{srv.provider}</p>
                     
-                    <div className="flex items-center space-x-2 text-xs pt-1">
-                      <span className="flex items-center text-amber-400 font-bold">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 mr-1" /> {srv.rating}
+                    <div className="flex items-center space-x-2 text-xs sm:text-sm pt-1">
+                      <span className="flex items-center text-amber-500 font-bold">
+                        <Star className="w-4 h-4 fill-amber-500 mr-1" /> {srv.rating}
                       </span>
                       <span className="opacity-40">•</span>
-                      <span className="opacity-60 text-[11px]">({srv.reviews} reseñas)</span>
+                      <span className={`text-xs font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>({srv.reviews} reseñas)</span>
                     </div>
 
-                    <p className="text-xs font-medium pt-1 flex items-center text-[#059669] dark:text-[#00F5A0]">
-                      <MapPin className="w-3.5 h-3.5 mr-1 shrink-0" /> {srv.sector}
+                    <p className="text-xs sm:text-sm font-semibold pt-1 flex items-center text-emerald-700 dark:text-[#00F5A0]">
+                      <MapPin className="w-4 h-4 mr-1.5 shrink-0" /> {srv.sector}
                     </p>
                   </div>
 
                   <button 
                     onClick={() => { setSelectedService(srv); setLeadSuccess(null); }}
-                    className="btn-primary-2026 w-full py-3 px-4 text-xs flex items-center justify-center space-x-1.5"
+                    className="btn-primary-2026 w-full py-3 px-4 text-xs sm:text-sm font-bold flex items-center justify-center space-x-2 cursor-pointer"
                   >
-                    <span>Agendar Directo</span>
-                    <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Agendar Servicio</span>
+                    <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                   </button>
                 </div>
               ))}
@@ -933,22 +961,24 @@ export default function App() {
             {selectedService && (
               <div className="glass-panel-glow rounded-3xl p-6 sm:p-8 max-w-xl mx-auto space-y-5">
                 <div className={`flex items-center justify-between border-b pb-4 ${
-                  theme === 'dark' ? 'border-white/10' : 'border-slate-200'
+                  theme === 'dark' ? 'border-white/10' : 'border-slate-300'
                 }`}>
                   <div>
-                    <span className="text-[10px] font-mono uppercase text-[#059669] dark:text-[#00F5A0] font-bold">
+                    <span className="text-xs font-mono uppercase text-emerald-700 dark:text-[#00F5A0] font-bold">
                       ORDEN DIRECT-TO-CARE
                     </span>
-                    <h3 className="font-extrabold text-lg">{selectedService.provider}</h3>
-                    <p className="text-xs opacity-75">{selectedService.title} — <strong>${selectedService.price.toFixed(2)} {selectedCity.currency}</strong></p>
+                    <h3 className="font-extrabold text-xl">{selectedService.provider}</h3>
+                    <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                      {selectedService.title} — <strong>${selectedService.price.toFixed(2)} {selectedCity.currency}</strong>
+                    </p>
                   </div>
-                  <button onClick={() => setSelectedService(null)} className="opacity-60 hover:opacity-100 font-bold text-sm p-2">✕</button>
+                  <button onClick={() => setSelectedService(null)} className="opacity-70 hover:opacity-100 font-bold text-base p-2 cursor-pointer">✕</button>
                 </div>
 
                 {!leadSuccess ? (
-                  <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs">
+                  <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs sm:text-sm">
                     <div>
-                      <label htmlFor="lead-fullname" className="font-bold opacity-80">Nombre del Tutor:</label>
+                      <label htmlFor="lead-fullname" className="font-bold block mb-1">Nombre Completo del Tutor:</label>
                       <input 
                         id="lead-fullname"
                         name="fullName"
@@ -957,12 +987,12 @@ export default function App() {
                         placeholder="Ej. Mateo Valdivieso"
                         value={leadForm.fullName}
                         onChange={e => setLeadForm({...leadForm, fullName: e.target.value})}
-                        className="w-full mt-1.5 glass-input rounded-xl px-4 py-3 focus:outline-none"
+                        className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label htmlFor="lead-phone" className="font-bold opacity-80">WhatsApp:</label>
+                        <label htmlFor="lead-phone" className="font-bold block mb-1">WhatsApp:</label>
                         <input 
                           id="lead-phone"
                           name="phone"
@@ -971,11 +1001,11 @@ export default function App() {
                           placeholder="0998408369"
                           value={leadForm.phone}
                           onChange={e => setLeadForm({...leadForm, phone: e.target.value})}
-                          className="w-full mt-1.5 glass-input rounded-xl px-4 py-3 focus:outline-none"
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label htmlFor="lead-sector" className="font-bold opacity-80">Zona en {selectedCity.name}:</label>
+                        <label htmlFor="lead-sector" className="font-bold block mb-1">Zona en {selectedCity.name}:</label>
                         <input 
                           id="lead-sector"
                           name="sector"
@@ -984,13 +1014,13 @@ export default function App() {
                           placeholder="Ej. El Vergel"
                           value={leadForm.sector}
                           onChange={e => setLeadForm({...leadForm, sector: e.target.value})}
-                          className="w-full mt-1.5 glass-input rounded-xl px-4 py-3 focus:outline-none"
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label htmlFor="lead-petname" className="font-bold opacity-80">Nombre del Paciente:</label>
+                        <label htmlFor="lead-petname" className="font-bold block mb-1">Nombre de la Mascota:</label>
                         <input 
                           id="lead-petname"
                           name="petName"
@@ -999,50 +1029,52 @@ export default function App() {
                           placeholder="Ej. Bruno"
                           value={leadForm.petName}
                           onChange={e => setLeadForm({...leadForm, petName: e.target.value})}
-                          className="w-full mt-1.5 glass-input rounded-xl px-4 py-3 focus:outline-none"
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
                         />
                       </div>
                       <div>
-                        <label htmlFor="lead-payment" className="font-bold opacity-80">Método de Pago:</label>
+                        <label htmlFor="lead-payment" className="font-bold block mb-1">Medio de Pago:</label>
                         <select 
                           id="lead-payment"
                           name="paymentPreference"
                           value={leadForm.paymentPreference}
                           onChange={e => setLeadForm({...leadForm, paymentPreference: e.target.value})}
-                          className="w-full mt-1.5 glass-input rounded-xl px-4 py-3 focus:outline-none"
+                          className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
                         >
                           <option value="Deuna_P2P">Deuna (P2P Instantáneo)</option>
-                          <option value="Pichincha">Transferencia Bancaria</option>
+                          <option value="Pichincha">Transferencia Bancaria Pichincha</option>
                           <option value="Produbanco">Produbanco / Be</option>
-                          <option value="Contraentrega">Pago en Clínica</option>
+                          <option value="Contraentrega">Pago Presencial en Clínica</option>
                         </select>
                       </div>
                     </div>
 
                     <button 
                       type="submit"
-                      className="btn-primary-2026 w-full py-3.5 text-xs font-extrabold mt-2"
+                      className="btn-primary-2026 w-full py-4 text-xs sm:text-sm font-bold mt-3 cursor-pointer"
                     >
-                      Generar Pase Clínico & Abrir WhatsApp
+                      Continuar a WhatsApp con el Profesional
                     </button>
                   </form>
                 ) : (
                   <div className="space-y-4 text-center py-4">
-                    <div className="w-12 h-12 bg-[#00F5A0]/20 text-[#059669] dark:text-[#00F5A0] rounded-2xl flex items-center justify-center mx-auto border border-[#00F5A0]/30">
-                      <CheckCircle2 className="w-6 h-6" />
+                    <div className="w-14 h-14 bg-emerald-500/20 text-emerald-700 dark:text-[#00F5A0] rounded-2xl flex items-center justify-center mx-auto border border-emerald-500/30">
+                      <CheckCircle2 className="w-7 h-7" />
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-base">¡Orden Direct-to-Care Lista!</h4>
-                      <p className="text-xs opacity-60 mt-1 font-mono">TOKEN: {leadSuccess.refId}</p>
+                      <h4 className="font-extrabold text-xl">¡Orden Directa Preparada!</h4>
+                      <p className={`text-xs sm:text-sm font-mono mt-1 ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                        CÓDIGO: {leadSuccess.refId}
+                      </p>
                     </div>
                     <a 
                       href={leadSuccess.waUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="btn-primary-2026 inline-flex items-center space-x-2 py-3.5 px-6 text-xs"
+                      className="btn-primary-2026 inline-flex items-center space-x-2.5 py-4 px-8 text-xs sm:text-sm font-bold cursor-pointer"
                     >
-                      <MessageSquare className="w-4 h-4 stroke-[2.5]" />
-                      <span>Confirmar en WhatsApp Ahora</span>
+                      <MessageSquare className="w-5 h-5 stroke-[2.5]" />
+                      <span>Abrir WhatsApp Ahora</span>
                     </a>
                   </div>
                 )}
@@ -1054,27 +1086,29 @@ export default function App() {
         {/* 4. MÓDULO: BIOMETRÍA & ESCÁNER ISO UNIVERSAL */}
         {activeTab === 'chip_lookup' && (
           <section className="max-w-2xl mx-auto space-y-6">
-            <div className="glass-panel rounded-3xl p-8 space-y-5">
+            <div className="glass-panel rounded-3xl p-7 sm:p-9 space-y-6">
               <div className="flex items-center space-x-4">
-                <div className="p-3.5 bg-[#00F5A0]/10 border border-[#00F5A0]/30 rounded-2xl text-[#059669] dark:text-[#00F5A0]">
-                  <Fingerprint className="w-7 h-7" />
+                <div className="p-4 bg-[#00F5A0]/15 border border-[#00F5A0]/30 rounded-2xl text-emerald-800 dark:text-[#00F5A0]">
+                  <Fingerprint className="w-8 h-8" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-[#059669] dark:text-[#00F5A0]">
-                    GLOBAL TRANSPONDER REGISTRY
+                  <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-700 dark:text-[#00F5A0]">
+                    REGISTRO UNIVERSAL DE TRANSPONDERS
                   </span>
-                  <h2 className="text-2xl font-extrabold">Validador Biométrico ISO 11784/11785</h2>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold">Validador Biométrico ISO 11784/11785</h2>
                 </div>
               </div>
 
-              <p className="text-xs opacity-80 leading-relaxed">
-                Verifica la autenticidad estructural de cualquier microchip FDX-B de 15 dígitos a nivel global o identificadores de la red privada de clínicas asociadas a PAWLO.
+              <p className={`text-xs sm:text-sm leading-relaxed ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                Verifica la validez y fabricante de cualquier microchip FDX-B de 15 dígitos internacional o códigos registrados en la red privada de clínicas de Cuenca.
               </p>
 
               <form onSubmit={handleValidateMicrochip} className="space-y-4 pt-2">
                 <div>
-                  <label htmlFor="pawlo-chip-input" className="text-xs font-bold opacity-80">Código de Transponder (15 dígitos ISO o ID Clínico):</label>
-                  <div className="mt-2 flex gap-2.5">
+                  <label htmlFor="pawlo-chip-input" className="text-xs sm:text-sm font-bold block mb-1">
+                    Número de Microchip (15 dígitos ISO o Código Clínico):
+                  </label>
+                  <div className="mt-2 flex gap-3">
                     <input 
                       id="pawlo-chip-input"
                       name="chipNumber"
@@ -1082,30 +1116,30 @@ export default function App() {
                       value={chipInput}
                       onChange={e => setChipInput(e.target.value)}
                       placeholder="Ej. 981098123456789"
-                      className="flex-1 glass-input rounded-2xl px-4 py-3.5 text-xs focus:outline-none font-mono tracking-wider"
+                      className="flex-1 glass-input rounded-2xl px-4 py-3.5 text-xs sm:text-sm focus:outline-none font-mono tracking-wider"
                     />
                     <button 
                       type="submit"
-                      className="btn-primary-2026 px-6 py-3.5 text-xs"
+                      className="btn-primary-2026 px-7 py-3.5 text-xs sm:text-sm font-bold cursor-pointer"
                     >
                       Escanear
                     </button>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 text-[11px] font-mono opacity-70">
-                  <span>Cargar muestra:</span>
+                <div className="flex items-center space-x-3 text-xs sm:text-sm font-mono font-semibold">
+                  <span className="opacity-60">Probar:</span>
                   <button 
                     type="button" 
                     onClick={() => setChipInput('981098123456789')}
-                    className="text-[#059669] dark:text-[#00F5A0] hover:underline font-bold"
+                    className="text-emerald-700 dark:text-[#00F5A0] hover:underline"
                   >
                     [981098123456789 • ISO]
                   </button>
                   <button 
                     type="button" 
                     onClick={() => setChipInput('PWL-EC-90412')}
-                    className="text-[#0284C7] dark:text-[#00D9F5] hover:underline font-bold"
+                    className="text-sky-700 dark:text-[#00D9F5] hover:underline"
                   >
                     [PWL-EC-90412 • Red Privada]
                   </button>
@@ -1113,23 +1147,23 @@ export default function App() {
               </form>
 
               {chipResult && (
-                <div className={`p-5 rounded-2xl border text-xs space-y-2 ${
+                <div className={`p-5 rounded-2xl border text-xs sm:text-sm space-y-2 ${
                   chipResult.isValid 
-                    ? 'bg-[#00F5A0]/10 border-[#00F5A0]/30 text-emerald-900 dark:text-emerald-200' 
-                    : 'bg-[#FF2A5F]/10 border-[#FF2A5F]/30 text-rose-900 dark:text-rose-200'
+                    ? (theme === 'dark' ? 'bg-[#00F5A0]/15 border-[#00F5A0]/40 text-emerald-200' : 'bg-emerald-50 border-emerald-300 text-emerald-950') 
+                    : (theme === 'dark' ? 'bg-rose-500/15 border-rose-500/40 text-rose-200' : 'bg-rose-50 border-rose-300 text-rose-950')
                 }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2 font-mono font-extrabold text-sm">
+                  <div className="flex items-center justify-between font-bold">
+                    <div className="flex items-center space-x-2 font-mono text-sm sm:text-base">
                       {chipResult.isValid ? (
-                        <Check className="w-4 h-4 text-[#059669] dark:text-[#00F5A0]" />
+                        <Check className="w-5 h-5 text-emerald-700 dark:text-[#00F5A0]" />
                       ) : (
-                        <AlertCircle className="w-4 h-4 text-[#FF2A5F]" />
+                        <AlertCircle className="w-5 h-5 text-rose-600" />
                       )}
                       <span>{chipResult.standard}</span>
                     </div>
-                    <span className="text-[10px] font-mono opacity-60">{chipResult.timestamp}</span>
+                    <span className="text-xs font-mono opacity-70">{chipResult.timestamp}</span>
                   </div>
-                  <p className="opacity-85 leading-relaxed">{chipResult.message}</p>
+                  <p className="leading-relaxed font-medium">{chipResult.message}</p>
                 </div>
               )}
             </div>
@@ -1140,47 +1174,51 @@ export default function App() {
         {activeTab === 'adoptions' && (
           <section className="space-y-6">
             <div className="glass-panel rounded-3xl p-6 sm:p-8">
-              <span className="text-[11px] font-mono uppercase font-extrabold tracking-wider text-[#FF2A5F] bg-[#FF2A5F]/10 px-3 py-1 rounded-full border border-[#FF2A5F]/30">
-                PAWLO DIRECT ADOPTION NETWORK
+              <span className="text-xs font-mono uppercase font-bold tracking-wider badge-emerald px-3 py-1 rounded-full">
+                RED CIUDADANA DE ADOPCIONES • {selectedCity.name.toUpperCase()}
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">Adopción Responsable entre Particulares en {selectedCity.name}</h2>
-              <p className="text-xs sm:text-sm opacity-75 mt-1 max-w-2xl">
-                Cada mascota cuenta con ficha clínica verificada, esterilización y contacto directo con su hogar temporal.
+              <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">Adopción Responsable Directa en {selectedCity.name}</h2>
+              <p className={`text-xs sm:text-sm mt-1 max-w-2xl ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                Conectamos tutores temporales y rescatistas independientes con familias adoptantes responsables, con ficha médica al día y sin burocracia.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {COMMUNITY_ADOPTIONS.map(pet => (
-                <div key={pet.id} className="glass-panel rounded-3xl overflow-hidden flex flex-col sm:flex-row group hover:border-[#00F5A0]/40 transition">
-                  <div className="w-full sm:w-56 h-56 sm:h-auto bg-slate-900 relative overflow-hidden">
+                <div key={pet.id} className="glass-panel rounded-3xl overflow-hidden flex flex-col sm:flex-row group hover:border-emerald-500/60 dark:hover:border-[#00F5A0]/60 transition-all duration-300">
+                  <div className="w-full sm:w-60 h-60 sm:h-auto bg-slate-900 relative overflow-hidden shrink-0">
                     <img src={pet.photo} alt={pet.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-                    <span className="absolute top-3 left-3 text-[10px] font-mono font-extrabold bg-[#03060C]/85 backdrop-blur text-[#00F5A0] px-2.5 py-1 rounded-full border border-[#00F5A0]/30">
+                    <span className="absolute top-3 left-3 text-xs font-mono font-bold bg-black/80 backdrop-blur-md text-[#00F5A0] px-3 py-1 rounded-full border border-white/20">
                       {pet.badge}
                     </span>
                   </div>
-                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="p-6 sm:p-7 flex-1 flex flex-col justify-between space-y-4">
                     <div>
                       <div className="flex items-center justify-between">
-                        <h3 className="font-extrabold text-2xl">{pet.name}</h3>
-                        <span className="text-xs font-mono text-[#059669] dark:text-[#00F5A0] font-bold">{pet.gender}</span>
+                        <h3 className="font-extrabold text-2xl sm:text-3xl">{pet.name}</h3>
+                        <span className="text-xs sm:text-sm font-mono text-emerald-700 dark:text-[#00F5A0] font-bold">{pet.gender}</span>
                       </div>
-                      <p className="text-xs opacity-60 mt-0.5 font-medium">{pet.breed} • {pet.age} • {pet.location}</p>
-                      <span className="inline-block mt-2 text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-semibold">
-                        ✓ {pet.health}
-                      </span>
-                      <p className={`text-xs mt-3 leading-relaxed p-3 rounded-2xl border ${
-                        theme === 'dark' ? 'bg-[#03060C]/60 border-white/5 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+                      <p className={`text-xs sm:text-sm font-semibold mt-1 ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                        {pet.breed} • {pet.age} • {pet.location}
+                      </p>
+                      <div className="mt-2.5">
+                        <span className="text-xs font-mono px-3 py-1 rounded-md badge-indigo font-bold inline-block">
+                          ✓ {pet.health}
+                        </span>
+                      </div>
+                      <p className={`text-xs sm:text-sm mt-3.5 leading-relaxed p-3.5 rounded-2xl border ${
+                        theme === 'dark' ? 'bg-[#03060C]/70 border-white/10 text-slate-200' : 'bg-slate-50 border-slate-300 text-slate-800'
                       }`}>
                         "{pet.story}"
                       </p>
                     </div>
 
                     <button 
-                      onClick={() => alert(`Solicitud directa enviada al hogar temporal de ${pet.name} en ${selectedCity.name}.`)}
-                      className="w-full py-3 px-4 bg-gradient-to-r from-[#FF2A5F] to-rose-600 hover:brightness-110 text-white rounded-2xl text-xs font-extrabold transition flex items-center justify-center space-x-2 shadow-lg shadow-rose-600/25"
+                      onClick={() => alert(`Solicitud enviada directamente al hogar temporal de ${pet.name} en ${selectedCity.name}.`)}
+                      className="w-full py-3.5 px-4 bg-gradient-to-r from-rose-600 to-rose-700 hover:brightness-110 text-white rounded-2xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 shadow-md shadow-rose-600/30 cursor-pointer"
                     >
-                      <Heart className="w-3.5 h-3.5 fill-white" />
-                      <span>Conectar con Hogar Temporal</span>
+                      <Heart className="w-4 h-4 fill-white" />
+                      <span>Postular para Adopción</span>
                     </button>
                   </div>
                 </div>
@@ -1190,16 +1228,16 @@ export default function App() {
         )}
       </main>
 
-      {/* FOOTER PAWLO FLAGSHIP */}
-      <footer className={`border-t py-6 px-6 lg:px-8 text-xs flex flex-wrap items-center justify-between gap-4 relative z-10 transition-colors duration-300 ${
-        theme === 'dark' ? 'border-white/5 bg-[#020409] text-slate-500' : 'border-slate-200 bg-white text-slate-500'
+      {/* FOOTER */}
+      <footer className={`border-t py-6 px-6 lg:px-8 text-xs sm:text-sm flex flex-wrap items-center justify-between gap-4 relative z-10 transition-colors duration-300 ${
+        theme === 'dark' ? 'border-white/10 bg-[#020409] text-slate-400' : 'border-slate-300 bg-white text-slate-600'
       }`}>
         <div className="flex items-center space-x-3">
           <PawloLogo size="sm" showWordmark={false} theme={theme} />
-          <span className="font-semibold">PAWLO™ Urban Pet Operating System • Nodo Activo: {selectedCity.name} ({selectedCity.code})</span>
+          <span className="font-bold">PAWLO™ Urban Pet Operating System • Nodo Activo: {selectedCity.name} ({selectedCity.code})</span>
         </div>
-        <div className="font-mono text-[11px] opacity-75">
-          ISO 11784/11785 FDX-B | PostGIS Spatial Engine | Stitch Flagship 2026
+        <div className="font-mono text-xs opacity-75">
+          ISO 11784/11785 FDX-B | PostGIS Spatial Engine | WCAG AA Compliant
         </div>
       </footer>
     </div>

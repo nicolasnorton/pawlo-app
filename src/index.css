@@ -11,38 +11,64 @@
     /* Dark Mode Flagship (Obsidian Void) */
     --bg-main: #03060C;
     --bg-elevated: #080E1C;
-    --bg-header: rgba(6, 10, 21, 0.82);
-    --bg-glass: rgba(11, 18, 34, 0.72);
-    --bg-glass-subtle: rgba(15, 23, 42, 0.55);
-    --bg-glass-input: rgba(4, 7, 15, 0.9);
-    --border-glass: rgba(255, 255, 255, 0.08);
-    --border-highlight: rgba(255, 255, 255, 0.16);
+    --bg-header: rgba(6, 10, 21, 0.88);
+    --bg-glass: rgba(11, 18, 34, 0.82);
+    --bg-glass-subtle: rgba(15, 23, 42, 0.65);
+    --bg-glass-input: rgba(4, 7, 15, 0.95);
+    --border-glass: rgba(255, 255, 255, 0.1);
+    --border-highlight: rgba(255, 255, 255, 0.2);
     --text-primary: #F8FAFC;
     --text-secondary: #94A3B8;
     --text-tertiary: #64748B;
-    --card-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    --card-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    
+    /* Badge & Tag Helpers Dark */
+    --tag-emerald-bg: rgba(0, 245, 160, 0.12);
+    --tag-emerald-text: #00F5A0;
+    --tag-emerald-border: rgba(0, 245, 160, 0.35);
+
+    --tag-sky-bg: rgba(0, 217, 245, 0.12);
+    --tag-sky-text: #00D9F5;
+    --tag-sky-border: rgba(0, 217, 245, 0.35);
+
+    --tag-indigo-bg: rgba(99, 102, 241, 0.14);
+    --tag-indigo-text: #818CF8;
+    --tag-indigo-border: rgba(99, 102, 241, 0.35);
   }
 
-  /* Light Mode Flagship (Ceramic Alabaster & Studio Slate) */
+  /* Light Mode Flagship (High-Contrast Precision Porcelain) */
   html.light {
-    --primary: #059669;
-    --primary-dark: #047857;
-    --secondary: #0284C7;
-    --indigo: #4F46E5;
-    --accent: #E11D48;
+    --primary: #047857;
+    --primary-dark: #065F46;
+    --secondary: #0369A1;
+    --indigo: #4338CA;
+    --accent: #BE123C;
     
-    --bg-main: #F6F8FC;
+    --bg-main: #F1F4F9;
     --bg-elevated: #FFFFFF;
-    --bg-header: rgba(255, 255, 255, 0.86);
-    --bg-glass: rgba(255, 255, 255, 0.88);
-    --bg-glass-subtle: rgba(241, 245, 249, 0.8);
+    --bg-header: rgba(255, 255, 255, 0.96);
+    --bg-glass: #FFFFFF;
+    --bg-glass-subtle: #F8FAFC;
     --bg-glass-input: #FFFFFF;
-    --border-glass: rgba(15, 23, 42, 0.08);
-    --border-highlight: rgba(15, 23, 42, 0.14);
-    --text-primary: #090D16;
-    --text-secondary: #475569;
-    --text-tertiary: #64748B;
-    --card-shadow: 0 14px 34px -8px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03), inset 0 1px 0 0 #FFFFFF;
+    --border-glass: #CBD5E1;
+    --border-highlight: #94A3B8;
+    --text-primary: #020617;
+    --text-secondary: #1E293B;
+    --text-tertiary: #475569;
+    --card-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.04), 0 0 0 1px rgba(15, 23, 42, 0.04);
+    
+    /* Badge & Tag Helpers Light (High WCAG Contrast AA/AAA) */
+    --tag-emerald-bg: #ECFDF5;
+    --tag-emerald-text: #065F46;
+    --tag-emerald-border: #A7F3D0;
+
+    --tag-sky-bg: #F0F9FF;
+    --tag-sky-text: #075985;
+    --tag-sky-border: #BAE6FD;
+
+    --tag-indigo-bg: #EEF2FF;
+    --tag-indigo-text: #3730A3;
+    --tag-indigo-border: #C7D2FE;
   }
 
   body {
@@ -50,11 +76,14 @@
     color: var(--text-primary);
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
-    transition: background-color 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color 0.25s ease, color 0.25s ease;
+    font-size: 15px;
+    line-height: 1.6;
   }
 
   h1, h2, h3, .font-display {
     font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    color: var(--text-primary);
   }
 
   code, pre, .font-mono {
@@ -62,14 +91,14 @@
   }
 }
 
-/* Superficies Flagship 2026 con borde especular superior */
+/* Superficies Flagship con bordes claros y sombras de elevación */
 .glass-panel {
   background: var(--bg-glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
   box-shadow: var(--card-shadow);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s ease;
 }
 
 .glass-panel:hover {
@@ -80,20 +109,31 @@
   background: var(--bg-glass);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(0, 245, 160, 0.35);
-  box-shadow: 0 0 35px rgba(0, 245, 160, 0.14), var(--card-shadow);
+  border: 1px solid var(--primary);
+  box-shadow: 0 0 35px rgba(0, 245, 160, 0.16), var(--card-shadow);
+}
+
+html.light .glass-panel-glow {
+  border-color: #059669;
+  box-shadow: 0 0 30px rgba(5, 150, 105, 0.15), var(--card-shadow);
 }
 
 .glass-input {
   background: var(--bg-glass-input);
   border: 1px solid var(--border-glass);
   color: var(--text-primary);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
 }
 
 .glass-input:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+}
+
+html:not(.light) .glass-input:focus {
   border-color: #00F5A0;
-  box-shadow: 0 0 0 3px rgba(0, 245, 160, 0.16);
+  box-shadow: 0 0 0 3px rgba(0, 245, 160, 0.2);
 }
 
 /* Botón Principal Espectral PAWLO */
@@ -102,33 +142,57 @@
   color: #03060C;
   font-weight: 800;
   letter-spacing: -0.01em;
-  border-radius: 1rem;
+  border-radius: 0.875rem;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 6px 22px -4px rgba(0, 245, 160, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.45);
+  box-shadow: 0 6px 20px -4px rgba(0, 245, 160, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.45);
+}
+
+html.light .btn-primary-2026 {
+  background: linear-gradient(135deg, #059669 0%, #0284C7 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 20px -4px rgba(5, 150, 105, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary-2026:hover {
   transform: translateY(-1.5px);
-  box-shadow: 0 10px 28px -4px rgba(0, 217, 245, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
-  filter: brightness(1.04);
+  filter: brightness(1.05);
 }
 
 .btn-primary-2026:active {
   transform: translateY(0);
 }
 
-/* Malla de Precisión Sutil en el Fondo */
+/* Badges de Alto Contraste */
+.badge-emerald {
+  background-color: var(--tag-emerald-bg);
+  color: var(--tag-emerald-text);
+  border: 1px solid var(--tag-emerald-border);
+}
+
+.badge-sky {
+  background-color: var(--tag-sky-bg);
+  color: var(--tag-sky-text);
+  border: 1px solid var(--tag-sky-border);
+}
+
+.badge-indigo {
+  background-color: var(--tag-indigo-bg);
+  color: var(--tag-indigo-text);
+  border: 1px solid var(--tag-indigo-border);
+}
+
+/* Malla de Fondo Sutil */
 .bg-grid-pattern {
   background-size: 40px 40px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
 }
 
 html.light .bg-grid-pattern {
   background-image: 
-    linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
 }
 
 /* Contenedor de Mapa Leaflet */
