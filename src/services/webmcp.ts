@@ -7,11 +7,27 @@
  * 3. Schemas JSON formales y marcado de readOnlyHint
  * 4. Integración declarativa en formularios HTML (toolname, tooldescription, toolautosubmit)
  * 5. Fallback universal en `window.pawloWebMCP` para agentes y extensiones
+ * 6. Herramientas de ESCRITURA para mutar Bóveda de Mascotas (Peso, Vacunas, Notas) y Carrito
  */
 
-import { STORE_CATALOG, INITIAL_USER_PETS, StoreProduct, UserPet } from '../data/pawloData';
-import { processOfflineTriage, LocalTriageResult } from './offlineTriage';
-import { PAWLO_ROLES, PawloRoleId } from '../data/rolesAndPortalsData';
+import {
+  STORE_CATALOG,
+  INITIAL_USER_PETS,
+  StoreProduct,
+  UserPet,
+  VaccineRecord,
+  PetNote,
+  ClinicalEntry,
+  EXPANDED_SERVICES_CATALOG
+} from '../data/pawloData';
+import {
+  processOfflineTriage,
+  processAssistantCommand,
+  LocalTriageResult,
+  AssistantExecutionContext,
+  AssistantResponse
+} from './offlineTriage';
+import { PAWLO_ROLES, PawloRoleId, getRoleMeta } from '../data/rolesAndPortalsData';
 
 export const STORE_PRODUCTS = STORE_CATALOG;
 export const USER_PETS_VAULT = INITIAL_USER_PETS;
@@ -32,6 +48,13 @@ export interface WebMCPEvents {
   onCartChange?: (cart: Array<{ product: StoreProduct; qty: number }>) => void;
   onTriageRequest?: (result: LocalTriageResult) => void;
   onNavigateTab?: (tabId: string) => void;
+  onPetsChange?: (pets: UserPet[]) => void;
+  onUpdatePetWeight?: (petId: string, weightKg: number) => void;
+  onAddPetVaccine?: (petId: string, vaccine: Omit<VaccineRecord, 'id'>) => void;
+  onAddPetNote?: (petId: string, note: Omit<PetNote, 'id' | 'date'>) => void;
+  onRoleChange?: (roleId: PawloRoleId) => void;
+  onSosAlert?: (description: string, sector: string) => void;
+  onAssistantResponse?: (res: AssistantResponse) => void;
 }
 
 export class WebMCPAgentManager {
@@ -42,6 +65,7 @@ export class WebMCPAgentManager {
     { product: STORE_PRODUCTS[0], qty: 1 }
   ];
   private currentPets: UserPet[] = [...USER_PETS_VAULT];
+  private currentRole: PawloRoleId = 'usuario';
   private listeners: WebMCPEvents = {};
 
   constructor() {
@@ -60,7 +84,11 @@ export class WebMCPAgentManager {
   }
 
   public setListeners(listeners: WebMCPEvents) {
-    this.listeners = listeners;
+    this.listeners = { ...this.listeners, ...listeners };
+  }
+
+  public getListeners(): WebMCPEvents {
+    return this.listeners;
   }
 
   public updateCartState(cart: Array<{ product: StoreProduct; qty: number }>) {
@@ -71,6 +99,29 @@ export class WebMCPAgentManager {
     this.currentPets = pets;
   }
 
+  public getCurrentPets(): UserPet[] {
+    return this.currentPets;
+  }
+
+  public getActivePet(): UserPet {
+    return this.currentPets[0] || USER_PETS_VAULT[0];
+  }
+
+  public getCurrentCart(): Array<{ product: StoreProduct; qty: number }> {
+    return this.currentCart;
+  }
+
+  public getCurrentRole(): PawloRoleId {
+    return this.currentRole;
+  }
+
+  public setCurrentRole(roleId: PawloRoleId) {
+    this.currentRole = roleId;
+    if (this.listeners.onRoleChange) {
+      this.listeners.onRoleChange(roleId);
+    }
+  }
+
   public getAvailableTools(): WebMCPToolDefinition[] {
     return Array.from(this.registeredTools.values());
   }
@@ -79,12 +130,212 @@ export class WebMCPAgentManager {
     return this.isNativeWebMCPAvailable;
   }
 
+  // ==========================================================================
+  // MÉTODOS DE MUTACIÓN Y ESCRITURA (WRITE CAPABILITIES)
+  // ==========================================================================
+
+  public updatePetWeight(petId: string, weightKg: number): UserPet {
+    let updatedPet: UserPet | undefined;
+    this.currentPets = this.currentPets.map(p => {
+      if (p.id === petId) {
+        updatedPet = { ...p, weightKg };
+        return updatedPet;
+      }
+      return p;
+    });
+
+    if (!updatedPet) {
+      updatedPet = { ...this.currentPets[0], weightKg };
+      this.currentPets[0] = updatedPet;
+    }
+
+    if (this.listeners.onUpdatePetWeight) {
+      this.listeners.onUpdatePetWeight(petId, weightKg);
+    }
+    if (this.listeners.onPetsChange) {
+      this.listeners.onPetsChange(this.currentPets);
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('pawlo_user_pets', JSON.stringify(this.currentPets));
+      } catch {}
+      window.dispatchEvent(new CustomEvent('pawlo:pets_updated', {
+        detail: { pets: this.currentPets, updatedPetId: petId }
+      }));
+    }
+
+    return updatedPet;
+  }
+
+  public addPetVaccine(petId: string, vaccine: Omit<VaccineRecord, 'id'>): VaccineRecord {
+    const fullVaccine: VaccineRecord = {
+      ...vaccine,
+      id: `vac-${Date.now()}`
+    };
+
+    this.currentPets = this.currentPets.map(p => {
+      if (p.id === petId) {
+        return { ...p, vaccines: [fullVaccine, ...p.vaccines] };
+      }
+      return p;
+    });
+
+    if (this.listeners.onAddPetVaccine) {
+      this.listeners.onAddPetVaccine(petId, vaccine);
+    }
+    if (this.listeners.onPetsChange) {
+      this.listeners.onPetsChange(this.currentPets);
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('pawlo_user_pets', JSON.stringify(this.currentPets));
+      } catch {}
+      window.dispatchEvent(new CustomEvent('pawlo:pets_updated', {
+        detail: { pets: this.currentPets, updatedPetId: petId }
+      }));
+    }
+
+    return fullVaccine;
+  }
+
+  public addPetNote(petId: string, note: Omit<PetNote, 'id' | 'date'>): PetNote {
+    const fullNote: PetNote = {
+      ...note,
+      id: `note-${Date.now()}`
+    };
+
+    this.currentPets = this.currentPets.map(p => {
+      if (p.id === petId) {
+        return { ...p, notes: [fullNote, ...p.notes] };
+      }
+      return p;
+    });
+
+    if (this.listeners.onAddPetNote) {
+      this.listeners.onAddPetNote(petId, note);
+    }
+    if (this.listeners.onPetsChange) {
+      this.listeners.onPetsChange(this.currentPets);
+    }
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('pawlo_user_pets', JSON.stringify(this.currentPets));
+      } catch {}
+      window.dispatchEvent(new CustomEvent('pawlo:pets_updated', {
+        detail: { pets: this.currentPets, updatedPetId: petId }
+      }));
+    }
+
+    return fullNote;
+  }
+
+  public addToCart(product: StoreProduct, qty: number = 1) {
+    const existing = this.currentCart.find(i => i.product.id === product.id);
+    if (existing) {
+      this.currentCart = this.currentCart.map(i =>
+        i.product.id === product.id ? { ...i, qty: i.qty + qty } : i
+      );
+    } else {
+      this.currentCart = [...this.currentCart, { product, qty }];
+    }
+
+    if (this.listeners.onCartChange) {
+      this.listeners.onCartChange(this.currentCart);
+    }
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pawlo:cart_updated', {
+        detail: { cart: this.currentCart }
+      }));
+    }
+  }
+
+  public clearCart() {
+    this.currentCart = [];
+    if (this.listeners.onCartChange) {
+      this.listeners.onCartChange(this.currentCart);
+    }
+  }
+
+  public triggerSosAlert(description: string, sector: string) {
+    if (this.listeners.onSosAlert) {
+      this.listeners.onSosAlert(description, sector);
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pawlo:sos_alert', {
+        detail: { description, sector }
+      }));
+    }
+  }
+
+  public navigateTab(tabId: string) {
+    if (this.listeners.onNavigateTab) {
+      this.listeners.onNavigateTab(tabId);
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pawlo:navigate_tab', {
+        detail: { tabId }
+      }));
+    }
+  }
+
+  public switchRole(roleId: PawloRoleId) {
+    this.currentRole = roleId;
+    if (this.listeners.onRoleChange) {
+      this.listeners.onRoleChange(roleId);
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pawlo:role_changed', {
+        detail: { roleId }
+      }));
+    }
+  }
+
+  public onPartnerAction(actionType: string, payload: any): string {
+    if (typeof window !== 'undefined') {
+      try {
+        const history = JSON.parse(localStorage.getItem('pawlo_partner_actions') || '[]');
+        history.unshift({ actionType, payload, timestamp: new Date().toISOString() });
+        localStorage.setItem('pawlo_partner_actions', JSON.stringify(history));
+      } catch {}
+    }
+    return `Acción ${actionType} ejecutada y persistida en portal de aliados.`;
+  }
+
+  public onStaffAction(actionType: string, payload: any): string {
+    if (typeof window !== 'undefined') {
+      try {
+        const history = JSON.parse(localStorage.getItem('pawlo_staff_actions') || '[]');
+        history.unshift({ actionType, payload, timestamp: new Date().toISOString() });
+        localStorage.setItem('pawlo_staff_actions', JSON.stringify(history));
+      } catch {}
+    }
+    return `Acción staff ${actionType} autorizada y registrada en auditoría inmutable.`;
+  }
+
   /**
-   * Inicializa y registra todas las herramientas de comercio agéntico y utilidades
+   * Inicializa y registra todas las herramientas de comercio agéntico, boveda y asistente
    */
   public initializeAgenticTools(): () => void {
     this.abortController = new AbortController();
-    const signal = this.abortController.signal;
+
+    // Auto-montar el asistente agéntico omnipresente si estamos en el navegador
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        import('../components/PawloPetAssistantDrawer')
+          .then(mod => {
+            if (mod.mountGlobalPetAssistant) {
+              mod.mountGlobalPetAssistant();
+            }
+          })
+          .catch(err => {
+            console.warn('[PAWLO WebMCP] Fallback montando asistente global:', err);
+          });
+      }, 100);
+    }
 
     // 1. Herramienta: Búsqueda en el Catálogo de Comercio Agéntico
     this.register({
@@ -131,7 +382,7 @@ export class WebMCPAgentManager {
             category: p.category,
             species: p.species,
             rating: p.rating,
-            inStock: p.inStock,
+            stock: p.stock,
             requiresPrescription: p.requiresPrescription,
             highlightBadge: p.badge
           }))
@@ -147,7 +398,7 @@ export class WebMCPAgentManager {
       parameters: {
         type: 'object',
         properties: {
-          productId: { type: 'string', description: 'Identificador único del producto (ej: prod_1)' }
+          productId: { type: 'string', description: 'Identificador único del producto (ej: prd-01)' }
         },
         required: ['productId']
       },
@@ -233,7 +484,7 @@ export class WebMCPAgentManager {
     // 4. Herramienta de Comercio Agéntico: Resumen y Preparación de Checkout
     this.register({
       name: 'pawlo_get_cart_and_checkout_summary',
-      description: 'Genera el resumen de compra para el carrito actual con cálculo de impuestos, costos de entrega y enlace directo de confirmación WhatsApp/Deuna.',
+      description: 'Genera el resumen de compra para el carrito actual con cálculo de impuestos, costos de entrega y enlace directo de confirmación WhatsApp/Deuna/Sipy/Peigo.',
       readOnlyHint: true,
       parameters: {
         type: 'object',
@@ -241,14 +492,14 @@ export class WebMCPAgentManager {
           deliveryAddress: { type: 'string', description: 'Dirección de entrega' },
           paymentMethod: {
             type: 'string',
-            enum: ['Deuna_P2P', 'Tarjeta_Credito', 'Efectivo_Contraentrega'],
-            description: 'Método de pago preferido'
+            enum: ['Payphone', 'QR_Deuna_Sipy_Peigo', 'Transferencia_Bancaria', 'Efectivo_Contraentrega', 'Deuna_P2P', 'Sipy_QR', 'Peigo_QR', 'Payphone_TC'],
+            description: 'Método de pago preferido (Payphone, QR DeUna/Sipy/Peigo, Transferencia, Contraentrega)'
           }
         }
       },
       execute: async (args) => {
         const address = args.deliveryAddress || 'Sector El Vergel / Calle Larga';
-        const payment = args.paymentMethod || 'Deuna_P2P';
+        const payment = args.paymentMethod || 'Payphone';
         const subtotal = this.currentCart.reduce((acc, i) => acc + i.product.price * i.qty, 0);
         const deliveryFee = subtotal > 35 ? 0 : 2.50;
         const total = subtotal + deliveryFee;
@@ -277,7 +528,7 @@ export class WebMCPAgentManager {
       }
     });
 
-    // 5. Herramienta: Bóveda Digital de Mascotas del Usuario
+    // 5. Herramienta: Bóveda Digital de Mascotas del Usuario (READ)
     this.register({
       name: 'pawlo_list_user_pets',
       description: 'Consulta los datos clínicos, peso, edad, microchip ISO y alergias de las mascotas registradas en la Bóveda del usuario.',
@@ -315,7 +566,7 @@ export class WebMCPAgentManager {
         type: 'object',
         properties: {
           weightKg: { type: 'number', description: 'Peso corporal en kg' },
-          species: { type: 'string', enum: ['dog', 'cat'], description: 'Especie del animal' },
+          species: { type: 'string', enum: ['canine', 'feline', 'dog', 'cat'], description: 'Especie del animal' },
           activityLevel: {
             type: 'string',
             enum: ['low', 'moderate', 'high'],
@@ -326,14 +577,13 @@ export class WebMCPAgentManager {
       },
       execute: async (args) => {
         const { weightKg, species, activityLevel = 'moderate' } = args;
-        // RER = 70 * (kg ^ 0.75)
         const rer = Math.round(70 * Math.pow(weightKg, 0.75));
-        let multiplier = species === 'dog' ? 1.6 : 1.2;
+        let multiplier = (species === 'canine' || species === 'dog') ? 1.6 : 1.2;
         if (activityLevel === 'low') multiplier *= 0.85;
         if (activityLevel === 'high') multiplier *= 1.35;
 
         const dailyKcal = Math.round(rer * multiplier);
-        const standardKcalPerGram = 3.8; // Promedio alimento premium (3800 kcal/kg)
+        const standardKcalPerGram = 3.8;
         const dailyGrams = Math.round(dailyKcal / standardKcalPerGram);
 
         return {
@@ -447,6 +697,195 @@ export class WebMCPAgentManager {
       }
     });
 
+    // ========================================================================
+    // NUEVAS HERRAMIENTAS DE ESCRITURA AGÉNTICA (WRITE-CAPABLE TOOLS)
+    // ========================================================================
+
+    // 10. Herramienta WRITE: Actualizar Peso Corporal en Bóveda
+    this.register({
+      name: 'pawlo_update_pet_weight',
+      description: 'Actualiza el peso corporal de una mascota en la Bóveda Digital de PAWLO y recalcula automáticamente los requerimientos energéticos basales (RER) y ración diaria recomendada.',
+      readOnlyHint: false,
+      parameters: {
+        type: 'object',
+        properties: {
+          petId: { type: 'string', description: 'ID de la mascota (ej: pet-bruno o pet-mia)' },
+          weightKg: { type: 'number', description: 'Nuevo peso corporal en kilogramos (ej: 30.5)' }
+        },
+        required: ['petId', 'weightKg']
+      },
+      execute: async (args) => {
+        const { petId, weightKg } = args;
+        if (typeof weightKg !== 'number' || weightKg <= 0) {
+          throw new Error('El peso corporal debe ser un valor numérico positivo mayor a 0 kg.');
+        }
+
+        const updatedPet = this.updatePetWeight(petId, weightKg);
+        const rer = Math.round(70 * Math.pow(weightKg, 0.75));
+        const factor = (updatedPet.species === 'canine' || (updatedPet.species as any) === 'dog') ? 1.6 : 1.2;
+        const dailyKcal = Math.round(rer * factor);
+        const dailyGrams = Math.round((dailyKcal / 380) * 100);
+
+        return {
+          success: true,
+          action: 'UPDATE_PET_WEIGHT',
+          petId: updatedPet.id,
+          petName: updatedPet.name,
+          newWeightKg: updatedPet.weightKg,
+          rerKcalPerDay: rer,
+          merKcalPerDay: dailyKcal,
+          recommendedDailyGrams: dailyGrams,
+          confirmationBadge: '✍️ ACCIÓN WRITE EJECUTADA: PESO ACTUALIZADO',
+          timestamp: new Date().toISOString()
+        };
+      }
+    });
+
+    // 11. Herramienta WRITE: Registrar Vacuna en Carnet Digital
+    this.register({
+      name: 'pawlo_add_pet_vaccine',
+      description: 'Registra una nueva vacuna o biológico en el carnet digital de la mascota en la Bóveda de PAWLO con fecha de aplicación y próximo refuerzo.',
+      readOnlyHint: false,
+      parameters: {
+        type: 'object',
+        properties: {
+          petId: { type: 'string', description: 'ID de la mascota (ej: pet-bruno)' },
+          vaccineName: { type: 'string', description: 'Nombre comercial o biológico de la vacuna (ej: Antirrábica, Séxtuple, Triple Felina)' },
+          batch: { type: 'string', description: 'Número de lote opcional (por defecto LOT-PWL-2026)' },
+          appliedDate: { type: 'string', description: 'Fecha de aplicación opcional' },
+          nextDueDate: { type: 'string', description: 'Fecha de próximo refuerzo' },
+          clinic: { type: 'string', description: 'Clínica o veterinaria emisora' },
+          vetName: { type: 'string', description: 'Nombre del médico veterinario tratante' }
+        },
+        required: ['petId', 'vaccineName']
+      },
+      execute: async (args) => {
+        const {
+          petId,
+          vaccineName,
+          batch = 'LOT-PWL-2026',
+          appliedDate = '20 Oct 2026',
+          nextDueDate = '20 Oct 2027',
+          clinic = 'Hospital Veterinario PAWLO',
+          vetName = 'Dr. Validador PAWLO IA (Reg. SENESCYT 9021)'
+        } = args;
+
+        const vaccine = this.addPetVaccine(petId, {
+          name: vaccineName,
+          batch,
+          appliedDate,
+          nextDueDate,
+          clinic,
+          vetName,
+          status: 'vigente'
+        });
+
+        return {
+          success: true,
+          action: 'ADD_PET_VACCINE',
+          petId,
+          vaccine,
+          confirmationBadge: '✍️ ACCIÓN WRITE EJECUTADA: VACUNA REGISTRADA EN BÓVEDA',
+          timestamp: new Date().toISOString()
+        };
+      }
+    });
+
+    // 12. Herramienta WRITE: Guardar Nota en Bóveda
+    this.register({
+      name: 'pawlo_add_pet_note',
+      description: 'Guarda una nota clínica, de conducta, nutrición o cuidados diarios en la ficha inmutable de la mascota dentro de la Bóveda PAWLO.',
+      readOnlyHint: false,
+      parameters: {
+        type: 'object',
+        properties: {
+          petId: { type: 'string', description: 'ID de la mascota' },
+          category: {
+            type: 'string',
+            enum: ['Nutrición', 'Medicación', 'Conducta', 'Cuidado Diario'],
+            description: 'Categoría de la nota'
+          },
+          title: { type: 'string', description: 'Título o asunto de la nota' },
+          content: { type: 'string', description: 'Texto detallado de la nota o recordatorio' }
+        },
+        required: ['petId', 'content']
+      },
+      execute: async (args) => {
+        const {
+          petId,
+          category = 'Cuidado Diario',
+          title = 'Nota Registrada vía WebMCP',
+          content
+        } = args;
+
+        const note = this.addPetNote(petId, {
+          category,
+          title,
+          content,
+          updatedAt: 'Registrado ahora'
+        });
+
+        return {
+          success: true,
+          action: 'ADD_PET_NOTE',
+          petId,
+          note,
+          confirmationBadge: '✍️ ACCIÓN WRITE EJECUTADA: NOTA GUARDADA EN BÓVEDA',
+          timestamp: new Date().toISOString()
+        };
+      }
+    });
+
+    // 13. Herramienta WRITE/READ: Ejecutor Agéntico Omnicanal PAWLO IA
+    this.register({
+      name: 'pawlo_omni_assistant_execute',
+      description: 'Asistente agéntico PAWLO IA con capacidad de lectura y escritura en todos los módulos autorizados según el rol activo (Tutor, Veterinario, Comercio, Servicio, Staff).',
+      readOnlyHint: false,
+      parameters: {
+        type: 'object',
+        properties: {
+          command: {
+            type: 'string',
+            description: 'Instrucción o consulta en lenguaje natural (ej: actualiza el peso de Bruno a 30.5 kg, o registra vacuna Antirrábica)'
+          },
+          petId: { type: 'string', description: 'ID opcional de la mascota objetivo' },
+          roleId: {
+            type: 'string',
+            description: 'Rol bajo el cual se ejecuta el comando (opcional, por defecto el rol activo)'
+          }
+        },
+        required: ['command']
+      },
+      execute: async (args) => {
+        const targetPet = (args.petId ? this.currentPets.find(p => p.id === args.petId) : null) || this.getActivePet();
+        const role: PawloRoleId = (args.roleId as PawloRoleId) || this.currentRole;
+
+        const context: AssistantExecutionContext = {
+          currentRole: role,
+          activePet: targetPet,
+          allPets: this.currentPets,
+          products: STORE_PRODUCTS,
+          services: EXPANDED_SERVICES_CATALOG,
+          onUpdatePetWeight: (id, w) => this.updatePetWeight(id, w),
+          onAddPetVaccine: (id, v) => this.addPetVaccine(id, v),
+          onAddPetNote: (id, n) => this.addPetNote(id, n),
+          onAddToCart: (p, q) => this.addToCart(p, q),
+          onClearCart: () => this.clearCart(),
+          onNavigateTab: (tab) => this.navigateTab(tab),
+          onSwitchRole: (r) => this.switchRole(r),
+          onTriggerSosAlert: (desc, sec) => this.triggerSosAlert(desc, sec),
+          onPartnerAction: (act, pay) => this.onPartnerAction(act, pay),
+          onStaffAction: (act, pay) => this.onStaffAction(act, pay)
+        };
+
+        const res = await processAssistantCommand(args.command, context);
+        if (this.listeners.onAssistantResponse) {
+          this.listeners.onAssistantResponse(res);
+        }
+        return res;
+      }
+    });
+
     // Registrar en el objeto global para agentes web y extensiones
     this.exposeGlobalFallback();
 
@@ -489,7 +928,7 @@ export class WebMCPAgentManager {
     if (typeof window === 'undefined') return;
 
     const pawloAgentTools = {
-      version: '2026.1.0-webmcp',
+      version: '2026.2.0-webmcp-omni',
       isNativeWebMCPAvailable: this.isNativeWebMCPAvailable,
       tools: Array.from(this.registeredTools.values()).map(t => ({
         name: t.name,

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { loadLocalState, saveLocalState, subscribeLocalState } from '../services/localStore';
 import {
   Stethoscope, Store, Truck, ShieldCheck, CheckCircle2, Clock, AlertTriangle,
   Search, Plus, Package, Car, Sparkles, Send, MessageSquare, Calendar,
@@ -293,172 +294,192 @@ export const PartnerPortals: React.FC<PartnerPortalsProps> = ({
     description: 'Fluralaner de acción sistémica contra garrapatas y pulgas con eficacia sostenida por 3 meses completos.'
   });
 
-  // Pedidos del comercio
-  const [storeOrders, setStoreOrders] = useState<StoreOrder[]>([
-    {
-      id: 'PWL-9041',
-      customerName: 'Nicolás Norton',
-      customerPhone: '0998408369',
-      deliveryAddress: 'Sector El Vergel, Calle Larga y Doce de Abril',
-      petName: 'Bruno',
-      petSpecies: 'canine',
-      microchipIso: '981098104592831',
-      items: [
-        {
-          title: 'Tratamiento Dermatológico Antialérgico (Apoquel 16mg)',
-          qty: 1,
-          price: 48.00,
-          requiresPrescription: true
-        },
-        {
-          title: 'Alimento Super Premium Salmón & Arroz (15 kg)',
-          qty: 1,
-          price: 78.50,
-          requiresPrescription: false
-        }
-      ],
-      totalAmount: 126.50,
-      paymentMethod: 'Deuna P2P Instantáneo',
-      prescriptionCode: 'RX-PWL-84920-BRU',
-      prescriptionStatus: 'pendiente_validacion',
-      vetPrescriber: 'Dr. Esteban Cordero (Reg. 1049)',
-      orderStatus: 'validando_receta',
-      motorizedDriver: 'Carlos M. (Moto #08)',
-      createdAt: 'Hace 12 min'
-    },
-    {
-      id: 'PWL-9038',
-      customerName: 'Sofía Andrade',
-      customerPhone: '0981122334',
-      deliveryAddress: 'Av. Remigio Crespo y Lorenzo Piedra',
-      petName: 'Mía',
-      petSpecies: 'feline',
-      microchipIso: '981098108843120',
-      items: [
-        {
-          title: 'Fórmula Felina Urinary Care & Hairball Control (4 kg)',
-          qty: 2,
-          price: 42.00,
-          requiresPrescription: false
-        }
-      ],
-      totalAmount: 84.00,
-      paymentMethod: 'Transferencia Banco Pichincha',
-      prescriptionStatus: 'no_requiere',
-      orderStatus: 'en_motorizado',
-      motorizedDriver: 'Juan P. (Moto #03)',
-      createdAt: 'Hace 38 min'
-    },
-    {
-      id: 'PWL-9035',
-      customerName: 'Mateo Vázquez',
-      customerPhone: '0987123456',
-      deliveryAddress: 'Puertas del Sol, Edificio Los Sauces',
-      petName: 'Rocky',
-      petSpecies: 'canine',
-      microchipIso: '981098107712399',
-      items: [
-        {
-          title: 'Antiparasitario Total NexGard Spectra (15-30kg)',
-          qty: 1,
-          price: 54.00,
-          requiresPrescription: false
-        },
-        {
-          title: 'Dispensador KONG Caucho XL + Alfombra Olfativa',
-          qty: 1,
-          price: 26.50,
-          requiresPrescription: false
-        }
-      ],
-      totalAmount: 80.50,
-      paymentMethod: 'Deuna P2P Instantáneo',
-      prescriptionStatus: 'no_requiere',
-      orderStatus: 'entregado',
-      motorizedDriver: 'David T. (Moto #05)',
-      createdAt: 'Hace 2 horas'
-    }
-  ]);
+  // Pedidos del comercio con persistencia local y sincronización en tiempo real
+  const [storeOrders, setStoreOrders] = useState<StoreOrder[]>(() =>
+    loadLocalState<StoreOrder[]>('pawlo_store_orders', [
+      {
+        id: 'PWL-9041',
+        customerName: 'Nicolás Norton',
+        customerPhone: '0998408369',
+        deliveryAddress: 'Sector El Vergel, Calle Larga y Doce de Abril',
+        petName: 'Bruno',
+        petSpecies: 'canine',
+        microchipIso: '981098104592831',
+        items: [
+          {
+            title: 'Tratamiento Dermatológico Antialérgico (Apoquel 16mg)',
+            qty: 1,
+            price: 48.00,
+            requiresPrescription: true
+          },
+          {
+            title: 'Alimento Super Premium Salmón & Arroz (15 kg)',
+            qty: 1,
+            price: 78.50,
+            requiresPrescription: false
+          }
+        ],
+        totalAmount: 126.50,
+        paymentMethod: 'Pago QR Instantáneo (DeUna / Sipy / Peigo)',
+        prescriptionCode: 'RX-PWL-84920-BRU',
+        prescriptionStatus: 'pendiente_validacion',
+        vetPrescriber: 'Dr. Esteban Cordero (Reg. 1049)',
+        orderStatus: 'validando_receta',
+        motorizedDriver: 'Carlos M. (Moto #08)',
+        createdAt: 'Hace 12 min'
+      },
+      {
+        id: 'PWL-9038',
+        customerName: 'Sofía Andrade',
+        customerPhone: '0981122334',
+        deliveryAddress: 'Av. Remigio Crespo y Lorenzo Piedra',
+        petName: 'Mía',
+        petSpecies: 'feline',
+        microchipIso: '981098108843120',
+        items: [
+          {
+            title: 'Fórmula Felina Urinary Care & Hairball Control (4 kg)',
+            qty: 2,
+            price: 42.00,
+            requiresPrescription: false
+          }
+        ],
+        totalAmount: 84.00,
+        paymentMethod: 'Transferencia Bancaria Directa',
+        prescriptionStatus: 'no_requiere',
+        orderStatus: 'en_motorizado',
+        motorizedDriver: 'Juan P. (Moto #03)',
+        createdAt: 'Hace 38 min'
+      },
+      {
+        id: 'PWL-9035',
+        customerName: 'Mateo Vázquez',
+        customerPhone: '0987123456',
+        deliveryAddress: 'Puertas del Sol, Edificio Los Sauces',
+        petName: 'Rocky',
+        petSpecies: 'canine',
+        microchipIso: '981098107712399',
+        items: [
+          {
+            title: 'Antiparasitario Total NexGard Spectra (15-30kg)',
+            qty: 1,
+            price: 54.00,
+            requiresPrescription: false
+          },
+          {
+            title: 'Dispensador KONG Caucho XL + Alfombra Olfativa',
+            qty: 1,
+            price: 26.50,
+            requiresPrescription: false
+          }
+        ],
+        totalAmount: 80.50,
+        paymentMethod: 'Payphone (Tarjeta Crédito / Débito)',
+        prescriptionStatus: 'no_requiere',
+        orderStatus: 'entregado',
+        motorizedDriver: 'David T. (Moto #05)',
+        createdAt: 'Hace 2 horas'
+      }
+    ])
+  );
+
+  useEffect(() => {
+    saveLocalState('pawlo_store_orders', storeOrders);
+  }, [storeOrders]);
+
+  useEffect(() => {
+    return subscribeLocalState<StoreOrder[]>('pawlo_store_orders', (updated) => {
+      if (Array.isArray(updated)) {
+        setStoreOrders(updated);
+      }
+    });
+  }, []);
 
   const [orderFilter, setOrderFilter] = useState<'todos' | 'validando_receta' | 'en_motorizado' | 'entregado'>('todos');
 
   // ==========================================
-  // ESTADO: PORTAL SERVICIO & OPERACIONES
+  // ESTADO: PORTAL SERVICIO & OPERACIONES CON PERSISTENCIA
   // ==========================================
-  const [serviceBookings, setServiceBookings] = useState<ServiceBookingItem[]>([
-    {
-      id: 'srv-bk-01',
-      serviceCategory: 'Transporte',
-      serviceTitle: 'PAWLO Pet Taxi — Traslado Climatizado con GPS en Vivo',
-      provider: 'PAWLO Mobility Fleet',
-      petName: 'Bruno',
-      petBreed: 'Golden Retriever',
-      petWeightKg: 29.4,
-      microchipIso: '981098104592831',
-      tutorName: 'Nicolás Norton',
-      tutorPhone: '0998408369',
-      scheduledTime: 'Hoy 10:15 AM (En trayecto)',
-      locationDetails: 'Origen: Calle Larga 4-12 -> Destino: Hospital Veterinario El Paraíso',
-      specialNotes: 'Arnés ISOFIX talla XL. Prohibido darle snacks con pollo por alergia severa DAPP.',
-      status: 'en_atencion',
-      assignedOperator: 'Conductor Ricardo Mora (Furgoneta PAWLO Móvil #04)',
-      activeLogCount: 3
-    },
-    {
-      id: 'srv-bk-02',
-      serviceCategory: 'Hospedaje',
-      serviceTitle: 'Hospedaje Boutique Libre de Jaulas — Suite Campestre',
-      provider: 'Valle Verde Pet Resort & Suites',
-      petName: 'Bruno',
-      petBreed: 'Golden Retriever',
-      petWeightKg: 29.4,
-      microchipIso: '981098104592831',
-      tutorName: 'Nicolás Norton',
-      tutorPhone: '0998408369',
-      scheduledTime: 'Check-in: 24 Oct — Check-out: 27 Oct',
-      locationDetails: 'Valle Verde Resort, Sector Challuabamba / Km 7',
-      specialNotes: 'Dieta de salmón 190g mañana / 190g noche + 1 cápsula Omega 3. Música relajante en tormentas.',
-      status: 'confirmado',
-      assignedOperator: 'Dra. Andrea Morales (Coordinadora de Bienestar)',
-      activeLogCount: 1
-    },
-    {
-      id: 'srv-bk-03',
-      serviceCategory: 'Grooming',
-      serviceTitle: 'Full Grooming Dermocosmético & Baño de Ozono Móvil',
-      provider: 'Tomebamba Pet Spa Studio',
-      petName: 'Mía',
-      petBreed: 'Siamés Seal Point',
-      petWeightKg: 4.1,
-      microchipIso: '981098108843120',
-      tutorName: 'Nicolás Norton',
-      tutorPhone: '0998408369',
-      scheduledTime: 'Mañana 15:00 PM (En Domicilio)',
-      locationDetails: 'Furgoneta Móvil frente a Edificio El Vergel, Calle Larga',
-      specialNotes: 'Manejo suave sin jaulas ni turbina ruidosa. Shampoo hipoalergénico pH neutro.',
-      status: 'confirmado',
-      assignedOperator: 'Estilista Mayra Guamán (EcoVan #02)',
-      activeLogCount: 0
-    },
-    {
-      id: 'srv-bk-04',
-      serviceCategory: 'Etología',
-      serviceTitle: 'Etología Clínica & Modificación Conductual',
-      provider: 'K9 Behavior & Mind Lab',
-      petName: 'Rocky',
-      petBreed: 'Pastor Alemán',
-      petWeightKg: 32.0,
-      microchipIso: '981098107712399',
-      tutorName: 'Mateo Vázquez',
-      tutorPhone: '0987123456',
-      scheduledTime: 'Hoy 16:00 PM',
-      locationDetails: 'Parque Lineal Tomebamba / Domicilio',
-      specialNotes: 'Desensibilización sonora ante pirotecnia y reactividad con perros desconocidos.',
-      status: 'confirmado',
-      assignedOperator: 'Etólogo Lic. Gabriel Vega',
-      activeLogCount: 2
-    }
-  ]);
+  const [serviceBookings, setServiceBookings] = useState<ServiceBookingItem[]>(() =>
+    loadLocalState<ServiceBookingItem[]>('pawlo_service_bookings', [
+      {
+        id: 'srv-bk-01',
+        serviceCategory: 'Transporte',
+        serviceTitle: 'PAWLO Pet Taxi — Traslado Climatizado con GPS en Vivo',
+        provider: 'PAWLO Mobility Fleet',
+        petName: 'Bruno',
+        petBreed: 'Golden Retriever',
+        petWeightKg: 29.4,
+        microchipIso: '981098104592831',
+        tutorName: 'Nicolás Norton',
+        tutorPhone: '0998408369',
+        scheduledTime: 'Hoy 10:15 AM (En trayecto)',
+        locationDetails: 'Origen: Calle Larga 4-12 -> Destino: Hospital Veterinario El Paraíso',
+        specialNotes: 'Arnés ISOFIX talla XL. Prohibido darle snacks con pollo por alergia severa DAPP.',
+        status: 'en_atencion',
+        assignedOperator: 'Conductor Ricardo Mora (Furgoneta PAWLO Móvil #04)',
+        activeLogCount: 3
+      },
+      {
+        id: 'srv-bk-02',
+        serviceCategory: 'Hospedaje',
+        serviceTitle: 'Hospedaje Boutique Libre de Jaulas — Suite Campestre',
+        provider: 'Valle Verde Pet Resort & Suites',
+        petName: 'Bruno',
+        petBreed: 'Golden Retriever',
+        petWeightKg: 29.4,
+        microchipIso: '981098104592831',
+        tutorName: 'Nicolás Norton',
+        tutorPhone: '0998408369',
+        scheduledTime: 'Check-in: 24 Oct — Check-out: 27 Oct',
+        locationDetails: 'Valle Verde Resort, Sector Challuabamba / Km 7',
+        specialNotes: 'Dieta de salmón 190g mañana / 190g noche + 1 cápsula Omega 3. Música relajante en tormentas.',
+        status: 'confirmado',
+        assignedOperator: 'Dra. Andrea Morales (Coordinadora de Bienestar)',
+        activeLogCount: 1
+      },
+      {
+        id: 'srv-bk-03',
+        serviceCategory: 'Grooming',
+        serviceTitle: 'Full Grooming Dermocosmético & Baño de Ozono Móvil',
+        provider: 'Tomebamba Pet Spa Studio',
+        petName: 'Mía',
+        petBreed: 'Siamés Seal Point',
+        petWeightKg: 4.1,
+        microchipIso: '981098108843120',
+        tutorName: 'Nicolás Norton',
+        tutorPhone: '0998408369',
+        scheduledTime: 'Mañana 15:00 PM (En Domicilio)',
+        locationDetails: 'Furgoneta Móvil frente a Edificio El Vergel, Calle Larga',
+        specialNotes: 'Manejo suave sin jaulas ni turbina ruidosa. Shampoo hipoalergénico pH neutro.',
+        status: 'confirmado',
+        assignedOperator: 'Estilista Mayra Guamán (EcoVan #02)',
+        activeLogCount: 0
+      },
+      {
+        id: 'srv-bk-04',
+        serviceCategory: 'Etología',
+        serviceTitle: 'Etología Clínica & Modificación Conductual',
+        provider: 'K9 Behavior & Mind Lab',
+        petName: 'Rocky',
+        petBreed: 'Pastor Alemán',
+        petWeightKg: 32.0,
+        microchipIso: '981098107712399',
+        tutorName: 'Mateo Vázquez',
+        tutorPhone: '0987123456',
+        scheduledTime: 'Hoy 16:00 PM',
+        locationDetails: 'Parque Lineal Tomebamba / Domicilio',
+        specialNotes: 'Desensibilización sonora ante pirotecnia y reactividad con perros desconocidos.',
+        status: 'confirmado',
+        assignedOperator: 'Etólogo Lic. Gabriel Vega',
+        activeLogCount: 2
+      }
+    ])
+  );
+
+  useEffect(() => {
+    saveLocalState('pawlo_service_bookings', serviceBookings);
+  }, [serviceBookings]);
 
   // Bitácora de reportes de bienestar en tiempo real
   const [welfareReports, setWelfareReports] = useState<WelfareReportLog[]>([

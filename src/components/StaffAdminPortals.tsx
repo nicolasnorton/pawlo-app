@@ -451,8 +451,8 @@ const INITIAL_PARTNERS: PartnerApplication[] = [
 const INITIAL_SHELTERS: ShelterPartnership[] = [
   {
     id: 'shl-01',
-    shelterName: 'ARCA Cuenca (Asociación Rescatistas de Cuenca Animal)',
-    agreementCode: 'CONV-MUN-CUE-2024-08',
+    shelterName: 'Fundación Patitas Azuayas (Red de Rescate Independiente PAWLO)',
+    agreementCode: 'CONV-PAWLO-AZU-2024-08',
     receptionCapacity: 75,
     currentAnimalsCount: 68,
     solidarityDonationPercent: 2.5,
@@ -1611,7 +1611,7 @@ export const StaffAdminPortals: React.FC<StaffAdminPortalsProps> = ({
                   Gobernanza Territorial: Nodo {cityName} [{cityCode}]
                 </h3>
                 <p className="text-xs text-slate-300">
-                  Entidades reguladoras integradas: Agrocalidad Ecuador, SRI RIMPE, SENESCYT y Municipio de Cuenca.
+                  Entidades reguladoras integradas: Agrocalidad Ecuador, SRI RIMPE, SENESCYT y Colegio de Médicos Veterinarios.
                 </p>
               </div>
             </div>

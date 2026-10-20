@@ -280,7 +280,7 @@ export const INITIAL_PENDING_APPROVALS: PendingApprovalItem[] = [
       type: 'RUC',
       number: '0104829104001',
       verified: true,
-      verificationNotes: 'Permiso de operación de transporte municipal emitido por EMOV EP.'
+      verificationNotes: 'Permiso de operación de transporte comercial privado certificado por PAWLO Mobility.'
     },
     specialtiesOrCategory: ['Pet Taxi Climatizado', 'Traslado de Urgencia Código Rojo', 'Retorno Post-Quirúrgico'],
     address: 'Av. Ordóñez Lasso y Jacarandá',
@@ -375,6 +375,7 @@ export interface AuditLogEntry {
     | 'VET_SENESCYT_VERIFICATION'
     | 'EMERGENCY_CODE_RED_OVERRIDE'
     | 'DEUNA_P2P_WEBHOOK_VALIDATED'
+    | 'QR_INTERBANK_WEBHOOK_VALIDATED'
     | 'PET_VAULT_DECRYPTION_ACCESSED'
     | 'IMMUTABLE_CHAIN_HEARTBEAT';
   category: 'security' | 'pharmacological' | 'rbac' | 'financial' | 'compliance';
@@ -477,19 +478,19 @@ export const INITIAL_AUDIT_LOGS: AuditLogEntry[] = [
   {
     id: 'aud-005',
     timestamp: '2026-10-20T09:30:12Z',
-    actorId: 'payment-webhook-deuna',
-    actorName: 'Banco Pichincha Deuna API Gateway',
+    actorId: 'payment-webhook-qr',
+    actorName: 'Pasarela Nacional QR Interbancario (DeUna / Sipy / Peigo)',
     actorRole: 'super_admin',
-    action: 'DEUNA_P2P_WEBHOOK_VALIDATED',
+    action: 'QR_INTERBANK_WEBHOOK_VALIDATED',
     category: 'financial',
     ipAddress: '200.107.130.45',
     city: 'Quito',
     resourceAffected: 'order:ORD-2026-4412',
     severity: 'info',
     details: {
-      ruleTriggered: 'DEUNA_QR_P2P_RECONCILIATION',
+      ruleTriggered: 'QR_DEUNA_SIPY_PEIGO_RECONCILIATION',
       payloadHash: 'b492019b88231c93a02847291a83ba7c938d9284',
-      reason: 'Liquidación de $68.50 USD confirmada vía QR P2P interbancario instantáneo.',
+      reason: 'Liquidación de $68.50 USD confirmada vía QR P2P interbancario instantáneo (DeUna / Sipy / Peigo).',
       rawMessage: 'Orden ORD-2026-4412 liberada para validación farmacéutica de receta.'
     },
     hashSignature: '92427ae41e4649b934ca495991be3b0c44298fc1c149afbf4c8996fb7852b855'
@@ -748,7 +749,8 @@ export interface VetPatientConsultation {
   species: 'canine' | 'feline';
   breed: string;
   microchipIso: string;
-  cgaCode?: string;
+  cmvCode?: string; // Colegio de Médicos Veterinarios (Registro Privado)
+  pawloCode?: string;
   ownerName: string;
   ownerPhone: string;
   ownerEmail: string;
@@ -782,7 +784,7 @@ export const INITIAL_VET_CONSULTATIONS: VetPatientConsultation[] = [
     species: 'canine',
     breed: 'Schnauzer Miniatura',
     microchipIso: '981098104592831',
-    cgaCode: 'CGA-CUE-004592',
+    cmvCode: 'CMV-CUE-004592',
     ownerName: 'Carlos E. Serrano',
     ownerPhone: '+593 99 840 8369',
     ownerEmail: 'carlos.serrano@pawlo.ec',
@@ -819,7 +821,7 @@ export const INITIAL_VET_CONSULTATIONS: VetPatientConsultation[] = [
     species: 'feline',
     breed: 'Siamés Mestizo',
     microchipIso: '981098108843120',
-    cgaCode: 'CGA-CUE-008843',
+    cmvCode: 'CMV-CUE-008843',
     ownerName: 'Andrea Montesdeoca',
     ownerPhone: '+593 98 765 4321',
     ownerEmail: 'andrea.montes@cuencamail.ec',
@@ -856,7 +858,7 @@ export const INITIAL_VET_CONSULTATIONS: VetPatientConsultation[] = [
     species: 'canine',
     breed: 'Golden Retriever',
     microchipIso: '981098107734199',
-    cgaCode: 'CGA-CUE-007734',
+    cmvCode: 'CMV-CUE-007734',
     ownerName: 'Dr. Fernando Dávila',
     ownerPhone: '+593 99 840 8369',
     ownerEmail: 'fdavila@austromed.com',
@@ -893,7 +895,7 @@ export const INITIAL_VET_CONSULTATIONS: VetPatientConsultation[] = [
     species: 'canine',
     breed: 'Siberian Husky',
     microchipIso: '981098109923841',
-    cgaCode: 'CGA-CUE-009923',
+    cmvCode: 'CMV-CUE-009923',
     ownerName: 'María Valentina Cordero',
     ownerPhone: '+593 98 411 2233',
     ownerEmail: 'valentina.cordero@outlook.ec',
@@ -1220,7 +1222,13 @@ export interface MerchantOrder {
   subtotalUsd: number;
   deliveryFeeUsd: number;
   totalUsd: number;
-  paymentMethod: 'Deuna_P2P' | 'Tarjeta';
+  paymentMethod:
+    | 'Payphone'
+    | 'QR_Deuna_Sipy_Peigo'
+    | 'Transferencia_Bancaria'
+    | 'Efectivo_Contraentrega'
+    | 'Deuna_P2P'
+    | 'Tarjeta';
   paymentStatus: 'Aprobado' | 'En Verificación' | 'Pendiente';
   paymentReference?: string;
   requiresPrescriptionVerification: boolean;
@@ -1267,9 +1275,9 @@ export const INITIAL_MERCHANT_ORDERS: MerchantOrder[] = [
     subtotalUsd: 64.50,
     deliveryFeeUsd: 4.00,
     totalUsd: 68.50,
-    paymentMethod: 'Deuna_P2P',
+    paymentMethod: 'QR_Deuna_Sipy_Peigo',
     paymentStatus: 'Aprobado',
-    paymentReference: 'DEUNA-P2P-884920',
+    paymentReference: 'QR-DEUNA-884920',
     requiresPrescriptionVerification: true,
     prescriptionCodeLinked: 'RX-2026-VET-7841',
     prescriptionStatus: 'Pendiente de Validación Farmacéutica',
@@ -1309,9 +1317,9 @@ export const INITIAL_MERCHANT_ORDERS: MerchantOrder[] = [
     subtotalUsd: 174.00,
     deliveryFeeUsd: 0.00, // Envío gratis superando $100
     totalUsd: 174.00,
-    paymentMethod: 'Tarjeta',
+    paymentMethod: 'Payphone',
     paymentStatus: 'Aprobado',
-    paymentReference: 'STRIPE-TX-9938210',
+    paymentReference: 'PAYPHONE-TX-9938210',
     requiresPrescriptionVerification: false,
     prescriptionStatus: 'No Requerida',
     deliveryStatus: 'En Motorizado',
@@ -1350,9 +1358,9 @@ export const INITIAL_MERCHANT_ORDERS: MerchantOrder[] = [
     subtotalUsd: 48.20,
     deliveryFeeUsd: 5.00,
     totalUsd: 53.20,
-    paymentMethod: 'Deuna_P2P',
+    paymentMethod: 'QR_Deuna_Sipy_Peigo',
     paymentStatus: 'Aprobado',
-    paymentReference: 'DEUNA-P2P-773120',
+    paymentReference: 'QR-SIPY-773120',
     requiresPrescriptionVerification: true,
     prescriptionCodeLinked: 'RX-2026-VET-5104',
     prescriptionStatus: 'Verificada y Aprobada',
@@ -1386,7 +1394,7 @@ export const INITIAL_MERCHANT_ORDERS: MerchantOrder[] = [
     subtotalUsd: 52.00,
     deliveryFeeUsd: 3.50,
     totalUsd: 55.50,
-    paymentMethod: 'Tarjeta',
+    paymentMethod: 'Payphone',
     paymentStatus: 'Aprobado',
     paymentReference: 'PAYPHONE-TX-884920',
     requiresPrescriptionVerification: false,
@@ -1525,7 +1533,7 @@ export const INITIAL_PROVIDER_BOOKINGS: ProviderBooking[] = [
     microchipIso: '981098109923841',
     sector: 'Parque de la Madre / El Vergel',
     city: 'Cuenca',
-    pickupAddress: 'Punto de Encuentro: Planetario Municipal de Cuenca',
+    pickupAddress: 'Punto de Encuentro: Parque de la Madre (Frente al Planetario), Cuenca',
     scheduledDate: '2026-10-25',
     scheduledTimeSlot: '09:00 - 10:15',
     priceUsd: 35.00,

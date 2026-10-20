@@ -520,3 +520,47 @@ export const EXPANDED_SERVICES_CATALOG: PetServiceItem[] = [
     includes: ['Plan de Enriquecimiento Ambiental', 'Evaluación en el Entorno Familiar', 'Seguimiento por 30 días']
   }
 ];
+
+export type PawloPaymentMethod =
+  | 'Payphone'
+  | 'QR_Deuna_Sipy_Peigo'
+  | 'Transferencia_Bancaria'
+  | 'Efectivo_Contraentrega';
+
+export interface PaymentOption {
+  id: PawloPaymentMethod;
+  label: string;
+  description: string;
+}
+
+export const PAWLO_PAYMENT_METHODS: PaymentOption[] = [
+  {
+    id: 'Payphone',
+    label: 'Payphone (Tarjeta Crédito / Débito)',
+    description: 'Cobro seguro nacional e internacional con tarjetas Visa y Mastercard sin recargo.'
+  },
+  {
+    id: 'QR_Deuna_Sipy_Peigo',
+    label: 'Pago QR Instantáneo (DeUna / Sipy / Peigo)',
+    description: 'Transferencia móvil instantánea escaneando código QR (DeUna, Sipy, Peigo).'
+  },
+  {
+    id: 'Transferencia_Bancaria',
+    label: 'Transferencia Bancaria Directa',
+    description: 'Acreditación directa Banco Pichincha, Produbanco o Banco del Austro.'
+  },
+  {
+    id: 'Efectivo_Contraentrega',
+    label: 'Pago al Recibir',
+    description: 'Pago en efectivo al motorizado al momento de la entrega.'
+  }
+];
+
+export const CITY_DEFAULT_PAYMENT_RAILS: Record<string, string> = {
+  cue: 'Payphone, Transferencia & QR (DeUna, Sipy, Peigo)',
+  uio: 'Payphone, Transferencia & QR (DeUna, Sipy, Peigo)',
+  gye: 'Payphone, Transferencia & QR (DeUna, Sipy, Peigo)',
+  bog: 'Nequi, Daviplata & PSE',
+  lim: 'Yape & Plin'
+};
+

@@ -60,7 +60,7 @@ export const AgenticWebMCPConsole: React.FC<AgenticWebMCPConsoleProps> = ({
         setToolParamsInput('{\n  "action": "add",\n  "productId": "prd-02",\n  "quantity": 2\n}');
         break;
       case 'pawlo_get_cart_and_checkout_summary':
-        setToolParamsInput('{\n  "deliveryAddress": "Av. Solano y Doce de Abril, Cuenca",\n  "paymentMethod": "Deuna_P2P"\n}');
+        setToolParamsInput('{\n  "deliveryAddress": "Av. Solano y Doce de Abril, Cuenca",\n  "paymentMethod": "Payphone"\n}');
         break;
       case 'pawlo_calculate_diet_ration':
         setToolParamsInput('{\n  "weightKg": 18.5,\n  "species": "dog",\n  "activityLevel": "moderate"\n}');

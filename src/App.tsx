@@ -6,7 +6,7 @@ import {
   Compass, Zap, Globe, ChevronDown, Sun, Moon,
   Radio, Cpu, Fingerprint, Star, PlusCircle, Lock,
   PawPrint, ShoppingBag, Smartphone, Car, Building2, Scissors, Stethoscope, Brain,
-  Bot, Database, Store, Server, Flame, Users, ShieldAlert
+  Bot, Database, Store, Server, Flame, Users, ShieldAlert, Rocket, Layers
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
@@ -16,9 +16,11 @@ import { PetStoreMarketplace } from './components/PetStoreMarketplace';
 import { AgenticWebMCPConsole } from './components/AgenticWebMCPConsole';
 import { StaffAdminPortals } from './components/StaffAdminPortals';
 import { PartnerPortals } from './components/PartnerPortals';
+import { PawloPetAssistantDrawer } from './components/PawloPetAssistantDrawer';
 import { webMCPManager } from './services/webmcp';
 import { processOfflineTriage } from './services/offlineTriage';
 import { pawloDB, AgentTelemetryStats } from './services/indexedDbStorage';
+import { loadLocalState, saveLocalState } from './services/localStore';
 import {
   INITIAL_USER_PETS,
   STORE_CATALOG,
@@ -63,9 +65,9 @@ interface CityNode {
 }
 
 const CITY_NODES: CityNode[] = [
-  { id: 'cue', name: 'Cuenca', country: 'Ecuador', code: 'EC-AZU', center: [-2.8974, -79.0045], status: 'active', currency: 'USD', paymentRail: 'Deuna P2P & Pichincha', activeDevices: 1420, latencyMs: '0.17ms' },
-  { id: 'uio', name: 'Quito', country: 'Ecuador', code: 'EC-PIC', center: [-0.1807, -78.4678], status: 'beta', currency: 'USD', paymentRail: 'Deuna & Produbanco', activeDevices: 3890, latencyMs: '0.24ms' },
-  { id: 'gye', name: 'Guayaquil', country: 'Ecuador', code: 'EC-GUA', center: [-2.1894, -79.8891], status: 'beta', currency: 'USD', paymentRail: 'Deuna & Bolivariano', activeDevices: 2910, latencyMs: '0.29ms' },
+  { id: 'cue', name: 'Cuenca', country: 'Ecuador', code: 'EC-AZU', center: [-2.8974, -79.0045], status: 'active', currency: 'USD', paymentRail: 'Payphone, Transferencia & QR (DeUna, Sipy, Peigo)', activeDevices: 1420, latencyMs: '0.17ms' },
+  { id: 'uio', name: 'Quito', country: 'Ecuador', code: 'EC-PIC', center: [-0.1807, -78.4678], status: 'beta', currency: 'USD', paymentRail: 'Payphone, Transferencia & QR (DeUna, Sipy, Peigo)', activeDevices: 3890, latencyMs: '0.24ms' },
+  { id: 'gye', name: 'Guayaquil', country: 'Ecuador', code: 'EC-GUA', center: [-2.1894, -79.8891], status: 'beta', currency: 'USD', paymentRail: 'Payphone, Transferencia & QR (DeUna, Sipy, Peigo)', activeDevices: 2910, latencyMs: '0.29ms' },
   { id: 'bog', name: 'Bogotá', country: 'Colombia', code: 'CO-DC', center: [4.7110, -74.0721], status: 'coming_soon', currency: 'COP', paymentRail: 'Nequi & Bre-B', activeDevices: 8400, latencyMs: '0.31ms' },
   { id: 'lim', name: 'Lima', country: 'Perú', code: 'PE-LIM', center: [-12.0464, -77.0428], status: 'coming_soon', currency: 'PEN', paymentRail: 'Yape & Plin', activeDevices: 5120, latencyMs: '0.28ms' },
 ];
@@ -266,19 +268,41 @@ export default function App() {
   const [radiusKm, setRadiusKm] = useState(3);
   const [viewMode, setViewMode] = useState<'both' | 'map' | 'cards'>('both');
   const [citySelectorOpen, setCitySelectorOpen] = useState(false);
-  const [currentUserRole, setCurrentUserRole] = useState<PawloRoleId>('usuario');
   const [roleSelectorOpen, setRoleSelectorOpen] = useState(false);
+
+  // MVP v1.0 vs Suite Completa v2.0 Scope Mode Toggle (1-Click)
+  const [scopeMode, setScopeMode] = useState<'mvp_v1' | 'suite_v2'>(() =>
+    loadLocalState<'mvp_v1' | 'suite_v2'>('pawlo_scope_mode_v1', 'suite_v2')
+  );
+
+  // Local-First Persistence: Rol Activo
+  const [currentUserRole, setCurrentUserRole] = useState<PawloRoleId>(() =>
+    loadLocalState<PawloRoleId>('pawlo_active_role_v1', 'usuario')
+  );
 
   const currentRoleMeta = getRoleMeta(currentUserRole);
   const CurrentRoleIcon = getRoleIcon(currentUserRole);
 
-  // Estado de las Mascotas del Usuario Individual
-  const [userPets, setUserPets] = useState<UserPet[]>(INITIAL_USER_PETS);
-  const [selectedPetId, setSelectedPetId] = useState<string>(INITIAL_USER_PETS[0].id);
+  // Local-First Persistence: Bóveda de Mascotas del Usuario
+  const [userPets, setUserPets] = useState<UserPet[]>(() =>
+    loadLocalState<UserPet[]>('pawlo_user_pets_v1', INITIAL_USER_PETS)
+  );
+  const [selectedPetId, setSelectedPetId] = useState<string>(() => {
+    const loaded = loadLocalState<UserPet[]>('pawlo_user_pets_v1', INITIAL_USER_PETS);
+    return (loaded && loaded[0]?.id) || INITIAL_USER_PETS[0].id;
+  });
   const [storeCategoryFilter, setStoreCategoryFilter] = useState<string>('Todos');
   const [serviceCategoryFilter, setServiceCategoryFilter] = useState<string>('Todos');
 
-  const activeUserPet = userPets.find(p => p.id === selectedPetId) || userPets[0];
+  // Local-First Persistence: Radar Comunitario GeoAlerts
+  const [geoAlerts, setGeoAlerts] = useState<typeof GEO_ALERTS>(() =>
+    loadLocalState<typeof GEO_ALERTS>('pawlo_geo_alerts_v1', GEO_ALERTS)
+  );
+
+  // Control omnipresente del PAWLO IA Pet Assistant Drawer
+  const [isAssistantDrawerOpen, setIsAssistantDrawerOpen] = useState(false);
+
+  const activeUserPet = userPets.find(p => p.id === selectedPetId) || userPets[0] || INITIAL_USER_PETS[0];
 
   // Soporte Light / Dark Mode
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
@@ -296,40 +320,192 @@ export default function App() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark');
   };
 
-  // Handlers de la Bóveda de Mascotas
+  // Sincronización reactiva con localStorage y WebMCP
+  useEffect(() => {
+    saveLocalState('pawlo_active_role_v1', currentUserRole);
+    webMCPManager.switchRole(currentUserRole);
+  }, [currentUserRole]);
+
+  useEffect(() => {
+    saveLocalState('pawlo_user_pets_v1', userPets);
+    webMCPManager.updatePetsState(userPets);
+  }, [userPets]);
+
+  useEffect(() => {
+    saveLocalState('pawlo_geo_alerts_v1', geoAlerts);
+  }, [geoAlerts]);
+
+  useEffect(() => {
+    saveLocalState('pawlo_scope_mode_v1', scopeMode);
+  }, [scopeMode]);
+
+  // Manejador del Scope Mode v1.0
+  const handleToggleScopeMode = (newMode: 'mvp_v1' | 'suite_v2') => {
+    setScopeMode(newMode);
+    if (newMode === 'mvp_v1') {
+      if (!['usuario', 'supervisor', 'admin'].includes(currentUserRole)) {
+        setCurrentUserRole('usuario');
+      }
+      if (!['my_pets', 'services', 'alerts', 'assistant'].includes(activeTab)) {
+        setActiveTab('my_pets');
+      }
+    }
+  };
+
+  // Handlers de la Bóveda de Mascotas con persistencia inmediata
   const handleAddPet = (newPet: UserPet) => {
-    setUserPets(prev => [...prev, newPet]);
+    setUserPets(prev => {
+      const next = [...prev, newPet];
+      saveLocalState('pawlo_user_pets_v1', next);
+      return next;
+    });
   };
 
-  const handleAddNote = (petId: string, note: PetNote) => {
-    setUserPets(prev =>
-      prev.map(p => (p.id === petId ? { ...p, notes: [note, ...p.notes] } : p))
-    );
+  const handleAddNote = (petId: string, note: PetNote | any) => {
+    const fullNote: PetNote = {
+      id: note.id || `not-${Date.now().toString(36)}`,
+      category: note.category || 'Cuidado Diario',
+      title: note.title || 'Nota',
+      content: note.content || note.text || '',
+      updatedAt: note.updatedAt || 'Hace un momento'
+    };
+    setUserPets(prev => {
+      const next = prev.map(p => (p.id === petId ? { ...p, notes: [fullNote, ...p.notes] } : p));
+      saveLocalState('pawlo_user_pets_v1', next);
+      return next;
+    });
   };
 
-  const handleAddVaccine = (petId: string, vaccine: VaccineRecord) => {
-    setUserPets(prev =>
-      prev.map(p => (p.id === petId ? { ...p, vaccines: [vaccine, ...p.vaccines] } : p))
-    );
+  const handleAddVaccine = (petId: string, vaccine: VaccineRecord | any) => {
+    const fullVaccine: VaccineRecord = {
+      id: vaccine.id || `vac-${Date.now().toString(36)}`,
+      name: vaccine.name || 'Vacuna',
+      batch: vaccine.batch || 'LOT-2026-OK',
+      appliedDate: vaccine.appliedDate || new Date().toISOString().split('T')[0],
+      nextDueDate: vaccine.nextDueDate || '2027-10-20',
+      clinic: vaccine.clinic || 'Clínica Veterinaria PAWLO',
+      vetName: vaccine.vetName || 'Médico Veterinario',
+      status: vaccine.status || 'vigente'
+    };
+    setUserPets(prev => {
+      const next = prev.map(p => (p.id === petId ? { ...p, vaccines: [fullVaccine, ...p.vaccines] } : p));
+      saveLocalState('pawlo_user_pets_v1', next);
+      return next;
+    });
   };
 
-  const handleAddClinicalRecord = (petId: string, record: ClinicalEntry) => {
-    setUserPets(prev =>
-      prev.map(p => (p.id === petId ? { ...p, clinicalHistory: [record, ...p.clinicalHistory] } : p))
-    );
+  const handleAddClinicalRecord = (petId: string, record: ClinicalEntry | any) => {
+    const fullRecord: ClinicalEntry = {
+      id: record.id || `cln-${Date.now().toString(36)}`,
+      date: record.date || new Date().toLocaleDateString('es-EC', { year: 'numeric', month: 'short', day: 'numeric' }),
+      type: record.type || 'Consulta General',
+      title: record.title || 'Control Clínico',
+      diagnosis: record.diagnosis || '',
+      treatment: record.treatment || '',
+      weightKg: record.weightKg || activeUserPet?.weightKg || 30,
+      tempC: record.tempC || 38.5,
+      clinic: record.clinic || 'Clínica Veterinaria Asociada',
+      vetName: record.vetName || 'Médico Veterinario'
+    };
+    setUserPets(prev => {
+      const next = prev.map(p => (p.id === petId ? { ...p, clinicalHistory: [fullRecord, ...p.clinicalHistory] } : p));
+      saveLocalState('pawlo_user_pets_v1', next);
+      return next;
+    });
   };
 
   const handleAddPhoto = (petId: string, photo: { url: string; caption: string; date: string }) => {
-    setUserPets(prev =>
-      prev.map(p => (p.id === petId ? { ...p, gallery: [photo, ...p.gallery] } : p))
-    );
+    setUserPets(prev => {
+      const next = prev.map(p => (p.id === petId ? { ...p, gallery: [photo, ...p.gallery] } : p));
+      saveLocalState('pawlo_user_pets_v1', next);
+      return next;
+    });
   };
 
   const handleUpdateWeight = (petId: string, newWeight: number) => {
-    setUserPets(prev =>
-      prev.map(p => (p.id === petId ? { ...p, weightKg: newWeight } : p))
-    );
+    setUserPets(prev => {
+      const next = prev.map(p => (p.id === petId ? { ...p, weightKg: newWeight } : p));
+      saveLocalState('pawlo_user_pets_v1', next);
+      return next;
+    });
   };
+
+  const handleTriggerSosAlert = (description: string, sector: string) => {
+    const newAlert = {
+      id: `alt-${Date.now().toString(36)}`,
+      cityId: selectedCity.id,
+      pet_name: activeUserPet?.name || 'Mascota Comunitaria',
+      species: (activeUserPet?.species || 'canine') as 'canine' | 'feline',
+      breed: activeUserPet?.breed || 'Mestizo',
+      alert_type: 'lost' as const,
+      sector: sector || 'Sector Urbano',
+      coords: selectedCity.center,
+      description: description,
+      contact_phone: '+593 99 840 8369',
+      distance_km: 0.4,
+      time_ago: 'Ahora mismo',
+      reward: '$50',
+      chip_status: activeUserPet?.microchipIso || 'Alerta Comunitaria',
+      photo: activeUserPet?.avatar || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80'
+    };
+    setGeoAlerts(prev => {
+      const next = [newAlert, ...prev];
+      saveLocalState('pawlo_geo_alerts_v1', next);
+      return next;
+    });
+  };
+
+  const handleNavigateTabId = (tabId: string) => {
+    if (tabId === 'sos') {
+      setActiveTab('alerts');
+    } else if (tabId === 'assistant') {
+      setActiveTab('assistant');
+      setIsAssistantDrawerOpen(true);
+    } else if (['my_pets', 'store', 'services', 'alerts', 'assistant', 'adoptions', 'chip_lookup'].includes(tabId)) {
+      setActiveTab(tabId as MainTab);
+    }
+  };
+
+  // Escuchar eventos globales del bus de la aplicación
+  useEffect(() => {
+    const handlePetsUpdated = (e: any) => {
+      if (e.detail?.pets) {
+        setUserPets(e.detail.pets);
+      }
+    };
+    const handleRoleChanged = (e: any) => {
+      if (e.detail?.roleId) {
+        setCurrentUserRole(e.detail.roleId);
+      }
+    };
+    const handleSosAlert = (e: any) => {
+      if (e.detail?.description) {
+        handleTriggerSosAlert(e.detail.description, e.detail.sector || 'Sector Urbano');
+      }
+    };
+    const handleNavigateTab = (e: any) => {
+      if (e.detail?.tabId) {
+        handleNavigateTabId(e.detail.tabId);
+      }
+    };
+    const handleOpenAssistantEvent = () => {
+      setIsAssistantDrawerOpen(true);
+    };
+
+    window.addEventListener('pawlo:pets_updated', handlePetsUpdated as any);
+    window.addEventListener('pawlo:role_changed', handleRoleChanged as any);
+    window.addEventListener('pawlo:sos_alert', handleSosAlert as any);
+    window.addEventListener('pawlo:navigate_tab', handleNavigateTab as any);
+    window.addEventListener('pawlo:open_assistant', handleOpenAssistantEvent as any);
+
+    return () => {
+      window.removeEventListener('pawlo:pets_updated', handlePetsUpdated as any);
+      window.removeEventListener('pawlo:role_changed', handleRoleChanged as any);
+      window.removeEventListener('pawlo:sos_alert', handleSosAlert as any);
+      window.removeEventListener('pawlo:navigate_tab', handleNavigateTab as any);
+      window.removeEventListener('pawlo:open_assistant', handleOpenAssistantEvent as any);
+    };
+  }, [selectedCity, activeUserPet]);
 
   // Validador de Microchips Universal ISO
   const [chipInput, setChipInput] = useState('');
@@ -372,7 +548,7 @@ export default function App() {
   const [leadForm, setLeadForm] = useState({
     fullName: '',
     phone: '',
-    paymentPreference: 'Deuna_P2P',
+    paymentPreference: 'QR_Deuna_Sipy_Peigo',
     sector: 'El Vergel',
     petName: activeUserPet.name,
     petBreed: activeUserPet.breed,
@@ -462,20 +638,49 @@ export default function App() {
     setLeadSuccess({ waUrl, refId });
   };
 
-  const visibleAlerts = GEO_ALERTS.filter(a => a.distance_km <= radiusKm);
+  const visibleAlerts = geoAlerts.filter(a => a.distance_km <= radiusKm);
   const filteredServices = EXPANDED_SERVICES_CATALOG.filter(
     s => serviceCategoryFilter === 'Todos' || s.category === serviceCategoryFilter
   );
 
-  const navTabs = [
+  const MVP_ROLES: PawloRoleId[] = ['usuario', 'supervisor', 'admin'];
+  const activeRolesList = scopeMode === 'mvp_v1' ? MVP_ROLES : ORDERED_ROLES;
+
+  const ALL_NAV_TABS = [
     { id: 'my_pets', label: 'Mis Mascotas', icon: PawPrint },
     { id: 'store', label: 'Tienda & Farmacia', icon: ShoppingBag },
     { id: 'services', label: 'Servicios', icon: Zap },
     { id: 'alerts', label: 'Radar', icon: Compass },
-    { id: 'assistant', label: 'Neural AI', icon: Sparkles },
+    { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
     { id: 'adoptions', label: 'Adopciones', icon: Heart },
     { id: 'chip_lookup', label: 'Biometría ISO', icon: Fingerprint },
   ];
+
+  const MVP_NAV_TABS = [
+    { id: 'my_pets', label: 'Mis Mascotas', icon: PawPrint },
+    { id: 'services', label: 'Servicios', icon: Zap },
+    { id: 'alerts', label: 'Radar Comunitario', icon: Compass },
+    { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
+  ];
+
+  const navTabs = scopeMode === 'mvp_v1' ? MVP_NAV_TABS : ALL_NAV_TABS;
+
+  const ALL_MOBILE_NAV = [
+    { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
+    { id: 'store', label: 'Tienda', icon: ShoppingBag },
+    { id: 'services', label: 'Servicios', icon: Zap },
+    { id: 'alerts', label: 'Radar', icon: Compass },
+    { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
+  ];
+
+  const MVP_MOBILE_NAV = [
+    { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
+    { id: 'services', label: 'Servicios', icon: Zap },
+    { id: 'alerts', label: 'Radar', icon: Compass },
+    { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
+  ];
+
+  const mobileNavTabs = scopeMode === 'mvp_v1' ? MVP_MOBILE_NAV : ALL_MOBILE_NAV;
 
   return (
     <div className={`min-h-screen flex flex-col bg-grid-pattern relative selection:bg-[#00F5A0] selection:text-[#03060C] ${
@@ -515,6 +720,14 @@ export default function App() {
           </div>
         </div>
         <div className="flex items-center space-x-2.5 shrink-0">
+          <button
+            onClick={() => setIsAssistantDrawerOpen(true)}
+            className="px-2.5 py-0.5 rounded-md bg-gradient-to-r from-[#00F5A0]/20 via-[#00D9F5]/20 to-[#7B2CBF]/20 hover:brightness-125 text-[#00F5A0] border border-[#00F5A0]/40 font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer text-xs shadow-xs"
+            title="Abrir Asistente Agéntico PAWLO IA (Atajo: ⌘K / Ctrl+K)"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#00F5A0]" />
+            <span>PAWLO IA (⌘K)</span>
+          </button>
           <button
             onClick={() => setIsAgentConsoleOpen(true)}
             className="px-2.5 py-0.5 rounded-md bg-[#00F5A0]/20 hover:bg-[#00F5A0]/30 text-[#00F5A0] border border-[#00F5A0]/40 font-bold inline-flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
@@ -747,7 +960,14 @@ export default function App() {
                 return (
                   <button 
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id as MainTab)}
+                    onClick={() => {
+                      if (tab.id === 'assistant') {
+                        setIsAssistantDrawerOpen(true);
+                        setActiveTab('assistant');
+                      } else {
+                        setActiveTab(tab.id as MainTab);
+                      }
+                    }}
                     className={`px-3.5 py-2 rounded-xl transition-all duration-200 flex items-center space-x-2 shrink-0 cursor-pointer ${
                       isActive 
                         ? 'btn-primary-2026 !rounded-xl !py-2 !px-3.5' 
@@ -818,7 +1038,7 @@ export default function App() {
             : 'bg-white/95 border-slate-300/80 backdrop-blur-xl shadow-slate-200/50'
         }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-white/10">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F5A0] opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00F5A0]"></span>
@@ -826,9 +1046,48 @@ export default function App() {
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#00F5A0]">
                 PAWLO™ Switcher de Rol & Panel
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-slate-300 hidden sm:inline">
-                8 Roles en Vivo
-              </span>
+
+              {/* TOGGLE 1-CLIC DE ALCANCE: MODO MVP v1.0 vs SUITE COMPLETA v2.0 */}
+              <div className={`inline-flex items-center p-0.5 rounded-xl border text-[11px] font-mono ml-0 sm:ml-2 ${
+                theme === 'dark' ? 'bg-[#03060C] border-white/20' : 'bg-slate-100 border-slate-300'
+              }`}>
+                <button
+                  type="button"
+                  onClick={() => handleToggleScopeMode('mvp_v1')}
+                  className={`px-2.5 py-1 rounded-lg transition-all font-bold flex items-center gap-1.5 cursor-pointer ${
+                    scopeMode === 'mvp_v1'
+                      ? 'bg-[#00F5A0] text-[#03060C] shadow-sm'
+                      : (theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900')
+                  }`}
+                  title="Alcance v1.0 Validado: Mis Mascotas, Servicios WhatsApp, Radar y PAWLO IA"
+                >
+                  <Rocket className="w-3.5 h-3.5" />
+                  <span>Modo MVP v1.0</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleToggleScopeMode('suite_v2')}
+                  className={`px-2.5 py-1 rounded-lg transition-all font-bold flex items-center gap-1.5 cursor-pointer ${
+                    scopeMode === 'suite_v2'
+                      ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-sm'
+                      : (theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900')
+                  }`}
+                  title="Suite Completa: 8 Roles Especializados (Clínica CMV, Farmacia RUC, Pet Taxi, Operadores, Super Admin)"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Suite Completa v2.0 (8 Roles + Tienda)</span>
+                </button>
+              </div>
+
+              {scopeMode === 'mvp_v1' ? (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#00F5A0]/20 text-[#00F5A0] border border-[#00F5A0]/30 hidden lg:inline">
+                  3 Roles Clave: Tutor • Supervisor • Admin
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-slate-300 hidden lg:inline">
+                  8 Roles en Vivo
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2 text-xs font-mono">
               <span className="text-slate-400 text-[11px]">Rol Activo:</span>
@@ -839,9 +1098,9 @@ export default function App() {
             </div>
           </div>
 
-          {/* Píldoras de 1-Clic para los 8 Roles (Scroll horizontal ergonómico en móviles) */}
+          {/* Píldoras de 1-Clic para los Roles (filtradas según scopeMode) */}
           <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pt-2.5 -mx-1 px-1">
-            {ORDERED_ROLES.map(roleId => {
+            {activeRolesList.map(roleId => {
               const isSelected = currentUserRole === roleId;
               const meta = getRoleMeta(roleId);
               const Icon = getRoleIcon(roleId);
@@ -1175,10 +1434,10 @@ export default function App() {
                           onChange={e => setLeadForm({...leadForm, paymentPreference: e.target.value})}
                           className="w-full glass-input rounded-xl px-4 py-3 focus:outline-none"
                         >
-                          <option value="Deuna_P2P">Deuna (P2P Instantáneo)</option>
-                          <option value="Pichincha">Transferencia Bancaria Pichincha</option>
-                          <option value="Produbanco">Produbanco / Be</option>
-                          <option value="Contraentrega">Pago Presencial</option>
+                          <option value="QR_Deuna_Sipy_Peigo">Pago QR Instantáneo (DeUna / Sipy / Peigo)</option>
+                          <option value="Payphone">Payphone (Tarjeta Crédito / Débito)</option>
+                          <option value="Transferencia_Bancaria">Transferencia Bancaria Directa</option>
+                          <option value="Efectivo_Contraentrega">Pago al Recibir</option>
                         </select>
                       </div>
                     </div>
@@ -1822,25 +2081,26 @@ export default function App() {
       {currentUserRole === 'usuario' && (
         <nav
           aria-label="Navegación móvil nativa"
-          className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-2xl safe-area-bottom px-1 pt-1.5 flex items-center justify-around shadow-2xl ${
+          className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-2xl safe-area-bottom px-1 pt-1.5 flex items-center justify-around shadow-2xl ${
             theme === 'dark'
               ? 'bg-[#040812]/95 border-white/15 text-slate-300'
               : 'bg-white/95 border-slate-300 text-slate-700 shadow-2xl'
           }`}
         >
-          {[
-            { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
-            { id: 'store', label: 'Tienda', icon: ShoppingBag },
-            { id: 'services', label: 'Servicios', icon: Zap },
-            { id: 'alerts', label: 'Radar', icon: Compass },
-            { id: 'assistant', label: 'Triaje IA', icon: Sparkles },
-          ].map(tab => {
+          {mobileNavTabs.map(tab => {
             const Icon = tab.icon;
             const isAct = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as MainTab)}
+                onClick={() => {
+                  if (tab.id === 'assistant') {
+                    setIsAssistantDrawerOpen(true);
+                    setActiveTab('assistant');
+                  } else {
+                    setActiveTab(tab.id as MainTab);
+                  }
+                }}
                 className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[11px] font-bold transition cursor-pointer min-h-[50px] active:scale-95 ${
                   isAct
                     ? (theme === 'dark' ? 'text-[#00F5A0] bg-white/5' : 'text-emerald-700 font-extrabold bg-emerald-50')
@@ -1873,6 +2133,28 @@ export default function App() {
         theme={theme}
         isOpen={isAgentConsoleOpen}
         onClose={() => setIsAgentConsoleOpen(false)}
+      />
+
+      {/* DRAWER OMNIPRESENTE DE PAWLO IA PET ASSISTANT (READ & WRITE REAL EN TODOS LOS ROLES) */}
+      <PawloPetAssistantDrawer
+        currentRole={currentUserRole}
+        activePet={activeUserPet}
+        allPets={userPets}
+        products={STORE_CATALOG}
+        services={EXPANDED_SERVICES_CATALOG}
+        theme={theme}
+        isOpen={isAssistantDrawerOpen}
+        onClose={() => setIsAssistantDrawerOpen(false)}
+        onOpen={() => setIsAssistantDrawerOpen(true)}
+        onUpdatePetWeight={handleUpdateWeight}
+        onAddPetVaccine={handleAddVaccine}
+        onAddPetNote={handleAddNote}
+        onAddClinicalRecord={handleAddClinicalRecord}
+        onAddToCart={(prod, qty) => webMCPManager.addToCart(prod, qty)}
+        onClearCart={() => webMCPManager.clearCart()}
+        onNavigateTab={handleNavigateTabId}
+        onSwitchRole={(role) => setCurrentUserRole(role)}
+        onTriggerSosAlert={handleTriggerSosAlert}
       />
     </div>
   );

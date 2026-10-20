@@ -5,6 +5,7 @@ import {
   Search, Bot, Cpu
 } from 'lucide-react';
 import { StoreProduct, UserPet } from '../data/pawloData';
+import { loadLocalState, saveLocalState, subscribeLocalState } from '../services/localStore';
 import { webMCPManager } from '../services/webmcp';
 
 interface PetStoreMarketplaceProps {
@@ -36,24 +37,56 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'Todos');
   const [filterByPetSpecies, setFilterByPetSpecies] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [cart, setCart] = useState<Array<{ product: StoreProduct; qty: number }>>([
-    { product: products[0], qty: 1 }
-  ]);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [checkoutSuccess, setCheckoutSuccess] = useState<{ waUrl: string; orderId: string } | null>(null);
-  const [orderForm, setOrderForm] = useState({
-    fullName: '',
-    phone: '',
-    address: 'Sector El Vergel, Calle Larga',
-    paymentMethod: 'Deuna_P2P',
-    prescriptionVerified: true
+  // Catálogo local con sincronización y persistencia
+  const [catalogProducts, setCatalogProducts] = useState<StoreProduct[]>(() =>
+    loadLocalState<StoreProduct[]>('pawlo_store_products', products)
+  );
+
+  useEffect(() => {
+    return subscribeLocalState<StoreProduct[]>('pawlo_store_products', (updated) => {
+      if (Array.isArray(updated) && updated.length > 0) {
+        setCatalogProducts(updated);
+      }
+    });
+  }, []);
+
+  // Carrito de compras con persistencia local
+  const [cart, setCart] = useState<Array<{ product: StoreProduct; qty: number }>>(() => {
+    const defaultCart = products[0] ? [{ product: products[0], qty: 1 }] : [];
+    return loadLocalState<Array<{ product: StoreProduct; qty: number }>>('pawlo_cart', defaultCart);
   });
 
-  // Sincronización bidireccional con el Gestor de Comercio Agéntico WebMCP
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState<{ waUrl: string; orderId: string } | null>(null);
+  const [orderForm, setOrderForm] = useState(() =>
+    loadLocalState('pawlo_order_form', {
+      fullName: '',
+      phone: '',
+      address: 'Sector El Vergel, Calle Larga',
+      paymentMethod: 'Payphone',
+      prescriptionVerified: true
+    })
+  );
+
+  // Persistir formulario y carrito
   useEffect(() => {
+    saveLocalState('pawlo_order_form', orderForm);
+  }, [orderForm]);
+
+  useEffect(() => {
+    saveLocalState('pawlo_cart', cart);
     webMCPManager.updateCartState(cart);
   }, [cart]);
 
+  useEffect(() => {
+    return subscribeLocalState<Array<{ product: StoreProduct; qty: number }>>('pawlo_cart', (updated) => {
+      if (Array.isArray(updated)) {
+        setCart(updated);
+      }
+    });
+  }, []);
+
+  // Sincronización bidireccional con el Gestor de Comercio Agéntico WebMCP
   useEffect(() => {
     webMCPManager.setListeners({
       onCartChange: (newCart) => {
@@ -71,7 +104,7 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
     { id: 'Casas', label: 'Casas & Kennels', icon: Home }
   ];
 
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = catalogProducts.filter(p => {
     const matchesCat = selectedCategory === 'Todos' || p.category === selectedCategory;
     const matchesSpecies = !filterByPetSpecies || p.species === 'all' || p.species === activePet.species;
     const q = searchQuery.toLowerCase().trim();
@@ -111,8 +144,44 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
     const itemsSummary = cart
       .map(i => `${i.qty}x ${i.product.title} ($${(i.product.price * i.qty).toFixed(2)})`)
       .join(', ');
-    const waText = `Hola PAWLO Store (${cityName}), confirmo pedido ${orderId} para mi mascota ${activePet.name} (Chip ISO: ${activePet.microchipIso}). Productos: ${itemsSummary}. Total: $${totalAmount.toFixed(2)} ${currency}. Dirección: ${orderForm.address}. Pago vía: ${orderForm.paymentMethod}.`;
+
+    const paymentLabel = orderForm.paymentMethod === 'Payphone'
+      ? 'Payphone (Tarjeta Crédito / Débito)'
+      : orderForm.paymentMethod === 'QR_Deuna_Sipy_Peigo'
+      ? 'Pago QR Instantáneo (DeUna / Sipy / Peigo)'
+      : orderForm.paymentMethod === 'Transferencia_Bancaria'
+      ? 'Transferencia Bancaria Directa'
+      : orderForm.paymentMethod === 'Efectivo_Contraentrega'
+      ? 'Pago al Recibir (Efectivo)'
+      : orderForm.paymentMethod;
+
+    const waText = `Hola PAWLO Store (${cityName}), confirmo pedido ${orderId} para mi mascota ${activePet.name} (Chip ISO: ${activePet.microchipIso}). Productos: ${itemsSummary}. Total: $${totalAmount.toFixed(2)} ${currency}. Dirección: ${orderForm.address}. Pago vía: ${paymentLabel}.`;
     const waUrl = `https://wa.me/593998408369?text=${encodeURIComponent(waText)}`;
+
+    // Persistir nuevo pedido en el estado compartido del comercio
+    const existingOrders = loadLocalState<any[]>('pawlo_store_orders', []);
+    const newStoreOrder = {
+      id: orderId,
+      customerName: orderForm.fullName || 'Tutor PAWLO',
+      customerPhone: orderForm.phone || '+593 99 840 8369',
+      deliveryAddress: orderForm.address,
+      petName: activePet.name,
+      petSpecies: activePet.species,
+      microchipIso: activePet.microchipIso,
+      items: cart.map(i => ({
+        title: i.product.title,
+        qty: i.qty,
+        price: i.product.price,
+        requiresPrescription: i.product.requiresPrescription
+      })),
+      totalAmount,
+      paymentMethod: paymentLabel,
+      prescriptionStatus: hasPrescriptionItems ? 'pendiente_validacion' : 'no_requiere',
+      orderStatus: hasPrescriptionItems ? 'validando_receta' : 'en_motorizado',
+      createdAt: 'Hace un momento'
+    };
+    saveLocalState('pawlo_store_orders', [newStoreOrder, ...existingOrders]);
+
     setCheckoutSuccess({ waUrl, orderId });
   };
 
@@ -372,10 +441,10 @@ export const PetStoreMarketplace: React.FC<PetStoreMarketplaceProps> = ({
                       onChange={e => setOrderForm({ ...orderForm, paymentMethod: e.target.value })}
                       className="w-full glass-input rounded-xl px-4 py-3"
                     >
-                      <option value="Deuna_P2P">Deuna P2P Instantáneo</option>
-                      <option value="Transferencia_Pichincha">Banco Pichincha / Produbanco</option>
-                      <option value="Tarjeta_Credito">Link de Tarjeta Seguro</option>
-                      <option value="Contraentrega">Pago al Recibir</option>
+                      <option value="Payphone">Payphone (Tarjeta Crédito / Débito)</option>
+                      <option value="QR_Deuna_Sipy_Peigo">Pago QR Instantáneo (DeUna / Sipy / Peigo)</option>
+                      <option value="Transferencia_Bancaria">Transferencia Bancaria Directa</option>
+                      <option value="Efectivo_Contraentrega">Pago al Recibir</option>
                     </select>
                   </div>
                 </div>
