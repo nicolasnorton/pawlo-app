@@ -6,7 +6,7 @@ import {
   Compass, Zap, Globe, ChevronDown, Sun, Moon,
   Radio, Cpu, Fingerprint, Star, PlusCircle, Lock,
   PawPrint, ShoppingBag, Smartphone, Car, Building2, Scissors, Stethoscope, Brain,
-  Bot, Database
+  Bot, Database, Store, Server, Flame, Users, ShieldAlert
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
@@ -14,6 +14,8 @@ import { PawloLogo } from './components/PawloLogo';
 import { MyPetsVault } from './components/MyPetsVault';
 import { PetStoreMarketplace } from './components/PetStoreMarketplace';
 import { AgenticWebMCPConsole } from './components/AgenticWebMCPConsole';
+import { StaffAdminPortals } from './components/StaffAdminPortals';
+import { PartnerPortals } from './components/PartnerPortals';
 import { webMCPManager } from './services/webmcp';
 import { processOfflineTriage } from './services/offlineTriage';
 import { pawloDB, AgentTelemetryStats } from './services/indexedDbStorage';
@@ -27,6 +29,13 @@ import {
   ClinicalEntry,
   PetServiceItem
 } from './data/pawloData';
+import {
+  PawloRoleId,
+  PAWLO_ROLES,
+  getRoleMeta,
+  isStaffRole,
+  isPartnerRole
+} from './data/rolesAndPortalsData';
 
 // Corrección de íconos de Leaflet en React / Vite
 const defaultIcon = L.icon({
@@ -159,12 +168,109 @@ const COMMUNITY_ADOPTIONS = [
 
 type MainTab = 'my_pets' | 'store' | 'services' | 'alerts' | 'assistant' | 'adoptions' | 'chip_lookup';
 
+const ORDERED_ROLES: PawloRoleId[] = [
+  'usuario',
+  'veterinario',
+  'comercio',
+  'servicio',
+  'operator',
+  'supervisor',
+  'admin',
+  'super_admin',
+];
+
+const ROLE_GROUPS = [
+  {
+    id: 'user',
+    title: 'Usuario',
+    badge: 'B2C',
+    badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+    roles: [
+      {
+        id: 'usuario' as PawloRoleId,
+        title: 'Tutor de Mascota (Usuario)',
+        description: 'Bóveda digital de carnet, vacunas, compras en pet shop y alertas SOS.',
+      },
+    ],
+  },
+  {
+    id: 'partner',
+    title: 'Aliados & B2B',
+    badge: 'Aliados B2B',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    roles: [
+      {
+        id: 'veterinario' as PawloRoleId,
+        title: 'Veterinario Clínico',
+        description: 'Emisión de recetas electrónicas, firmas de carnet e historial médico.',
+      },
+      {
+        id: 'comercio' as PawloRoleId,
+        title: 'Comercio & Farmacia',
+        description: 'Inventario, dispensación con receta médica y despacho con Deuna.',
+      },
+      {
+        id: 'servicio' as PawloRoleId,
+        title: 'Proveedor de Servicios',
+        description: 'Pet Taxi, Hotel, Grooming Spa móvil y etología con check-in QR.',
+      },
+    ],
+  },
+  {
+    id: 'staff',
+    title: 'App Admin & Staff',
+    badge: 'Staff & Ops',
+    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+    roles: [
+      {
+        id: 'super_admin' as PawloRoleId,
+        title: 'Super Admin',
+        description: 'Cortafuegos farmacológico, auditoría SHA-256 y liquidación financiera.',
+      },
+      {
+        id: 'admin' as PawloRoleId,
+        title: 'Admin Ciudad',
+        description: 'Aprobación de veterinarios SENESCYT, RUC de comercios y catálogo.',
+      },
+      {
+        id: 'supervisor' as PawloRoleId,
+        title: 'Supervisor',
+        description: 'Triaje Código Rojo, auditoría médica, despacho prioritario y alertas SOS.',
+      },
+      {
+        id: 'operator' as PawloRoleId,
+        title: 'Operator SOS',
+        description: 'Despacho táctico de emergencias, flota GPS en tiempo real y asistencia.',
+      },
+    ],
+  },
+];
+
+function getRoleIcon(roleId: PawloRoleId) {
+  switch (roleId) {
+    case 'usuario': return PawPrint;
+    case 'veterinario': return Stethoscope;
+    case 'comercio': return Store;
+    case 'servicio': return Scissors;
+    case 'operator': return Radio;
+    case 'supervisor': return Flame;
+    case 'admin': return ShieldCheck;
+    case 'super_admin': return Server;
+    default: return PawPrint;
+  }
+}
+
 export default function App() {
   const [selectedCity, setSelectedCity] = useState<CityNode>(CITY_NODES[0]);
   const [activeTab, setActiveTab] = useState<MainTab>('my_pets');
   const [radiusKm, setRadiusKm] = useState(3);
   const [viewMode, setViewMode] = useState<'both' | 'map' | 'cards'>('both');
   const [citySelectorOpen, setCitySelectorOpen] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<PawloRoleId>('usuario');
+  const [roleSelectorOpen, setRoleSelectorOpen] = useState(false);
+
+  const currentRoleMeta = getRoleMeta(currentUserRole);
+  const CurrentRoleIcon = getRoleIcon(currentUserRole);
 
   // Estado de las Mascotas del Usuario Individual
   const [userPets, setUserPets] = useState<UserPet[]>(INITIAL_USER_PETS);
@@ -372,7 +478,9 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-grid-pattern relative selection:bg-[#00F5A0] selection:text-[#03060C] pb-20 lg:pb-0">
+    <div className={`min-h-screen flex flex-col bg-grid-pattern relative selection:bg-[#00F5A0] selection:text-[#03060C] ${
+      currentUserRole === 'usuario' ? 'pb-20 lg:pb-0' : 'pb-8'
+    }`}>
       
       {/* Iluminación Atmosférica Boreal */}
       <div className={`fixed -top-24 left-1/2 -translate-x-1/2 w-[950px] h-[380px] rounded-full blur-[130px] pointer-events-none -z-0 transition-opacity duration-700 ${
@@ -398,6 +506,13 @@ export default function App() {
           <span className="hidden sm:inline shrink-0">MASCOTA ACTIVA: <strong className="text-[#00F5A0] font-bold">{activeUserPet.name} ({activeUserPet.weightKg} kg)</strong></span>
           <span className="opacity-40 hidden md:inline">|</span>
           <span className="hidden md:inline shrink-0">GUARDIANES COMUNIDAD: <strong className="text-white font-bold">{selectedCity.activeDevices.toLocaleString()}</strong></span>
+          <span className="opacity-40 hidden sm:inline">|</span>
+          <div className="hidden sm:flex items-center space-x-1.5 shrink-0">
+            <span className="text-slate-400">PANEL:</span>
+            <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${currentRoleMeta.badgeColor}`}>
+              {currentRoleMeta.shortLabel}
+            </span>
+          </div>
         </div>
         <div className="flex items-center space-x-2.5 shrink-0">
           <button
@@ -425,16 +540,19 @@ export default function App() {
           : 'border-slate-300/80 bg-white/95 shadow-sm'
       }`}>
         
-        {/* BRANDING + SELECTOR DE NODO URBANO */}
-        <div className="flex items-center gap-2 sm:gap-5">
-          <div onClick={() => setActiveTab('my_pets')} className="cursor-pointer">
+        {/* BRANDING + SELECTOR DE NODO URBANO + ROLE SWITCHER */}
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+          <div onClick={() => { setActiveTab('my_pets'); setCurrentUserRole('usuario'); }} className="cursor-pointer" title="Ir al inicio (Vista Tutor)">
             <PawloLogo size="md" cityBadge={selectedCity.name} theme={theme} />
           </div>
 
           {/* Conmutador de Nodos Globales */}
           <div className="relative">
             <button 
-              onClick={() => setCitySelectorOpen(!citySelectorOpen)}
+              onClick={() => {
+                setCitySelectorOpen(!citySelectorOpen);
+                setRoleSelectorOpen(false);
+              }}
               className={`flex items-center space-x-1.5 sm:space-x-2 border px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer min-h-[40px] ${
                 theme === 'dark' 
                   ? 'bg-white/5 hover:bg-white/10 border-white/15 text-slate-100' 
@@ -493,48 +611,187 @@ export default function App() {
               </div>
             )}
           </div>
+
+          {/* Conmutador de Rol & Portal ("Rol Activo / Cambiar Panel") */}
+          <div className="relative">
+            <button 
+              onClick={() => {
+                setRoleSelectorOpen(!roleSelectorOpen);
+                setCitySelectorOpen(false);
+              }}
+              className={`flex items-center space-x-1.5 sm:space-x-2 border px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer min-h-[40px] ${
+                roleSelectorOpen
+                  ? 'ring-2 ring-[#00F5A0]/50 border-[#00F5A0]/60'
+                  : ''
+              } ${
+                theme === 'dark' 
+                  ? 'bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-indigo-500/10 hover:bg-white/10 border-white/20 text-slate-100' 
+                  : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-900'
+              }`}
+              title="Rol Activo / Cambiar Panel"
+            >
+              <CurrentRoleIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#00F5A0]" />
+              <span className="hidden sm:inline opacity-75 text-xs">Rol:</span>
+              <span className="font-extrabold text-xs sm:text-sm">{currentRoleMeta.shortLabel}</span>
+              <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform duration-200 ${roleSelectorOpen ? 'rotate-180 text-[#00F5A0]' : 'opacity-75'}`} />
+            </button>
+
+            {roleSelectorOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40" 
+                  onClick={() => setRoleSelectorOpen(false)} 
+                />
+                <div className={`absolute top-full left-0 mt-2.5 w-[330px] sm:w-[420px] max-w-[95vw] rounded-3xl p-3 sm:p-4 z-50 shadow-2xl border space-y-3 backdrop-blur-2xl animate-in fade-in zoom-in-95 duration-150 max-h-[80vh] overflow-y-auto no-scrollbar ${
+                  theme === 'dark' 
+                    ? 'bg-[#080E1E]/95 border-white/20 text-slate-200' 
+                    : 'bg-white border-slate-300 text-slate-800 shadow-2xl'
+                }`}>
+                  <div className="px-2 py-1 border-b border-white/10 flex items-center justify-between pb-2">
+                    <div>
+                      <div className="text-xs font-mono font-bold uppercase tracking-wider text-[#00F5A0]">
+                        Rol Activo / Cambiar Panel
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        8 Paneles Especializados con RBAC
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#00F5A0]/20 text-[#00F5A0] border border-[#00F5A0]/30">
+                      {selectedCity.name}
+                    </span>
+                  </div>
+
+                  {ROLE_GROUPS.map(group => (
+                    <div key={group.id} className="space-y-1.5">
+                      <div className="flex items-center justify-between px-2 pt-1">
+                        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">
+                          {group.title}
+                        </span>
+                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${group.badgeColor}`}>
+                          {group.badge}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1">
+                        {group.roles.map(r => {
+                          const isAct = currentUserRole === r.id;
+                          const ItemIcon = getRoleIcon(r.id);
+                          return (
+                            <button
+                              key={r.id}
+                              onClick={() => {
+                                setCurrentUserRole(r.id);
+                                setRoleSelectorOpen(false);
+                              }}
+                              className={`w-full text-left p-2.5 rounded-2xl text-xs sm:text-sm flex items-start justify-between gap-2.5 transition cursor-pointer ${
+                                isAct
+                                  ? (theme === 'dark'
+                                      ? 'bg-[#00F5A0]/15 text-white font-bold border border-[#00F5A0]/50 shadow-sm'
+                                      : 'bg-emerald-50 text-emerald-950 font-bold border border-emerald-300 shadow-sm')
+                                  : (theme === 'dark'
+                                      ? 'text-slate-300 hover:bg-white/10 border border-transparent'
+                                      : 'text-slate-800 hover:bg-slate-100 border border-transparent')
+                              }`}
+                            >
+                              <div className="flex items-start space-x-2.5">
+                                <div className={`p-1.5 rounded-xl shrink-0 mt-0.5 ${
+                                  isAct 
+                                    ? 'bg-[#00F5A0] text-[#03060C]' 
+                                    : (theme === 'dark' ? 'bg-white/10 text-slate-300' : 'bg-slate-200 text-slate-700')
+                                }`}>
+                                  <ItemIcon className="w-4 h-4" />
+                                </div>
+                                <div>
+                                  <div className="font-extrabold flex items-center gap-1.5">
+                                    <span>{r.title}</span>
+                                    {isAct && (
+                                      <span className="text-[10px] font-mono bg-[#00F5A0]/30 text-[#00F5A0] px-1.5 py-0.2 rounded font-bold">
+                                        ACTIVO
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className={`text-[11px] leading-tight mt-0.5 line-clamp-2 ${
+                                    theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                                  }`}>
+                                    {r.description}
+                                  </p>
+                                </div>
+                              </div>
+                              {isAct && (
+                                <CheckCircle2 className="w-4 h-4 text-[#00F5A0] shrink-0 mt-1" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* DOCK DE NAVEGACIÓN DESKTOP & ACCIONES HEADER */}
         <div className="flex items-center gap-2">
-          {/* Navegación desktop (oculta en móvil para dar espacio y evitar doble nav) */}
-          <nav className={`hidden lg:flex items-center p-1.5 rounded-2xl border text-xs sm:text-sm font-bold transition-all shadow-xs ${
-            theme === 'dark' 
-              ? 'bg-[#03060C] border-white/15' 
-              : 'bg-slate-100 border-slate-300'
-          }`}>
-            {navTabs.map(tab => {
-              const IconComponent = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button 
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as MainTab)}
-                  className={`px-3.5 py-2 rounded-xl transition-all duration-200 flex items-center space-x-2 shrink-0 cursor-pointer ${
-                    isActive 
-                      ? 'btn-primary-2026 !rounded-xl !py-2 !px-3.5' 
-                      : (theme === 'dark' ? 'text-slate-300 hover:text-white hover:bg-white/10' : 'text-slate-700 hover:text-slate-950 hover:bg-white')
-                  }`}
-                >
-                  <IconComponent className="w-4 h-4 stroke-[2.2]" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </nav>
+          {currentUserRole === 'usuario' ? (
+            /* Navegación desktop Tutor (oculta en móvil para dar espacio y evitar doble nav) */
+            <nav className={`hidden lg:flex items-center p-1.5 rounded-2xl border text-xs sm:text-sm font-bold transition-all shadow-xs ${
+              theme === 'dark' 
+                ? 'bg-[#03060C] border-white/15' 
+                : 'bg-slate-100 border-slate-300'
+            }`}>
+              {navTabs.map(tab => {
+                const IconComponent = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button 
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as MainTab)}
+                    className={`px-3.5 py-2 rounded-xl transition-all duration-200 flex items-center space-x-2 shrink-0 cursor-pointer ${
+                      isActive 
+                        ? 'btn-primary-2026 !rounded-xl !py-2 !px-3.5' 
+                        : (theme === 'dark' ? 'text-slate-300 hover:text-white hover:bg-white/10' : 'text-slate-700 hover:text-slate-950 hover:bg-white')
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4 stroke-[2.2]" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          ) : (
+            /* Badge de Portal Activo y botón para volver a la app de Tutor */
+            <div className="hidden lg:flex items-center gap-2">
+              <div className={`px-3.5 py-2 rounded-2xl border text-xs font-mono font-bold flex items-center gap-2 ${currentRoleMeta.badgeColor}`}>
+                <CurrentRoleIcon className="w-4 h-4" />
+                <span>PORTAL: {currentRoleMeta.label.toUpperCase()}</span>
+              </div>
+              <button
+                onClick={() => setCurrentUserRole('usuario')}
+                className="px-3.5 py-2 rounded-2xl text-xs font-bold bg-white/10 hover:bg-white/15 text-slate-200 transition cursor-pointer flex items-center gap-1.5 border border-white/15"
+                title="Volver a la vista del Tutor de Mascotas"
+              >
+                <PawPrint className="w-3.5 h-3.5 text-[#00F5A0]" />
+                <span>Vista Tutor</span>
+              </button>
+            </div>
+          )}
 
-          {/* Selector de Mascota Activa Rápido en Móvil */}
-          <div className="lg:hidden flex items-center">
-            <button
-              onClick={() => setActiveTab('my_pets')}
-              className={`flex items-center gap-2 px-2.5 py-1 rounded-xl border text-xs font-bold ${
-                theme === 'dark' ? 'bg-white/5 border-white/15 text-slate-200' : 'bg-slate-100 border-slate-300 text-slate-800'
-              }`}
-            >
-              <img src={activeUserPet.avatar} alt={activeUserPet.name} className="w-6 h-6 rounded-lg object-cover" />
-              <span>{activeUserPet.name}</span>
-            </button>
-          </div>
+          {/* Selector de Mascota Activa Rápido en Móvil (solo en vista tutor) */}
+          {currentUserRole === 'usuario' && (
+            <div className="lg:hidden flex items-center">
+              <button
+                onClick={() => setActiveTab('my_pets')}
+                className={`flex items-center gap-2 px-2.5 py-1 rounded-xl border text-xs font-bold ${
+                  theme === 'dark' ? 'bg-white/5 border-white/15 text-slate-200' : 'bg-slate-100 border-slate-300 text-slate-800'
+                }`}
+              >
+                <img src={activeUserPet.avatar} alt={activeUserPet.name} className="w-6 h-6 rounded-lg object-cover" />
+                <span>{activeUserPet.name}</span>
+              </button>
+            </div>
+          )}
 
           {/* Conmutador de Tema (Sol / Luna) */}
           <button
@@ -554,7 +811,87 @@ export default function App() {
       {/* CONTENIDO PRINCIPAL */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 space-y-5 sm:space-y-8 relative z-10">
 
-        {/* 1. MÓDULO ESTRELLA: MIS MASCOTAS (BÓVEDA DIGITAL PERSONAL) */}
+        {/* BARRA DE CONTEXTO DE ROLES & CAMBIO EN 1-CLIC (SIEMPRE VISIBLE EN EL TOP DE MAIN) */}
+        <section aria-label="Selector de Rol y Panel Activo" className={`p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl border transition-all duration-300 shadow-md ${
+          theme === 'dark'
+            ? 'bg-[#050A18]/90 border-white/15 backdrop-blur-xl'
+            : 'bg-white/95 border-slate-300/80 backdrop-blur-xl shadow-slate-200/50'
+        }`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F5A0] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00F5A0]"></span>
+              </span>
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#00F5A0]">
+                PAWLO™ Switcher de Rol & Panel
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-slate-300 hidden sm:inline">
+                8 Roles en Vivo
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="text-slate-400 text-[11px]">Rol Activo:</span>
+              <span className={`px-2.5 py-0.5 rounded-lg font-bold border text-[11px] ${currentRoleMeta.badgeColor}`}>
+                {currentRoleMeta.label}
+              </span>
+              <span className="text-slate-500 hidden md:inline">• {selectedCity.name}</span>
+            </div>
+          </div>
+
+          {/* Píldoras de 1-Clic para los 8 Roles (Scroll horizontal ergonómico en móviles) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar pt-2.5 -mx-1 px-1">
+            {ORDERED_ROLES.map(roleId => {
+              const isSelected = currentUserRole === roleId;
+              const meta = getRoleMeta(roleId);
+              const Icon = getRoleIcon(roleId);
+              return (
+                <button
+                  key={roleId}
+                  onClick={() => setCurrentUserRole(roleId)}
+                  className={`px-3 py-1.5 sm:py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center space-x-1.5 cursor-pointer min-h-[36px] ${
+                    isSelected
+                      ? 'btn-primary-2026 shadow-md shadow-[#00F5A0]/20 scale-[1.02]'
+                      : (theme === 'dark' 
+                          ? 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 hover:border-white/20' 
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300')
+                  }`}
+                  title={`${meta.label}: ${meta.description}`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#03060C]' : 'opacity-80'}`} />
+                  <span className="whitespace-nowrap">{meta.shortLabel}</span>
+                  {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-[#03060C] animate-pulse ml-0.5" />}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* ENRUTADOR PRINCIPAL SEGÚN ROL ACTIVO */}
+        {isStaffRole(currentUserRole) ? (
+          <StaffAdminPortals
+            activeRole={currentUserRole as 'super_admin' | 'admin' | 'supervisor' | 'operator'}
+            onSelectRole={(role) => setCurrentUserRole(role)}
+            cityName={selectedCity.name}
+            cityCode={selectedCity.code}
+            currency={selectedCity.currency}
+            theme={theme}
+          />
+        ) : isPartnerRole(currentUserRole) ? (
+          <PartnerPortals
+            activeRole={currentUserRole as 'veterinario' | 'comercio' | 'servicio'}
+            onSelectRole={(role) => setCurrentUserRole(role)}
+            pets={userPets}
+            products={STORE_CATALOG}
+            services={EXPANDED_SERVICES_CATALOG}
+            cityName={selectedCity.name}
+            currency={selectedCity.currency}
+            paymentRail={selectedCity.paymentRail}
+            theme={theme}
+          />
+        ) : (
+          <>
+            {/* 1. MÓDULO ESTRELLA: MIS MASCOTAS (BÓVEDA DIGITAL PERSONAL) */}
         {activeTab === 'my_pets' && (
           <MyPetsVault
             pets={userPets}
@@ -1477,42 +1814,46 @@ export default function App() {
             </div>
           </section>
         )}
+          </>
+        )}
       </main>
 
       {/* BARRA DE NAVEGACIÓN INFERIOR NATIVA PARA MÓVILES (iOS App Store / Google Play Ergonomics) */}
-      <nav
-        aria-label="Navegación móvil nativa"
-        className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-2xl safe-area-bottom px-1 pt-1.5 flex items-center justify-around shadow-2xl ${
-          theme === 'dark'
-            ? 'bg-[#040812]/95 border-white/15 text-slate-300'
-            : 'bg-white/95 border-slate-300 text-slate-700 shadow-2xl'
-        }`}
-      >
-        {[
-          { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
-          { id: 'store', label: 'Tienda', icon: ShoppingBag },
-          { id: 'services', label: 'Servicios', icon: Zap },
-          { id: 'alerts', label: 'Radar', icon: Compass },
-          { id: 'assistant', label: 'Triaje IA', icon: Sparkles },
-        ].map(tab => {
-          const Icon = tab.icon;
-          const isAct = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as MainTab)}
-              className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[11px] font-bold transition cursor-pointer min-h-[50px] active:scale-95 ${
-                isAct
-                  ? (theme === 'dark' ? 'text-[#00F5A0] bg-white/5' : 'text-emerald-700 font-extrabold bg-emerald-50')
-                  : 'opacity-75 hover:opacity-100'
-              }`}
-            >
-              <Icon className="w-5 h-5 mb-0.5 stroke-[2.2]" />
-              <span className="leading-tight">{tab.label}</span>
-            </button>
-          );
-        })}
-      </nav>
+      {currentUserRole === 'usuario' && (
+        <nav
+          aria-label="Navegación móvil nativa"
+          className={`lg:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-2xl safe-area-bottom px-1 pt-1.5 flex items-center justify-around shadow-2xl ${
+            theme === 'dark'
+              ? 'bg-[#040812]/95 border-white/15 text-slate-300'
+              : 'bg-white/95 border-slate-300 text-slate-700 shadow-2xl'
+          }`}
+        >
+          {[
+            { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
+            { id: 'store', label: 'Tienda', icon: ShoppingBag },
+            { id: 'services', label: 'Servicios', icon: Zap },
+            { id: 'alerts', label: 'Radar', icon: Compass },
+            { id: 'assistant', label: 'Triaje IA', icon: Sparkles },
+          ].map(tab => {
+            const Icon = tab.icon;
+            const isAct = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as MainTab)}
+                className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-[11px] font-bold transition cursor-pointer min-h-[50px] active:scale-95 ${
+                  isAct
+                    ? (theme === 'dark' ? 'text-[#00F5A0] bg-white/5' : 'text-emerald-700 font-extrabold bg-emerald-50')
+                    : 'opacity-75 hover:opacity-100'
+                }`}
+              >
+                <Icon className="w-5 h-5 mb-0.5 stroke-[2.2]" />
+                <span className="leading-tight">{tab.label}</span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
 
       {/* FOOTER */}
       <footer className={`border-t py-6 px-6 lg:px-8 text-xs sm:text-sm flex flex-wrap items-center justify-between gap-4 relative z-10 transition-colors duration-300 ${

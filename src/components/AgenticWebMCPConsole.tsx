@@ -71,6 +71,9 @@ export const AgenticWebMCPConsole: React.FC<AgenticWebMCPConsoleProps> = ({
       case 'pawlo_triage_symptom':
         setToolParamsInput('{\n  "symptomDescription": "¿Cuántas gotas de paracetamol le doy a mi perro?",\n  "petId": "pet_1"\n}');
         break;
+      case 'pawlo_get_roles_and_permissions':
+        setToolParamsInput('{\n  "roleId": "veterinario"\n}');
+        break;
       case 'pawlo_list_user_pets':
       default:
         setToolParamsInput('{}');

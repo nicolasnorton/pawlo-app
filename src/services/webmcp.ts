@@ -11,6 +11,7 @@
 
 import { STORE_CATALOG, INITIAL_USER_PETS, StoreProduct, UserPet } from '../data/pawloData';
 import { processOfflineTriage, LocalTriageResult } from './offlineTriage';
+import { PAWLO_ROLES, PawloRoleId } from '../data/rolesAndPortalsData';
 
 export const STORE_PRODUCTS = STORE_CATALOG;
 export const USER_PETS_VAULT = INITIAL_USER_PETS;
@@ -412,6 +413,36 @@ export class WebMCPAgentManager {
             species: pet.species,
             weightKg: pet.weightKg
           }
+        };
+      }
+    });
+
+    // 9. Herramienta: Matriz de Roles y Permisos RBAC PAWLO
+    this.register({
+      name: 'pawlo_get_roles_and_permissions',
+      description: 'Devuelve la lista completa de los 8 roles de la plataforma PAWLO (Staff, Aliados B2B y Tutores), junto con sus matrices de permisos y capacidades de acceso.',
+      readOnlyHint: true,
+      parameters: {
+        type: 'object',
+        properties: {
+          roleId: {
+            type: 'string',
+            description: 'ID de rol opcional para consultar (ej. usuario, veterinario, comercio, servicio, operator, supervisor, admin, super_admin)'
+          }
+        }
+      },
+      execute: async (args?: { roleId?: string }) => {
+        if (args?.roleId) {
+          const role = PAWLO_ROLES.find(r => r.id === args.roleId);
+          return {
+            found: Boolean(role),
+            role: role || null,
+            totalRolesCount: PAWLO_ROLES.length
+          };
+        }
+        return {
+          totalRolesCount: PAWLO_ROLES.length,
+          roles: PAWLO_ROLES
         };
       }
     });
