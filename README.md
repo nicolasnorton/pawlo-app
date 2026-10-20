@@ -1,0 +1,130 @@
+<div align="center">
+
+# 🐾 PAWLO™
+### The Urban Pet Operating System
+**Red Tecnológica Descentralizada para Bienestar Animal, Radar Geoespacial y Comercio Direct-to-Care**
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React 19](https://img.shields.io/badge/React-19.0+-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![PostgreSQL PostGIS](https://img.shields.io/badge/PostgreSQL-PostGIS_EPSG:4326-336791?logo=postgresql&logoColor=white)](https://postgis.net/)
+[![DeepSeek Reasoner](https://img.shields.io/badge/AI-DeepSeek_V3_/_R1-10E7A6?logo=openai&logoColor=black)](https://deepseek.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+<br />
+
+<img src="./docs/assets/pawlo_preview.png" alt="PAWLO Interface" width="90%" style="border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);" />
+
+</div>
+
+---
+
+## 🌟 ¿Qué es PAWLO™?
+
+**PAWLO™** es una plataforma integral creada para transformar el cuidado animal en entornos urbanos. Construida con una **arquitectura por Nodos Urbanos**, PAWLO puede desplegarse en cualquier ciudad del mundo preservando la cartografía local, medios de pago autóctonos y redes privadas de profesionales.
+
+El primer nodo operativo de la red es **Cuenca (Ecuador)**, con soporte para expansión a ciudades como Quito, Guayaquil, Bogotá y Lima.
+
+---
+
+## 🚀 Módulos Principales
+
+### 1. 🗺️ Radar Geoespacial en Vivo
+* **Motor Espacial**: Basado en **PostgreSQL 15 + PostGIS (EPSG:4326)** con índices `GiST` y consultas `ST_DWithin`.
+* **Latencia Ultra-Baja**: Respuestas sub-10ms (benchmark verificado de **0.172 ms** en 5,000 registros).
+* **Filtros Dinámicos**: Escaneo por radio (1 km a 8 km) con círculos de cobertura WGS84 reactivos en **Leaflet**.
+
+### 2. 🧠 Asistente de Triaje Inteligente (PAWLO AI)
+* **Modelos**: Integración con **DeepSeek-V3** y **DeepSeek-R1 Reasoner**.
+* **Blindaje Farmacológico Absoluto**: Cortafuegos determinista que bloquea al 100% intentos de prescripción o dosificación casera.
+* **Escala de Triaje RGB**:
+  - 🔴 **ROJO (0h)**: Emergencias vitales críticas (atropellos, convulsiones, hemorragias).
+  - 🟡 **AMARILLO (<12h)**: Urgencias clínicas prioritarias.
+  - 🟢 **VERDE**: Orientación etológica, bienestar y enriquecimiento ambiental.
+
+### 3. ⚡ Comercio Conversacional Direct-to-Care
+* **Conexión Directa**: Enlaces universales de WhatsApp (`wa.me`) con formato internacional E.164.
+* **Integración CRM**: Sincronización automática de contactos y oportunidades en **GoHighLevel (GHL) API v2**.
+* **Arquitectura Resiliente (Outbox Pattern)**: Si el CRM externo sufre caídas de red, la experiencia del usuario continúa sin fricción hacia WhatsApp.
+* **Pasarelas Locales**: Soporte nativo para *Deuna (P2P)*, *Banco Pichincha*, *Produbanco* y transferencias directas.
+
+### 4. 🛡️ Escáner de Microchips ISO Universal
+* Validación algorítmica conforme a la norma internacional **ISO 11784/11785** (15 dígitos).
+* Soporte para identificadores clínicos alfanuméricos privados.
+
+### 5. 🎨 Sistema de Diseño Neo-Glass 2026 & Dual Theme
+* **Dark Mode & Light Mode**: Selector de tema instantáneo con tokens CSS adaptativos.
+* Creado y registrado mediante **Stitch MCP**.
+
+---
+
+## 📐 Arquitectura de Alto Nivel
+
+```mermaid
+flowchart LR
+    A["Cliente Multiplataforma (React + Leaflet)"] --> B["Supabase Edge Functions"]
+    B --> C[("PostGIS EPSG:4326")]
+    B --> D["DeepSeek Reasoner API"]
+    B --> E["GoHighLevel CRM API v2"]
+    E -. Fallback Resiliente .-> F["WhatsApp Directo (E.164)"]
+```
+
+---
+
+## 🛠️ Pila Tecnológica
+
+| Componente | Tecnología |
+| :--- | :--- |
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons |
+| **Mapas GIS** | Leaflet 1.9, React-Leaflet, OpenStreetMap Tiles |
+| **Base de Datos** | PostgreSQL 15, PostGIS (EPSG:4326), Row Level Security (RLS) |
+| **Backend Serverless**| Supabase Edge Functions (Deno / TypeScript) |
+| **Inteligencia Artificial**| DeepSeek API (V3 / R1 Reasoner) con Cortafuegos Farmacológico |
+| **CRM / Comercio** | GoHighLevel REST API v2 + WhatsApp Universal Links |
+
+---
+
+## 📦 Instalación y Ejecución Local
+
+### Prerrequisitos
+* **Node.js** >= 20.x
+* **npm** >= 10.x
+* Cuenta de Supabase (opcional para desarrollo local con mocks)
+
+### Pasos
+
+1. **Clonar el repositorio**:
+   ```bash
+   git clone https://github.com/nicolasnorton/pawlo-app.git
+   cd pawlo-app
+   ```
+
+2. **Instalar dependencias**:
+   ```bash
+   npm install
+   ```
+
+3. **Iniciar el servidor de desarrollo**:
+   ```bash
+   npm run dev
+   ```
+   Abre [http://localhost:5173](http://localhost:5173) en tu navegador.
+
+4. **Ejecutar la suite de pruebas de blindaje y rendimiento**:
+   ```bash
+   python3 tests/run_validation_suite.py
+   ```
+
+---
+
+## 📚 Documentación Técnica
+
+* 📄 [Documento de Requisitos de Producto (PRD)](./docs/PRD.md)
+* 🤖 [Guía de Contexto para Modelos y Agentes (llms.txt)](./llms.txt)
+* 🏗️ [Diseño de Sistema y Flujos de Resiliencia](./docs/architecture/SYSTEM_DESIGN.md)
+
+---
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo los términos de la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.

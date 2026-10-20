@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="p-grad" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#10E7A6"/>
+      <stop offset="60%" stop-color="#00F5FF"/>
+      <stop offset="100%" stop-color="#0099FF"/>
+    </linearGradient>
+    <linearGradient id="p-heart" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF3366"/>
+      <stop offset="100%" stop-color="#FF758C"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="28" fill="#050811"/>
+  <path d="M26 35 C20 35, 16 43, 19 50 C22 57, 30 55, 33 48 C36 41, 32 35, 26 35 Z" fill="url(#p-grad)"/>
+  <path d="M40 20 C34 20, 31 29, 34 37 C37 45, 45 44, 48 36 C51 28, 46 20, 40 20 Z" fill="url(#p-grad)"/>
+  <path d="M60 20 C54 20, 49 28, 52 36 C55 44, 63 45, 66 37 C69 29, 66 20, 60 20 Z" fill="url(#p-grad)"/>
+  <path d="M74 35 C68 35, 64 41, 67 48 C70 55, 78 57, 81 50 C84 43, 80 35, 74 35 Z" fill="url(#p-grad)"/>
+  <path d="M50 48 C34 48, 25 61, 29 74 C32 84, 42 89, 50 89 C58 89, 68 84, 71 74 C75 61, 66 48, 50 48 Z" fill="url(#p-grad)"/>
+  <circle cx="50" cy="69" r="6" fill="#050811"/>
+  <path d="M50 64 C48.5 62, 45.5 63, 45.5 65 C45.5 67.5, 50 71.5, 50 71.5 C50 71.5, 54.5 67.5, 54.5 65 C54.5 63, 51.5 62, 50 64 Z" fill="url(#p-heart)"/>
+</svg>

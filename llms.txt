@@ -1,0 +1,52 @@
+# LLMS.txt — PAWLO™ Developer & Agent Context
+> Machine-readable context guide for LLMs, Autonomous Coding Agents, and Copilots.
+
+## Project Overview
+- **Name**: PAWLO™ (The Urban Pet Operating System)
+- **Primary Domain**: Urban Pet Care, Geospatial Real-Time Radar, Direct-to-Care Conversational Commerce.
+- **Tech Stack**:
+  - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Leaflet / React-Leaflet.
+  - **Backend**: Supabase (PostgreSQL 15+, PostGIS EPSG:4326), Deno / TypeScript Edge Functions.
+  - **AI / LLM Integration**: DeepSeek-V3 & DeepSeek-R1 (Flash / Reasoner) with strict deterministic Pharmacological Firewall.
+  - **CRM & Messaging**: GoHighLevel REST API v2 + WhatsApp Universal Links (E.164).
+  - **Design System**: PAWLO Stitch Neo-Glass 2026 (Dark & Light modes with dynamic root classes).
+
+## Architectural Guidelines for LLMs
+
+### 1. Medical & Pharmacological Safety Shield
+- Under no circumstances should an LLM formulate, dosage, or recommend pharmaceutical drugs (e.g., paracetamol, ibuprofen, ivermectin, meloxicam, tramadol) for pets.
+- When evaluating user symptoms, enforce the 3-tier triage system:
+  - `RED`: Immediate physical emergency (0h). Direct referral to 24/7 emergency clinics.
+  - `YELLOW`: Urgent within 12h. Hydration advice only, physical exam required.
+  - `GREEN`: Ethology, routine wellness, environmental enrichment.
+
+### 2. Multi-City Node Model
+- Do NOT hardcode cities. Use the `CityNode` interface:
+  ```typescript
+  interface CityNode {
+    id: string;          // e.g. 'cue', 'uio', 'bog', 'lim'
+    name: string;        // 'Cuenca', 'Quito', etc.
+    country: string;
+    center: [number, number]; // [lat, lng] WGS84
+    status: 'active' | 'beta' | 'coming_soon';
+    currency: string;    // 'USD', 'COP', 'PEN'
+    paymentRail: string; // 'Deuna & Pichincha', 'Yape', 'Nequi'
+  }
+  ```
+
+### 3. Spatial Queries with PostGIS
+- Queries rely on `ST_DWithin` over indexed `geography(Point, 4326)` columns.
+- SLA requirement: `< 10ms` execution time achieved via GiST R-Tree indexing.
+
+### 4. Direct Commerce & Resilient Outbox
+- All service booking flows generate a WhatsApp URL (`https://wa.me/`) with international format E.164.
+- In backend Edge Functions, always wrap third-party CRM calls (GoHighLevel) in try/catch blocks with local fallback references (`PWL-[CITY]-[HASH]`) to prevent user blocking during external outages.
+
+## File Map
+- `src/App.tsx`: Main modular application shell with tab switcher, city switcher, and dual theme.
+- `src/components/PawloLogo.tsx`: Biometric paw icon + animated status node + responsive wordmark.
+- `src/index.css`: Design system CSS variables for Dark and Light modes.
+- `supabase/migrations/`: SQL migrations for PostGIS tables, RLS policies, and RPCs.
+- `supabase/functions/create-ghl-lead/`: Resilient lead capture Edge Function with WhatsApp fallback.
+- `supabase/functions/pet-assistant/`: DeepSeek router with deterministic pharma regex blocking.
+- `tests/run_validation_suite.py`: Synthetic test suite for safety shields and spatial benchmarks.
