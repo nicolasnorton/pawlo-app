@@ -1,26 +1,26 @@
-# PAWLO™ WebMCP & Arquitectura de Comercio Agéntico (2026)
+# KIRUPET™ WebMCP & Arquitectura de Comercio Agéntico (2026)
 
 ## 1. Visión & Objetivos
-PAWLO™ implementa el estándar emergente **WebMCP (Web Model Context Protocol)** guiado por las directrices de *Modern Web Guidance* (Google Chrome & W3C Agentic Web Community). 
+KIRUPET™ implementa el estándar emergente **WebMCP (Web Model Context Protocol)** guiado por las directrices de *Modern Web Guidance* (Google Chrome & W3C Agentic Web Community). 
 
 El objetivo es doble:
 1. **Comercio Agéntico Autónomo**: Permitir que agentes IA de navegación (Chrome DevTools MCP, Claude in Chrome, Gemini Browser Agent, ChatGPT Web Extension o asistentes en segundo plano) interactúen directamente con el catálogo, agreguen productos al carrito y preparen pedidos sin requerir scraping frágil de selectores CSS.
-2. **Minimización Extrema de Servidor & DeepSeek API (Cero Costo)**: Transferir más del 90% del razonamiento clínico y de bienestar a la capa del dispositivo/navegador (*Edge Computing*) mediante un motor de triaje determinístico local persistido en **IndexedDB**, garantizando cero latencia (1ms), privacidad absoluta y un cortafuegos farmacológico estricto.
+2. **Minimización Extrema de Servidor & DeepSeek API (Cero Costo)**: Transferir más del 90% del razonamiento clínico y de bienestar a la capa del dispositivo/navegador (*Edge Computing*) mediante un motor de triaje determinístico local persistido en **IndexedDB**, garantizando cero latencia (1ms), privacidad absoluta y un cortafuegos farmacológico estricto guiado por **Kiru IA**.
 
 ---
 
-## 2. Los Dos Pilares de WebMCP en PAWLO™
+## 2. Los Dos Pilares de WebMCP en KIRUPET™
 
 ### A. Herramientas Imperativas (`document.modelContext.registerTool`)
-PAWLO™ implementa detección de capacidades y registro con control de ciclo de vida (`AbortController`):
+KIRUPET™ implementa detección de capacidades y registro con control de ciclo de vida (`AbortController`):
 
 ```typescript
 // Detección nativa con fallback transparente
 const modelContext = (document as any).modelContext || (navigator as any).modelContext;
 if (modelContext && typeof modelContext.registerTool === 'function') {
   modelContext.registerTool({
-    name: 'pawlo_search_catalog',
-    description: 'Busca productos en el catálogo de alimentos y farmacia de PAWLO',
+    name: 'pawlo_search_catalog', // o alias kirupet_search_catalog
+    description: 'Busca productos en el catálogo de alimentos y farmacia de KIRUPET',
     readOnlyHint: true,
     parameters: { ... },
     signal: abortController.signal,
@@ -30,8 +30,8 @@ if (modelContext && typeof modelContext.registerTool === 'function') {
 ```
 
 En navegadores sin WebMCP experimental habilitado, se expone un protocolo universal estandarizado en:
-- `window.pawloWebMCP`
-- `window.pawloAgentTools`
+- `window.kirupetWebMCP` (y alias compatible `window.pawloWebMCP`)
+- `window.kirupetAgentTools` (y alias compatible `window.pawloAgentTools`)
 - Evento DOM de difusión: `window.dispatchEvent(new CustomEvent('webmcp:ready'))`
 
 ### Catálogo de Herramientas Registradas (8 Herramientas de Producción):
@@ -75,7 +75,7 @@ En cumplimiento de *Modern Web Guidance*, los formularios críticos del DOM inco
    ```html
    <form 
      toolname="pawlo_book_service"
-     tooldescription="Reserva servicios veterinarios, hospedaje o transporte pet taxi con expediente PAWLO"
+     tooldescription="Reserva servicios veterinarios, hospedaje o transporte pet taxi con expediente KIRUPET"
      toolautosubmit="true">
      ...
    </form>
@@ -93,7 +93,7 @@ En cumplimiento de *Modern Web Guidance*, los formularios críticos del DOM inco
 
 ---
 
-## 3. Motor Edge de Triaje Clínico & Cortafuegos Farmacológico
+## 3. Motor Edge de Triaje Clínico & Cortafuegos Farmacológico (Kiru IA)
 
 ### A. Cortafuegos Regulatorio
 Para proteger la vida de caninos y felinos y evitar responsabilidad legal médica:
@@ -103,7 +103,7 @@ Para proteger la vida de caninos y felinos y evitar responsabilidad legal médic
 
 ### B. Persistencia & Telemetría en IndexedDB (`pawlo_offline_vault_v1`)
 - **`triage_cache`**: Almacena las consultas pasadas por hash semántico de especie y síntomas. Si el usuario o un agente repite una consulta o signo similar, se resuelve desde el disco local en 1ms.
-- **`agent_telemetry`**: Registra llamadas evitadas a la API de DeepSeek, tokens ahorrados y ancho de banda preservado.
+- **`agent_telemetry`**: Registra llamadas evitadas a la API de DeepSeek, tokens ahorrados y ancho de banda preservado por Kiru IA.
 
 ---
 

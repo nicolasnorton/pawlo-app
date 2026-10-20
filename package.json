@@ -1,7 +1,7 @@
 {
-  "name": "pawlo-urban-pet-superapp",
+  "name": "kirupet-superapp",
   "version": "2.0.0",
-  "description": "PAWLO™ — The Urban Pet Super-App: Bóveda Digital de Mascotas (Carnets, Historia Clínica, Fotos, Peso, Edad, Notas), Tienda & Farmacia Especializada, Servicios Integrales (Transporte, Hospedaje, Grooming, Veterinaria), Triaje IA y Radar Geoespacial Comunitario. Preparado para Web, iOS App Store y Google Play Store con Capacitor.",
+  "description": "KIRUPET™ (com.kirupet.app) — La Super-App más fácil y completa para dueños de mascotas, veterinarios, comercios y rescate comunitario.",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
@@ -16,7 +16,7 @@
     "build:mobile": "vite build && npx cap copy"
   },
   "keywords": [
-    "pawlo",
+    "kirupet",
     "pets",
     "veterinary",
     "pet-store",
@@ -26,7 +26,7 @@
     "postgis",
     "react"
   ],
-  "author": "PAWLO Global Inc.",
+  "author": "KIRUPET Global Inc.",
   "license": "MIT",
   "dependencies": {
     "@capacitor/app": "^7.0.0",

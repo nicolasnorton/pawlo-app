@@ -135,7 +135,7 @@ export const SimpleUserHome: React.FC<SimpleUserHomeProps> = ({
       ? `${activePet.vaccines[0].name} (${activePet.vaccines[0].appliedDate})`
       : 'Al día';
 
-    const text = `🪪 *CARNET DIGITAL OFICIAL PAWLO™*\n` +
+    const text = `🪪 *CARNET DIGITAL OFICIAL KIRUPET™*\n` +
       `🐾 *Mascota:* ${activePet.name} (${speciesLabel})\n` +
       `📋 *Raza:* ${activePet.breed}\n` +
       `🎂 *Edad:* ${activePet.ageLabel} | *Sexo:* ${activePet.gender}\n` +
@@ -145,7 +145,7 @@ export const SimpleUserHome: React.FC<SimpleUserHomeProps> = ({
       `🚨 *Alergias:* ${allergiesList}\n` +
       `💉 *Última vacuna:* ${lastVaccine}\n` +
       `🥣 *Alimentación:* ${activePet.dietBrand || 'Balanceado'} (${dailyGrams}g al día)\n\n` +
-      `📍 _Ficha verificada en la Red Pawlo™ ${cityName}_`;
+      `📍 _Ficha verificada en la Red KiruPet™ ${cityName}_`;
 
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
@@ -170,7 +170,7 @@ export const SimpleUserHome: React.FC<SimpleUserHomeProps> = ({
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mb-1.5">
               <MapPin className="w-3.5 h-3.5" />
-              <span>{cityName}, Ecuador • Red Pawlo Activa</span>
+              <span>{cityName}, Ecuador • Red KiruPet Activa</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               ¡Hola{userName ? `, ${userName}` : ''}! 👋
@@ -558,7 +558,7 @@ export const SimpleUserHome: React.FC<SimpleUserHomeProps> = ({
               <h3 className="text-lg font-extrabold flex items-center gap-2">
                 <span>¿Tienes una duda sobre {activePet.name}?</span>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 uppercase">
-                  Pawlo IA
+                  Kiru IA
                 </span>
               </h3>
               <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>
@@ -635,7 +635,7 @@ export const SimpleUserHome: React.FC<SimpleUserHomeProps> = ({
                     Carnet Digital Oficial
                   </h3>
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-                    PAWLO™ Red Veterinaria • {cityName}
+                    KIRUPET™ Red Veterinaria • {cityName}
                   </p>
                 </div>
               </div>

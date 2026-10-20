@@ -1,15 +1,18 @@
-# LLMS.txt — PAWLO™ Developer & Agent Context
+# LLMS.txt — KIRUPET™ Developer & Agent Context
 > Machine-readable context guide for LLMs, Autonomous Coding Agents, and Copilots.
 
 ## Project Overview
-- **Name**: PAWLO™ (The Urban Pet Operating System)
-- **Primary Domain**: Urban Pet Care, Geospatial Real-Time Radar, Direct-to-Care Conversational Commerce.
+- **Name**: KIRUPET™ (styled as KIRUPET™ or KiruPet — "Todo para tu Mascota en 1 Toque: Cuidado Fácil & Bóveda Mascota")
+- **Package / Application ID**: `com.kirupet.app` (iOS & Android via Capacitor 7)
+- **AI Assistant**: Kiru IA / KiruPet IA
+- **Primary Domain**: Urban Pet Care, Geospatial Real-Time Radar, Direct-to-Care Conversational Commerce, Digital Pet Vault.
 - **Tech Stack**:
   - **Frontend**: React 19, TypeScript, Vite, Tailwind CSS v4, Lucide Icons, Leaflet / React-Leaflet.
+  - **Mobile**: Ionic Capacitor 7 (`com.kirupet.app`), Safe Areas (`viewport-fit=cover`), native status bar and haptics.
   - **Backend**: Supabase (PostgreSQL 15+, PostGIS EPSG:4326), Deno / TypeScript Edge Functions.
-  - **AI / LLM Integration**: DeepSeek-V3 & DeepSeek-R1 (Flash / Reasoner) with strict deterministic Pharmacological Firewall.
+  - **AI / LLM Integration**: Kiru IA powered by DeepSeek-V3 & DeepSeek-R1 (Flash / Reasoner) with strict deterministic Pharmacological Firewall.
   - **CRM & Messaging**: GoHighLevel REST API v2 + WhatsApp Universal Links (E.164).
-  - **Design System**: PAWLO Stitch Neo-Glass 2026 (Dark & Light modes with dynamic root classes).
+  - **Design System**: KIRUPET Neo-Glass 2026 (Dark & Light modes with dynamic root classes).
 
 ## Architectural Guidelines for LLMs
 
@@ -40,25 +43,27 @@
 
 ### 4. Direct Commerce & Resilient Outbox
 - All service booking flows generate a WhatsApp URL (`https://wa.me/`) with international format E.164.
-- In backend Edge Functions, always wrap third-party CRM calls (GoHighLevel) in try/catch blocks with local fallback references (`PWL-[CITY]-[HASH]`) to prevent user blocking during external outages.
+- In backend Edge Functions, always wrap third-party CRM calls (GoHighLevel) in try/catch blocks with local fallback references (`KIRU-[CITY]-[HASH]`) to prevent user blocking during external outages.
 
 ### 5. WebMCP (Web Model Context Protocol) & Agentic Commerce
 - **Standard**: Follows Chrome Modern Web Guidance for declarative forms and imperative tools.
 - **Declarative Form Attributes**: Forms must provide `toolname`, `tooldescription`, and `toolautosubmit="true"`.
 - **Imperative Registration**: `document.modelContext.registerTool()` with `AbortController` signal and `readOnlyHint` attributes.
-- **Global Fallback**: `window.pawloWebMCP` and `window.pawloAgentTools`.
+- **Global Fallback**: `window.kirupetWebMCP` / `window.pawloWebMCP` and `window.kirupetAgentTools` / `window.pawloAgentTools`.
 - **Zero API Cost Edge Engine**: Clinical triage & dietary formulas run in-browser (`offlineTriage.ts`) backed by `IndexedDB` (`indexedDbStorage.ts`), reducing server and DeepSeek API costs by 90%+.
 
 ## File Map
 - `src/App.tsx`: Main modular application shell with tab switcher, city switcher, and dual theme.
-- `src/services/webmcp.ts`: WebMCP agent manager registering 8 production tools for agentic commerce and triage.
+- `src/services/webmcp.ts`: WebMCP agent manager registering production tools for agentic commerce and triage.
 - `src/services/offlineTriage.ts`: Edge triage & regulatory pharmacological firewall.
 - `src/services/indexedDbStorage.ts`: IndexedDB persistence and API savings telemetry.
 - `src/components/AgenticWebMCPConsole.tsx`: Interactive WebMCP & Agentic Commerce developer test runner.
 - `src/components/PetStoreMarketplace.tsx`: Agentic e-commerce with declarative search and checkout forms.
 - `src/components/MyPetsVault.tsx`: Clinical records, vaccines, photos, and biometric data.
-- `src/components/PawloLogo.tsx`: Biometric paw icon + animated status node + responsive wordmark.
+- `src/components/PawloLogo.tsx`: Exports `KiruPetLogo` and backward-compatible `PawloLogo` (guardian paw + heart shield emblem + responsive KIRUPET wordmark).
 - `src/index.css`: Design system CSS variables for Dark and Light modes.
+- `capacitor.config.ts`: Native iOS & Android config (`com.kirupet.app` / `KiruPet`).
 - `docs/WEBMCP_AGENTIC_COMMERCE.md`: Full architectural specification for WebMCP and Agentic Commerce.
+- `docs/APP_STORE_DEPLOYMENT.md`: Step-by-step guide for Apple App Store and Google Play publishing.
 - `supabase/functions/pet-assistant/`: DeepSeek router with deterministic pharma regex blocking.
 - `tests/run_validation_suite.py`: Synthetic test suite for safety shields and spatial benchmarks.

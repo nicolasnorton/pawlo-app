@@ -1,7 +1,7 @@
 <div align="center">
 
-# 🐾 PAWLO™
-### The Urban Pet Operating System
+# 🐾 KIRUPET™
+### Todo para tu Mascota en 1 Toque — Cuidado Fácil & Bóveda Mascota
 **Red Tecnológica Descentralizada para Bienestar Animal, Radar Geoespacial y Comercio Direct-to-Care**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -13,15 +13,15 @@
 
 <br />
 
-<img src="./docs/assets/pawlo_preview.png" alt="PAWLO Interface" width="90%" style="border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);" />
+<img src="./docs/assets/pawlo_preview.png" alt="KIRUPET Interface" width="90%" style="border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);" />
 
 </div>
 
 ---
 
-## 🌟 ¿Qué es PAWLO™?
+## 🌟 ¿Qué es KIRUPET™?
 
-**PAWLO™** es una plataforma integral creada para transformar el cuidado animal en entornos urbanos. Construida con una **arquitectura por Nodos Urbanos**, PAWLO puede desplegarse en cualquier ciudad del mundo preservando la cartografía local, medios de pago autóctonos y redes privadas de profesionales.
+**KIRUPET™** es una plataforma integral creada para transformar el cuidado animal en entornos urbanos. Construida con una **arquitectura por Nodos Urbanos**, KIRUPET puede desplegarse en cualquier ciudad del mundo preservando la cartografía local, medios de pago autóctonos y redes privadas de profesionales.
 
 El primer nodo operativo de la red es **Cuenca (Ecuador)**, con soporte para expansión a ciudades como Quito, Guayaquil, Bogotá y Lima.
 
@@ -44,11 +44,11 @@ El primer nodo operativo de la red es **Cuenca (Ecuador)**, con soporte para exp
   - 🚕 **Transporte Pet Taxi**: Vehículos climatizados con anclaje ISOFIX y GPS en vivo.
   - 🏨 **Hospedaje & Guardería**: Suites libres de jaulas con cámaras 24/7.
   - ✂️ **Grooming & Spa Móvil**: Ozonoterapia dermocosmética en la puerta de tu casa.
-  - 🩺 **Veterinaria & Especialidades 24/7**: Sincronizada con el Carnet Digital PAWLO.
+  - 🩺 **Veterinaria & Especialidades 24/7**: Sincronizada con el Carnet Digital KIRUPET.
   - 🧠 **Etología & Paseo Educativo**: Rehabilitación conductual certificada.
 
 ### 3. 📱 Preparado para Apple App Store (iOS) & Google Play Store (Android)
-* **Ionic Capacitor 7 (`app.pawlo.os`)**: Configuración nativa lista en [`capacitor.config.ts`](capacitor.config.ts), manifiesto PWA ([`public/manifest.webmanifest`](public/manifest.webmanifest)), soporte `viewport-fit=cover` y barra de navegación inferior nativa para móviles.
+* **Ionic Capacitor 7 (`com.kirupet.app`)**: Configuración nativa lista en [`capacitor.config.ts`](capacitor.config.ts), manifiesto PWA ([`public/manifest.webmanifest`](public/manifest.webmanifest)), soporte `viewport-fit=cover` y barra de navegación inferior nativa para móviles.
 * Consulta la guía paso a paso en [`docs/APP_STORE_DEPLOYMENT.md`](docs/APP_STORE_DEPLOYMENT.md).
 
 ### 4. 🗺️ Radar Geoespacial en Vivo & Adopciones Comunitarias
@@ -56,7 +56,7 @@ El primer nodo operativo de la red es **Cuenca (Ecuador)**, con soporte para exp
 * **Latencia Ultra-Baja**: Respuestas sub-10ms (benchmark verificado de **0.172 ms** en 5,000 registros).
 * **Filtros Dinámicos**: Escaneo por radio (1 km a 8 km) con círculos de cobertura WGS84 reactivos en **Leaflet**.
 
-### 2. 🧠 Asistente de Triaje Inteligente (PAWLO AI)
+### 5. 🧠 Asistente de Triaje Inteligente (Kiru IA / KiruPet IA)
 * **Modelos**: Integración con **DeepSeek-V3** y **DeepSeek-R1 Reasoner**.
 * **Blindaje Farmacológico Absoluto**: Cortafuegos determinista que bloquea al 100% intentos de prescripción o dosificación casera.
 * **Escala de Triaje RGB**:
@@ -64,17 +64,17 @@ El primer nodo operativo de la red es **Cuenca (Ecuador)**, con soporte para exp
   - 🟡 **AMARILLO (<12h)**: Urgencias clínicas prioritarias.
   - 🟢 **VERDE**: Orientación etológica, bienestar y enriquecimiento ambiental.
 
-### 3. ⚡ Comercio Conversacional Direct-to-Care
+### 6. ⚡ Comercio Conversacional Direct-to-Care
 * **Conexión Directa**: Enlaces universales de WhatsApp (`wa.me`) con formato internacional E.164.
 * **Integración CRM**: Sincronización automática de contactos y oportunidades en **GoHighLevel (GHL) API v2**.
 * **Arquitectura Resiliente (Outbox Pattern)**: Si el CRM externo sufre caídas de red, la experiencia del usuario continúa sin fricción hacia WhatsApp.
 * **Pasarelas Locales**: Soporte nativo para *Deuna (P2P)*, *Banco Pichincha*, *Produbanco* y transferencias directas.
 
-### 4. 🛡️ Escáner de Microchips ISO Universal
+### 7. 🛡️ Escáner de Microchips ISO Universal
 * Validación algorítmica conforme a la norma internacional **ISO 11784/11785** (15 dígitos).
 * Soporte para identificadores clínicos alfanuméricos privados.
 
-### 5. 🎨 Sistema de Diseño Neo-Glass 2026 & Dual Theme
+### 8. 🎨 Sistema de Diseño Neo-Glass 2026 & Dual Theme
 * **Dark Mode & Light Mode**: Selector de tema instantáneo con tokens CSS adaptativos.
 * Creado y registrado mediante **Stitch MCP**.
 
@@ -86,7 +86,7 @@ El primer nodo operativo de la red es **Cuenca (Ecuador)**, con soporte para exp
 flowchart LR
     A["Cliente Multiplataforma (React + Leaflet)"] --> B["Supabase Edge Functions"]
     B --> C[("PostGIS EPSG:4326")]
-    B --> D["DeepSeek Reasoner API"]
+    B --> D["Kiru IA (DeepSeek Reasoner)"]
     B --> E["GoHighLevel CRM API v2"]
     E -. Fallback Resiliente .-> F["WhatsApp Directo (E.164)"]
 ```
@@ -101,7 +101,7 @@ flowchart LR
 | **Mapas GIS** | Leaflet 1.9, React-Leaflet, OpenStreetMap Tiles |
 | **Base de Datos** | PostgreSQL 15, PostGIS (EPSG:4326), Row Level Security (RLS) |
 | **Backend Serverless**| Supabase Edge Functions (Deno / TypeScript) |
-| **Inteligencia Artificial**| DeepSeek API (V3 / R1 Reasoner) con Cortafuegos Farmacológico |
+| **Inteligencia Artificial**| Kiru IA / DeepSeek API (V3 / R1 Reasoner) con Cortafuegos Farmacológico |
 | **CRM / Comercio** | GoHighLevel REST API v2 + WhatsApp Universal Links |
 
 ---
@@ -117,8 +117,8 @@ flowchart LR
 
 1. **Clonar el repositorio**:
    ```bash
-   git clone https://github.com/nicolasnorton/pawlo-app.git
-   cd pawlo-app
+   git clone https://github.com/nicolasnorton/kirupet-app.git
+   cd kirupet-app
    ```
 
 2. **Instalar dependencias**:
@@ -144,6 +144,8 @@ flowchart LR
 * 📄 [Documento de Requisitos de Producto (PRD)](./docs/PRD.md)
 * 🤖 [Guía de Contexto para Modelos y Agentes (llms.txt)](./llms.txt)
 * 🏗️ [Diseño de Sistema y Flujos de Resiliencia](./docs/architecture/SYSTEM_DESIGN.md)
+* 📱 [Guía de Publicación Móvil App Store & Play Store](./docs/APP_STORE_DEPLOYMENT.md)
+* 🌐 [WebMCP & Comercio Agéntico](./docs/WEBMCP_AGENTIC_COMMERCE.md)
 
 ---
 

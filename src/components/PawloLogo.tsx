@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface PawloLogoProps {
+export interface KiruPetLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showWordmark?: boolean;
   cityBadge?: string;
@@ -8,7 +8,9 @@ interface PawloLogoProps {
   className?: string;
 }
 
-export const PawloLogo: React.FC<PawloLogoProps> = ({
+export type PawloLogoProps = KiruPetLogoProps;
+
+export const KiruPetLogo: React.FC<KiruPetLogoProps> = ({
   size = 'md',
   showWordmark = true,
   cityBadge,
@@ -16,23 +18,23 @@ export const PawloLogo: React.FC<PawloLogoProps> = ({
   className = ''
 }) => {
   const sizeMap = {
-    sm: { box: 36, svg: 32, title: 'text-xl', sub: 'text-[8px]', badge: 'text-[9px] px-2 py-0.5' },
-    md: { box: 44, svg: 40, title: 'text-2xl', sub: 'text-[9px]', badge: 'text-[10px] px-2.5 py-0.5' },
-    lg: { box: 56, svg: 50, title: 'text-3xl', sub: 'text-[10px]', badge: 'text-xs px-3 py-1' },
-    xl: { box: 72, svg: 64, title: 'text-4xl', sub: 'text-xs', badge: 'text-xs px-3.5 py-1' }
+    sm: { box: 36, svg: 32, title: 'text-xl', sub: 'text-[7.5px]', badge: 'text-[9px] px-2 py-0.5' },
+    md: { box: 44, svg: 40, title: 'text-2xl', sub: 'text-[8.5px]', badge: 'text-[10px] px-2.5 py-0.5' },
+    lg: { box: 56, svg: 50, title: 'text-3xl', sub: 'text-[9.5px]', badge: 'text-xs px-3 py-1' },
+    xl: { box: 72, svg: 64, title: 'text-4xl', sub: 'text-[11px]', badge: 'text-xs px-3.5 py-1' }
   };
 
   const s = sizeMap[size];
 
   return (
     <div className={`inline-flex items-center gap-3.5 select-none group cursor-pointer ${className}`}>
-      {/* Isotipo de Precisión: The Orbital Paw */}
+      {/* Isotipo Guardián: KiruPet Guardian Paw & Heart Shield */}
       <div 
         className="relative flex items-center justify-center rounded-2xl transition-all duration-500 group-hover:scale-105"
         style={{ width: s.box, height: s.box }}
       >
-        {/* Halo de luz posterior reactivo */}
-        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-[#00F5A0]/30 via-[#00D9F5]/20 to-[#6366F1]/30 blur-md opacity-70 group-hover:opacity-100 transition duration-500"></div>
+        {/* Halo de luz posterior reactivo esmeralda-cyan */}
+        <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-[#00F5A0]/35 via-[#00D9F5]/25 to-[#6366F1]/20 blur-md opacity-75 group-hover:opacity-100 transition duration-500"></div>
 
         <svg
           width={s.box}
@@ -43,105 +45,105 @@ export const PawloLogo: React.FC<PawloLogoProps> = ({
           className="relative z-10 drop-shadow-sm"
         >
           <defs>
-            <radialGradient id="pawlo-bg-core" cx="50%" cy="0%" r="95%">
-              <stop offset="0%" stopColor={theme === 'dark' ? '#131F3A' : '#0B1325'} />
+            <radialGradient id="kirupet-bg-core" cx="50%" cy="0%" r="95%">
+              <stop offset="0%" stopColor={theme === 'dark' ? '#111E38' : '#0B1325'} />
               <stop offset="100%" stopColor="#040710" />
             </radialGradient>
 
-            <linearGradient id="pawlo-spectrum" x1="10%" y1="5%" x2="90%" y2="95%">
+            <linearGradient id="kirupet-spectrum" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#00F5A0" />
-              <stop offset="52%" stopColor="#00D9F5" />
-              <stop offset="100%" stopColor="#6366F1" />
+              <stop offset="60%" stopColor="#00D9F5" />
+              <stop offset="100%" stopColor="#38BDF8" />
             </linearGradient>
 
-            <linearGradient id="pawlo-heart-core" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="kirupet-heart-core" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#FF2A5F" />
               <stop offset="100%" stopColor="#FF758C" />
             </linearGradient>
 
-            <linearGradient id="pawlo-rim" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.45" />
-              <stop offset="50%" stopColor="#00F5A0" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#6366F1" stopOpacity="0.1" />
+            <linearGradient id="kirupet-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.5" />
+              <stop offset="50%" stopColor="#00F5A0" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#00D9F5" stopOpacity="0.15" />
             </linearGradient>
           </defs>
 
-          {/* Escudo Squircle de Titanio/Obsidiana */}
+          {/* Escudo Guardián Squircle con Borde Iridiscente */}
           <rect
             x="3"
             y="3"
             width="114"
             height="114"
             rx="32"
-            fill="url(#pawlo-bg-core)"
-            stroke="url(#pawlo-rim)"
+            fill="url(#kirupet-bg-core)"
+            stroke="url(#kirupet-rim)"
             strokeWidth="2.5"
           />
 
-          {/* Anillo de Telemetría Espacial */}
+          {/* Anillo Protector de Telemetría */}
           <circle
             cx="60"
             cy="64"
             r="41"
-            stroke="url(#pawlo-spectrum)"
-            strokeOpacity="0.22"
+            stroke="url(#kirupet-spectrum)"
+            strokeOpacity="0.25"
             strokeWidth="1.5"
             strokeDasharray="4 4"
             className="origin-center group-hover:rotate-45 transition-transform duration-1000"
           />
 
-          {/* 4 Nodos Satelitales en Proporción Áurea */}
+          {/* 4 Almohadillas Digitales Superiores (Huella Protectora KiruPet) */}
           <g transform="rotate(-27 29 52)">
-            <rect x="20" y="39" width="17.5" height="25" rx="8.75" fill="url(#pawlo-spectrum)" />
+            <rect x="20" y="39" width="17.5" height="25" rx="8.75" fill="url(#kirupet-spectrum)" />
           </g>
           <g transform="rotate(-9 47 36)">
-            <rect x="38" y="22" width="18" height="27" rx="9" fill="url(#pawlo-spectrum)" />
+            <rect x="38" y="22" width="18" height="27" rx="9" fill="url(#kirupet-spectrum)" />
           </g>
           <g transform="rotate(9 73 36)">
-            <rect x="64" y="22" width="18" height="27" rx="9" fill="url(#pawlo-spectrum)" />
+            <rect x="64" y="22" width="18" height="27" rx="9" fill="url(#kirupet-spectrum)" />
           </g>
           <g transform="rotate(27 91 52)">
-            <rect x="82.5" y="39" width="17.5" height="25" rx="8.75" fill="url(#pawlo-spectrum)" />
+            <rect x="82.5" y="39" width="17.5" height="25" rx="8.75" fill="url(#kirupet-spectrum)" />
           </g>
 
-          {/* Almohadilla Central (Arco Orgánico + Pin Geodésico) */}
+          {/* Almohadilla Central Guardiana */}
           <path
             d="M60 52 C41 52, 30 66, 35 82 C38.5 92, 49 97, 60 97 C71 97, 81.5 92, 85 82 C90 66, 79 52, 60 52 Z"
-            fill="url(#pawlo-spectrum)"
+            fill="url(#kirupet-spectrum)"
           />
 
-          {/* Cámara Oscura del Pulso */}
+          {/* Cámara Central Biométrica */}
           <circle cx="60" cy="76" r="11.5" fill="#040710" />
 
-          {/* Corazón Biométrico Interior */}
+          {/* Corazón Interior: Amor & Cuidado KiruPet */}
           <path
             d="M60 71.5 C58 68.5, 53.5 69.5, 53.5 73 C53.5 76.5, 60 81.5, 60 81.5 C60 81.5, 66.5 76.5, 66.5 73 C66.5 69.5, 62 68.5, 60 71.5 Z"
-            fill="url(#pawlo-heart-core)"
+            fill="url(#kirupet-heart-core)"
           />
         </svg>
 
-        {/* Indicador de Nodo en Vivo */}
+        {/* Indicador de Nodo Activo */}
         <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3 z-20">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00F5A0] opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-[#00F5A0] border-2 border-[#03060C]"></span>
         </span>
       </div>
 
-      {/* Logotipo Tipográfico Personalizado (Custom Wordmark) */}
+      {/* Logotipo Tipográfico: KIRUPET™ */}
       {showWordmark && (
         <div className="flex flex-col justify-center">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <span 
-              className={`font-display font-black tracking-[-0.04em] leading-none flex items-center ${s.title} ${
+              className={`font-display font-black tracking-[-0.035em] leading-none flex items-center ${s.title} ${
                 theme === 'dark' ? 'text-white' : 'text-slate-950'
               }`}
               style={{ fontFamily: "'Outfit', 'Plus Jakarta Sans', sans-serif" }}
             >
-              PAWL
-              <span className="bg-gradient-to-tr from-[#00F5A0] via-[#00D9F5] to-[#6366F1] bg-clip-text text-transparent">
-                O
+              KIRU
+              <span className="bg-gradient-to-r from-[#00F5A0] to-[#00D9F5] bg-clip-text text-transparent ml-0.5">
+                PET
               </span>
-              <span className="text-[#00F5A0] ml-0.5 font-black">.</span>
+              <span className="text-[10px] uppercase font-bold text-[#00F5A0] ml-1 self-start tracking-normal">™</span>
             </span>
 
             {cityBadge && (
@@ -158,12 +160,12 @@ export const PawloLogo: React.FC<PawloLogoProps> = ({
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-1">
-            <span className={`font-mono uppercase tracking-[0.22em] font-semibold ${s.sub} ${
+            <span className={`font-mono uppercase tracking-[0.16em] font-bold ${s.sub} ${
               theme === 'dark' ? 'text-slate-400' : 'text-slate-500'
             }`}>
-              URBAN PET OS
+              CUIDADO FÁCIL &amp; BÓVEDA MASCOTA
             </span>
-            <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-indigo-500/15 text-indigo-400 font-bold">
+            <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-emerald-500/15 text-emerald-400 font-bold">
               v2.6
             </span>
           </div>
@@ -173,4 +175,6 @@ export const PawloLogo: React.FC<PawloLogoProps> = ({
   );
 };
 
-export default PawloLogo;
+// Compatibilidad retroactiva total: exportamos ambos nombres para evitar cualquier rotura de imports
+export const PawloLogo = KiruPetLogo;
+export default KiruPetLogo;

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.pawlo.os',
-  appName: 'PAWLO',
+  appId: 'com.kirupet.app',
+  appName: 'KiruPet',
   webDir: 'dist',
   server: {
     androidScheme: 'https',

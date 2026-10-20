@@ -1,6 +1,6 @@
-# PAWLO™ — Guía Oficial de Publicación en Apple App Store & Google Play Store
+# KIRUPET™ — Guía Oficial de Publicación en Apple App Store & Google Play Store
 
-Esta arquitectura utiliza **React 19 + TypeScript + Vite + Ionic Capacitor 7** (`app.pawlo.os`) para compilar exactamente el mismo código fuente hacia **Web (PWA)**, **iOS (Apple App Store)** y **Android (Google Play Store)** con rendimiento nativo, soporte de Safe-Areas (`viewport-fit=cover`), barra de navegación inferior ergonómica y plugins nativos (`@capacitor/status-bar`, `@capacitor/haptics`, `@capacitor/app`).
+Esta arquitectura utiliza **React 19 + TypeScript + Vite + Ionic Capacitor 7** (`com.kirupet.app`) para compilar exactamente el mismo código fuente hacia **Web (PWA)**, **iOS (Apple App Store)** y **Android (Google Play Store)** con rendimiento nativo, soporte de Safe-Areas (`viewport-fit=cover`), barra de navegación inferior ergonómica y plugins nativos (`@capacitor/status-bar`, `@capacitor/haptics`, `@capacitor/app`).
 
 ---
 
@@ -8,8 +8,8 @@ Esta arquitectura utiliza **React 19 + TypeScript + Vite + Ionic Capacitor 7** (
 
 | Propiedad | Valor Configurado |
 | :--- | :--- |
-| **App Name** | `PAWLO` |
-| **Bundle ID (iOS) / Application ID (Android)** | `app.pawlo.os` |
+| **App Name** | `KiruPet` (Marca: `KIRUPET™`) |
+| **Bundle ID (iOS) / Application ID (Android)** | `com.kirupet.app` |
 | **Versión Inicial** | `2.0.0` (Build `1`) |
 | **Directorio Web Compilado** | `dist/` |
 | **Configuración Raíz** | [`capacitor.config.ts`](../capacitor.config.ts) |
@@ -53,11 +53,11 @@ npm run cap:sync
    ```
 2. En Xcode, selecciona el proyecto **App** en el panel izquierdo:
    - En **Signing & Capabilities**, activa *Automatically manage signing* y selecciona tu **Team** de Apple Developer.
-   - Verifica que el **Bundle Identifier** sea `app.pawlo.os`.
+   - Verifica que el **Bundle Identifier** sea `com.kirupet.app`.
 3. En `Info.plist`, incluye las descripciones de privacidad requeridas por Apple:
-   - `NSLocationWhenInUseUsageDescription`: *"PAWLO utiliza tu ubicación para mostrar alertas de mascotas extraviadas, clínicas veterinarias y transporte Pet Taxi dentro de tu radio cercano."*
-   - `NSCameraUsageDescription`: *"PAWLO necesita acceso a tu cámara para subir fotos al álbum de tu mascota, actualizar carnets de vacunación y reportar avistamientos."*
-   - `NSPhotoLibraryUsageDescription`: *"PAWLO permite adjuntar fotografías y exámenes clínicos al expediente digital de tu mascota."*
+   - `NSLocationWhenInUseUsageDescription`: *"KIRUPET utiliza tu ubicación para mostrar alertas de mascotas extraviadas, clínicas veterinarias y transporte Pet Taxi dentro de tu radio cercano."*
+   - `NSCameraUsageDescription`: *"KIRUPET necesita acceso a tu cámara para subir fotos al álbum de tu mascota, actualizar carnets de vacunación y reportar avistamientos."*
+   - `NSPhotoLibraryUsageDescription`: *"KIRUPET permite adjuntar fotografías y exámenes clínicos al expediente digital de tu mascota."*
 4. Selecciona como destino **Any iOS Device (arm64)** y ve al menú **Product → Archive**.
 5. Una vez completado el archivo, haz clic en **Distribute App → App Store Connect → Upload**.
 
@@ -83,5 +83,5 @@ npm run cap:sync
    ```
 4. En el menú superior de Android Studio, selecciona **Build → Generate Signed App Bundle / APK...**
 5. Elige **Android App Bundle (.aab)** (formato obligatorio para Google Play).
-6. Selecciona o crea tu archivo Keystore (`pawlo-release-key.jks`) y genera el bundle en modo `release`.
+6. Selecciona o crea tu archivo Keystore (`kirupet-release-key.jks`) y genera el bundle en modo `release`.
 7. Sube el archivo `app-release.aab` generado en `android/app/release/` directamente a **Google Play Console → Producción → Crear nueva versión**.

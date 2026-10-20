@@ -115,7 +115,7 @@ const HighContrastSvgQR: React.FC<{
 
       {/* Escudo central con insignia PAWLO QR */}
       <div className="absolute top-[38%] left-[38%] w-[24%] h-[24%] bg-slate-950 rounded-xl border-2 border-white flex flex-col items-center justify-center shadow-lg">
-        <span className="text-[10px] font-black tracking-tight text-[#00F5A0] font-mono leading-none">PAWLO</span>
+        <span className="text-[9px] font-black tracking-tight text-[#00F5A0] font-mono leading-none">KIRU</span>
         <span className="text-[8px] font-extrabold text-white uppercase tracking-wider leading-none mt-0.5">PAY</span>
       </div>
 
@@ -312,7 +312,7 @@ export const SimplePaymentFlow: React.FC<SimplePaymentFlowProps> = ({
                 theme === 'dark' ? 'bg-[#080E1C] border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700'
               }`}>
                 <div className="flex items-center justify-between font-mono">
-                  <span>Beneficiario: <strong>Nicolás Norton (PAWLO Cuenca)</strong></span>
+                  <span>Beneficiario: <strong>Nicolás Norton (KIRUPET Cuenca)</strong></span>
                   <span className="text-emerald-600 dark:text-[#00F5A0] font-bold">Verificado</span>
                 </div>
                 <div className="text-[11px] opacity-75">
@@ -423,7 +423,7 @@ export const SimplePaymentFlow: React.FC<SimplePaymentFlowProps> = ({
                   </span>
                 </div>
                 <div className="font-mono text-base font-extrabold tracking-wide">2100840921</div>
-                <div className="text-[11px] opacity-75">PAWLO Cuenca Cía. Ltda. • RUC 0190458721001</div>
+                <div className="text-[11px] opacity-75">KIRUPET Cuenca Cía. Ltda. • RUC 0190458721001</div>
               </div>
 
               {/* Banco del Austro */}
@@ -437,7 +437,7 @@ export const SimplePaymentFlow: React.FC<SimplePaymentFlowProps> = ({
                   </span>
                 </div>
                 <div className="font-mono text-base font-extrabold tracking-wide">0034928174</div>
-                <div className="text-[11px] opacity-75">PAWLO Cuenca Cía. Ltda. • RUC 0190458721001</div>
+                <div className="text-[11px] opacity-75">KIRUPET Cuenca Cía. Ltda. • RUC 0190458721001</div>
               </div>
             </div>
 
@@ -446,7 +446,7 @@ export const SimplePaymentFlow: React.FC<SimplePaymentFlowProps> = ({
               type="button"
               onClick={() => handleCopy(
                 'bank_data',
-                `PAWLO CUENCA - PAGO DE PEDIDO ${orderReference}\nTotal a transferir: $${formattedAmount} USD\n\n1. Banco Pichincha - Cta. Corriente: 2100840921\n2. Banco del Austro - Cta. Ahorros: 0034928174\nTitular: PAWLO Cuenca Cía. Ltda.\nRUC: 0190458721001\nCorreo: pagos@pawlo.ec`
+                `KIRUPET CUENCA - PAGO DE PEDIDO ${orderReference}\nTotal a transferir: $${formattedAmount} USD\n\n1. Banco Pichincha - Cta. Corriente: 2100840921\n2. Banco del Austro - Cta. Ahorros: 0034928174\nTitular: KIRUPET Cuenca Cía. Ltda.\nRUC: 0190458721001\nCorreo: pagos@kirupet.ec`
               )}
               className={`w-full py-3.5 px-4 rounded-2xl border font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 copiedKey === 'bank_data'

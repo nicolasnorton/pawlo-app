@@ -398,7 +398,7 @@ export default function App() {
       batch: vaccine.batch || 'LOT-2026-OK',
       appliedDate: vaccine.appliedDate || new Date().toISOString().split('T')[0],
       nextDueDate: vaccine.nextDueDate || '2027-10-20',
-      clinic: vaccine.clinic || 'Clínica Veterinaria PAWLO',
+      clinic: vaccine.clinic || 'Clínica Veterinaria KIRUPET',
       vetName: vaccine.vetName || 'Médico Veterinario',
       status: vaccine.status || 'vigente'
     };
@@ -553,7 +553,7 @@ export default function App() {
   }>>([
     {
       sender: 'bot',
-      text: 'Bienvenido a PAWLO Neural Triage Edge. El motor clínico opera 100% en tu dispositivo y navegador con cortafuegos farmacológico activo y $0 costo de API.',
+      text: 'Bienvenido a KIRUPET Neural Triage Edge. El motor clínico opera 100% en tu dispositivo y navegador con cortafuegos farmacológico activo y $0 costo de API.',
       badge: '⚡ EDGE COMPUTE IN-BROWSER (0ms)'
     }
   ]);
@@ -625,7 +625,7 @@ export default function App() {
     } else if (/^[A-Za-z0-9-]{8,16}$/.test(clean)) {
       setChipResult({
         isValid: true,
-        standard: "REGISTRO CLÍNICO PRIVADO PAWLO",
+        standard: "REGISTRO CLÍNICO PRIVADO KIRUPET",
         message: "Identificador verificado en la red de clínicas privadas asociadas.",
         timestamp: now
       });
@@ -685,7 +685,7 @@ export default function App() {
     if (!selectedService) return;
     const refId = `PWL-${selectedCity.id.toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
     const targetWa = selectedService.whatsapp || "593998408369";
-    const waText = `Hola ${selectedService.provider}, solicito confirmar reserva de "${selectedService.title}" vía PAWLO (${selectedCity.name}). Mascota: ${leadForm.petName} (${leadForm.petBreed}, Chip ISO: ${activeUserPet.microchipIso}). Horario: ${leadForm.dateOrSchedule}. Código: ${refId}. Sector: ${leadForm.sector}. Pago acordado: ${leadForm.paymentPreference}.`;
+    const waText = `Hola ${selectedService.provider}, solicito confirmar reserva de "${selectedService.title}" vía KIRUPET (${selectedCity.name}). Mascota: ${leadForm.petName} (${leadForm.petBreed}, Chip ISO: ${activeUserPet.microchipIso}). Horario: ${leadForm.dateOrSchedule}. Código: ${refId}. Sector: ${leadForm.sector}. Pago acordado: ${leadForm.paymentPreference}.`;
     const waUrl = `https://wa.me/${targetWa}?text=${encodeURIComponent(waText)}`;
 
     setLeadSuccess({ waUrl, refId });
@@ -705,7 +705,7 @@ export default function App() {
     { id: 'store', label: 'Tienda', icon: ShoppingBag },
     { id: 'services', label: 'Veterinario y Servicios', icon: Zap },
     { id: 'alerts', label: 'Mascotas Perdidas', icon: Compass },
-    { id: 'assistant', label: 'Preguntar a Pawlo', icon: Sparkles },
+    { id: 'assistant', label: 'Preguntar a Kiru IA', icon: Sparkles },
   ];
 
   const SIMPLE_MOBILE_NAV = [
@@ -723,7 +723,7 @@ export default function App() {
     { id: 'store', label: 'Tienda & Farmacia', icon: ShoppingBag },
     { id: 'services', label: 'Servicios', icon: Zap },
     { id: 'alerts', label: 'Radar', icon: Compass },
-    { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
+    { id: 'assistant', label: 'Kiru IA', icon: Sparkles },
     { id: 'adoptions', label: 'Adopciones', icon: Heart },
     { id: 'chip_lookup', label: 'Biometría ISO', icon: Fingerprint },
   ];
@@ -733,7 +733,7 @@ export default function App() {
     { id: 'my_pets', label: 'Mis Mascotas', icon: PawPrint },
     { id: 'services', label: 'Servicios', icon: Zap },
     { id: 'alerts', label: 'Radar Comunitario', icon: Compass },
-    { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
+    { id: 'assistant', label: 'Kiru IA', icon: Sparkles },
   ];
 
   const navTabs = userProfile.uiExperienceMode === 'simple'
@@ -746,7 +746,7 @@ export default function App() {
     { id: 'store', label: 'Tienda', icon: ShoppingBag },
     { id: 'services', label: 'Servicios', icon: Zap },
     { id: 'alerts', label: 'Radar', icon: Compass },
-    { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
+    { id: 'assistant', label: 'Kiru IA', icon: Sparkles },
   ];
 
   const MVP_MOBILE_NAV = [
@@ -754,7 +754,7 @@ export default function App() {
     { id: 'my_pets', label: 'Mascotas', icon: PawPrint },
     { id: 'services', label: 'Servicios', icon: Zap },
     { id: 'alerts', label: 'Radar', icon: Compass },
-    { id: 'assistant', label: 'PAWLO IA', icon: Sparkles },
+    { id: 'assistant', label: 'Kiru IA', icon: Sparkles },
   ];
 
   const mobileNavTabs = userProfile.uiExperienceMode === 'simple'
@@ -783,7 +783,7 @@ export default function App() {
           <div className="flex items-center space-x-4 overflow-x-auto no-scrollbar">
             <span className="flex items-center space-x-2 text-[#00F5A0] font-bold shrink-0">
               <Radio className="w-3.5 h-3.5 animate-pulse text-[#00F5A0]" />
-              <span>PAWLO SUPER-APP OS v2.0</span>
+              <span>KIRUPET SUPER-APP OS v2.0</span>
             </span>
             <span className="opacity-40">|</span>
             <span className="shrink-0">NODO: <strong className="text-white font-bold">{selectedCity.code} ({selectedCity.name})</strong></span>
@@ -803,10 +803,10 @@ export default function App() {
             <button
               onClick={() => setIsAssistantDrawerOpen(true)}
               className="px-2.5 py-0.5 rounded-md bg-gradient-to-r from-[#00F5A0]/20 via-[#00D9F5]/20 to-[#7B2CBF]/20 hover:brightness-125 text-[#00F5A0] border border-[#00F5A0]/40 font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer text-xs shadow-xs"
-              title="Abrir Asistente Agéntico PAWLO IA (Atajo: ⌘K / Ctrl+K)"
+              title="Abrir Asistente Agéntico Kiru IA (Atajo: ⌘K / Ctrl+K)"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#00F5A0]" />
-              <span>PAWLO IA (⌘K)</span>
+              <span>Kiru IA (⌘K)</span>
             </button>
             <button
               onClick={() => setIsAgentConsoleOpen(true)}
@@ -1198,7 +1198,7 @@ export default function App() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00F5A0]"></span>
               </span>
               <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#00F5A0]">
-                PAWLO™ Switcher de Rol & Panel
+                KIRUPET™ Switcher de Rol & Panel
               </span>
 
               {/* TOGGLE 1-CLIC DE ALCANCE: MODO MVP v1.0 vs SUITE COMPLETA v2.0 */}
@@ -1213,7 +1213,7 @@ export default function App() {
                       ? 'bg-[#00F5A0] text-[#03060C] shadow-sm'
                       : (theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900')
                   }`}
-                  title="Alcance v1.0 Validado: Mis Mascotas, Servicios WhatsApp, Radar y PAWLO IA"
+                  title="Alcance v1.0 Validado: Mis Mascotas, Servicios WhatsApp, Radar y Kiru IA"
                 >
                   <Rocket className="w-3.5 h-3.5" />
                   <span>Modo MVP v1.0</span>
@@ -1383,7 +1383,7 @@ export default function App() {
             <div className="glass-panel rounded-3xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
               <div className="space-y-2 max-w-2xl">
                 <span className="text-xs font-mono uppercase font-bold tracking-wider badge-emerald px-3 py-1 rounded-full">
-                  PAWLO SERVICIOS INTEGRALES • {selectedCity.name.toUpperCase()}
+                  KIRUPET SERVICIOS INTEGRALES • {selectedCity.name.toUpperCase()}
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">
                   Transporte, Hospedaje, Grooming, Veterinaria & Etología
@@ -1523,7 +1523,7 @@ export default function App() {
                 }`}>
                   <div>
                     <span className="text-xs font-mono uppercase text-emerald-700 dark:text-[#00F5A0] font-bold">
-                      RESERVA DIRECTA CON EXPEDIENTE PAWLO
+                      RESERVA DIRECTA CON EXPEDIENTE KIRUPET
                     </span>
                     <h3 className="font-extrabold text-xl">{selectedService.provider}</h3>
                     <p className={`text-xs sm:text-sm ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
@@ -1537,7 +1537,7 @@ export default function App() {
                   <form
                     onSubmit={handleBookingSubmit}
                     toolname="pawlo_book_service"
-                    tooldescription="Reserva servicios veterinarios, hospedaje o transporte pet taxi con expediente PAWLO"
+                    tooldescription="Reserva servicios veterinarios, hospedaje o transporte pet taxi con expediente KIRUPET"
                     toolautosubmit="true"
                     className="space-y-4 text-xs sm:text-sm"
                   >
@@ -1889,7 +1889,7 @@ export default function App() {
                     <span className="text-xs font-mono uppercase tracking-widest text-emerald-700 dark:text-[#00F5A0] font-bold">
                       MOTOR DE SEGURIDAD v4.2
                     </span>
-                    <h3 className="font-extrabold text-xl leading-tight">PAWLO Clinical Shield™</h3>
+                    <h3 className="font-extrabold text-xl leading-tight">KIRUPET Clinical Shield™</h3>
                   </div>
                 </div>
 
@@ -1953,7 +1953,7 @@ export default function App() {
               }`}>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 rounded-full bg-[#00F5A0] shadow-[0_0_10px_#00F5A0] animate-pulse"></div>
-                  <span className="font-bold text-sm sm:text-base">PAWLO Neural Edge Copilot ({activeUserPet.name})</span>
+                  <span className="font-bold text-sm sm:text-base">Kiru Neural Edge Copilot ({activeUserPet.name})</span>
                   <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-emerald-500/20 text-[#00F5A0] border border-[#00F5A0]/30 font-bold hidden sm:inline-block">
                     100% In-Browser • $0.00
                   </span>
@@ -2210,7 +2210,7 @@ export default function App() {
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold mt-2">Adopción Responsable Directa en {selectedCity.name}</h2>
               <p className={`text-xs sm:text-sm mt-1 max-w-2xl ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
-                Conectamos hogares temporales y rescatistas independientes con familias responsables. Al adoptar, la mascota recibe automáticamente su bóveda digital PAWLO con carnet e historial clínico.
+                Conectamos hogares temporales y rescatistas independientes con familias responsables. Al adoptar, la mascota recibe automáticamente su bóveda digital KIRUPET con carnet e historial clínico.
               </p>
             </div>
 
@@ -2305,7 +2305,7 @@ export default function App() {
       }`}>
         <div className="flex items-center space-x-3">
           <PawloLogo size="sm" showWordmark={false} theme={theme} />
-          <span className="font-bold">PAWLO™ Urban Pet Super-App • Nodo Activo: {selectedCity.name} ({selectedCity.code})</span>
+          <span className="font-bold">KIRUPET™ Urban Pet Super-App • Nodo Activo: {selectedCity.name} ({selectedCity.code})</span>
         </div>
         <div className="font-mono text-xs opacity-75">
           Capacitor iOS/Android Ready | ISO 11784/11785 | PostGIS Spatial Engine

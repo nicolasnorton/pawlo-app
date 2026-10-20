@@ -94,7 +94,7 @@ export const QuickSosModal: React.FC<QuickSosModalProps> = ({
       type: 'lost',
       title: `¡SE BUSCA! ${activePet.name} (${activePet.breed})`,
       sector: lostSector,
-      description: `Se perdió ${activePet.name} en ${lostSector}. ${activePet.breed}, color ${activePet.coatColor || 'característico'}. Microchip: ${activePet.microchipIso || 'Registrado en Pawlo'}. Teléfono de contacto: ${userPhone}. ${lostDetails}`
+      description: `Se perdió ${activePet.name} en ${lostSector}. ${activePet.breed}, color ${activePet.coatColor || 'característico'}. Microchip: ${activePet.microchipIso || 'Registrado en KiruPet'}. Teléfono de contacto: ${userPhone}. ${lostDetails}`
     });
     setLostPublished(true);
   };
@@ -105,7 +105,7 @@ export const QuickSosModal: React.FC<QuickSosModalProps> = ({
       `📍 *Sector donde se perdió:* ${lostSector}\n` +
       `🐾 *Mascota:* ${activePet.name} (${activePet.species === 'canine' ? 'Perro' : 'Gato'} - ${activePet.breed})\n` +
       `🎨 *Color / Señas:* ${activePet.coatColor || 'Ver foto adjunta'}\n` +
-      `🔢 *Microchip:* ${activePet.microchipIso || 'Registrado en Pawlo'}\n` +
+      `🔢 *Microchip:* ${activePet.microchipIso || 'Registrado en KiruPet'}\n` +
       `📞 *Contacto directo:* ${userPhone}\n` +
       `📝 *Detalle:* ${lostDetails}\n\n` +
       `🙏 _Por favor si lo ves o tienes cualquier pista, llámame o comparte en tus grupos de vecinos._`;
@@ -115,7 +115,7 @@ export const QuickSosModal: React.FC<QuickSosModalProps> = ({
 
   // 2. PEDIR AMBULANCIA / PET TAXI
   const handleCallAmbulanceWhatsApp = () => {
-    const text = `🚨 *EMERGENCIA VETERINARIA 24H - PAWLO ${cityName.toUpperCase()}*\n\n` +
+    const text = `🚨 *EMERGENCIA VETERINARIA 24H - KIRUPET ${cityName.toUpperCase()}*\n\n` +
       `Necesito *Ambulancia o Pet Taxi de Emergencia* para mi mascota *${activePet.name}* (${activePet.species === 'canine' ? 'Perro' : 'Gato'}, ${activePet.breed}).\n` +
       `📍 *Sector / Dirección:* ${userSector || cityName}\n` +
       `📞 *Teléfono de contacto:* ${userPhone}\n` +
@@ -306,7 +306,7 @@ export const QuickSosModal: React.FC<QuickSosModalProps> = ({
                       {activePet.breed} • {activePet.coatColor || 'Color característico'}
                     </p>
                     <div className="text-xs text-slate-400 font-mono">
-                      Chip: {activePet.microchipIso || 'Registrado en Pawlo'}
+                      Chip: {activePet.microchipIso || 'Registrado en KiruPet'}
                     </div>
                     <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
                       Teléfono de contacto: {userPhone}
@@ -559,7 +559,7 @@ export const QuickSosModal: React.FC<QuickSosModalProps> = ({
               </ul>
             </div>
 
-            {/* Notificar a la red Pawlo */}
+            {/* Notificar a la red KiruPet */}
             {!medicalAlertSent ? (
               <button
                 onClick={() => {

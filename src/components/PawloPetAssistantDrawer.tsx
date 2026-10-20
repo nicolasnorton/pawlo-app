@@ -125,7 +125,7 @@ export const PawloPetAssistantDrawer: React.FC<PawloPetAssistantDrawerProps> = (
     {
       id: 'welcome-msg',
       sender: 'assistant',
-      text: `Hola, soy **PAWLO IA Copilot**, tu asistente agéntico omnicanal.\n\nPuedo consultar información y **ejecutar acciones reales (Read & Write)** en todos los módulos autorizados para tu rol activo: **${roleMeta.label}**.\n\nPrueba pedirme por ejemplo: *"Actualiza el peso de Bruno a 30.5 kg"*, *"Registra vacuna Antirrábica hoy"* o *"Agrega alimento de salmón al carrito"*.`,
+      text: `Hola, soy **Kiru IA Copilot**, tu asistente agéntico omnicanal.\n\nPuedo consultar información y **ejecutar acciones reales (Read & Write)** en todos los módulos autorizados para tu rol activo: **${roleMeta.label}**.\n\nPrueba pedirme por ejemplo: *"Actualiza el peso de Bruno a 30.5 kg"*, *"Registra vacuna Antirrábica hoy"* o *"Agrega alimento de salmón al carrito"*.`,
       badge: '⚡ AGENTIC RUNTIME (0ms Edge)',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       latencyMs: 1
@@ -493,8 +493,8 @@ export const PawloPetAssistantDrawer: React.FC<PawloPetAssistantDrawerProps> = (
       <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 flex items-center gap-2 pointer-events-auto">
         <button
           onClick={toggleOpen}
-          aria-label="Abrir Asistente Agéntico PAWLO IA (Cmd+K)"
-          title="PAWLO IA Pet Assistant (Atajo: ⌘K / Ctrl+K)"
+          aria-label="Abrir Asistente Agéntico Kiru IA (Cmd+K)"
+          title="Kiru IA Pet Assistant (Atajo: ⌘K / Ctrl+K)"
           className="group relative flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 cursor-pointer bg-gradient-to-r from-[#00F5A0] via-[#00D9F5] to-[#7B2CBF] text-[#03060C] font-extrabold text-xs sm:text-sm border border-white/30 backdrop-blur-md"
         >
           {/* Anillo de pulso sutil */}
@@ -506,7 +506,7 @@ export const PawloPetAssistantDrawer: React.FC<PawloPetAssistantDrawerProps> = (
 
           <div className="relative z-10 flex flex-col text-left leading-tight hidden xs:flex">
             <span className="text-[10px] uppercase font-mono tracking-wider opacity-85 text-[#03060C]">
-              PAWLO IA Copilot
+              Kiru IA Copilot
             </span>
             <span className="text-xs font-black tracking-tight text-[#03060C]">
               {activePet.name} ({activePet.weightKg} kg)
@@ -556,7 +556,7 @@ export const PawloPetAssistantDrawer: React.FC<PawloPetAssistantDrawerProps> = (
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="font-extrabold text-base sm:text-lg tracking-tight">PAWLO™ IA Copilot</h2>
+                      <h2 className="font-extrabold text-base sm:text-lg tracking-tight">KIRUPET™ IA Copilot</h2>
                       <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-[#00F5A0]/20 text-[#00F5A0] border border-[#00F5A0]/30">
                         Read & Write
                       </span>
@@ -850,7 +850,7 @@ export const PawloPetAssistantDrawer: React.FC<PawloPetAssistantDrawerProps> = (
               {isProcessing && (
                 <div className="flex items-center gap-2 text-xs text-slate-400 p-2">
                   <div className="w-4 h-4 rounded-full border-2 border-[#00F5A0] border-t-transparent animate-spin" />
-                  <span>PAWLO IA ejecutando acción local en memoria...</span>
+                  <span>Kiru IA ejecutando acción local en memoria...</span>
                 </div>
               )}
 

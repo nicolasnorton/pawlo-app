@@ -1,7 +1,7 @@
 {
-  "name": "PAWLO™ — Urban Pet Super-App",
-  "short_name": "PAWLO",
-  "description": "El sistema operativo definitivo para dueños de mascotas: Ficha clínica digital, carnets de vacunación, tienda especializada, servicios integrales y radar de protección animal.",
+  "name": "KIRUPET — Cuidado Fácil para tu Mascota",
+  "short_name": "KiruPet",
+  "description": "KIRUPET™ — Todo para tu mascota en 1 toque: Bóveda clínica digital, carnets de vacunación, tienda personalizada, servicios y radar de protección animal.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
